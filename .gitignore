@@ -53,3 +53,5 @@ dkms.conf
 
 .git/
 .vs/
+.git/*
+.vs/*
