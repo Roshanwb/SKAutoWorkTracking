@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SKAuto.Data")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6a4f57804d94a675b45be299bc1f455adc1e071f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bb9cc94887b8f9cec321b88d8a4a59c36c038781")]
 [assembly: System.Reflection.AssemblyProductAttribute("SKAuto.Data")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SKAuto.Data")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

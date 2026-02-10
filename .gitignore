@@ -1,39 +1,45 @@
-## VisualStudio.gitignore (cleaned & optimized)
-
-# User-specific files
-*.rsuser
+## Elite .gitignore for Visual Studio / .NET (strict)
+# Visual Studio / .NET / Mono
+.vs/
+.vscode/
+.vsconfig
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+*.rsuser
 *.userprefs
 mono_crash.*
 
-# Build results
+# Build output
+[Bb]in/
+[Oo]bj/
+build/
+Build/
+[Bb]uild*/
 [Dd]ebug*/
-[Dd]ebugPublic*/
+[Dd]ebug*/
 [Rr]elease*/
 [Rr]eleases*/
 x64/
 x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
 artifacts/
+artifacts/**
+
+# MSBuild / tooling files
+.project.lock.json
 project.lock.json
 project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+packages/
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+packages/**
 
-# Visual Studio cache / local settings
-.vs/
-Generated\ Files/
-.vspscc
-.vssscc
-
-# Files built by Visual Studio / compilers / linkers
+# Temporary / intermediate files
 *_i.c
 *_p.c
 *_h.h
@@ -59,22 +65,23 @@ Generated\ Files/
 *.pidb
 *.svclog
 *.scc
-*.coverage
-*.coveragexml
 *.binlog
 
-# Test results & reports
+# Test results & coverage
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
 BenchmarkDotNet.Artifacts/
-_Chutzpah*
-coverage*[.json, .xml, .info]
-*.e2e
+_Chutzpah*/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
 
-# Visual C++ cache files / profiler / trace
+# Visual C++ / caches / DBs
 ipch/
 *.aps
 *.ncb
@@ -84,23 +91,15 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 *.cachefile
+
+# Profiling / trace
 *.psess
 *.vsp
 *.vspx
 *.sap
+*.e2e
 
-# NuGet & packages
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
-packages/
-*.nupkg
-*.snupkg
-*.nuget.props
-*.nuget.targets
-.paket/paket.exe
-paket-files/
-
-# Publish / deployment / build outputs
+# Publish / deployment
 publish/
 *.Publish.xml
 *.pubxml
@@ -115,103 +114,98 @@ _pkginfo.txt
 *.appxupload
 *.publishsettings
 
-# Azure / cloud build outputs
+# Azure / cloud
 csx/
 *.build.csdef
 ecf/
 rcf/
-*.build.csdef
 
-# Web / Node / client-side
-ClientBin/
+# Web / frontend / node
 node_modules/
+ClientBin/
+wwwroot/        # uncomment if you want to track generated static files
 .sass-cache/
 
-# IDE / tooling specific
+# IDE / extensions / plugins
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
-_TeamCity*
+_TeamCity*/
 *.dotCover
 .axoCover/*
 !.axoCover/settings.json
-_NCrunch_*
-.*crunch*.local.xml
+_NCrunch_*/
+*.nCrunch*
 nCrunchTemp_*
 _Tf/
-*.GhostDoc.xml
-*.jmconfig
-*.mm.*
-AutoTest.Net/
-.mfractor/
-.ionide/
+.TeamCity
 .mfractor/
 .ionide/
 
-# Source control / workspace
-$tf/
+# User / OS files
 $RECYCLE.BIN/
-Desktop.ini
 Thumbs.db
 ehthumbs.db
 .DS_Store
+Desktop.ini
 ~$*
 *~
 
-# Backup / conversion / upgrade files
+# Generated code / backups / logs
+Generated_Code/
+Generated\ Files/
+**/*GeneratedArtifacts*/
 _UpgradeReport_Files/
 Backup*/
 UpgradeLog*.XML
 UpgradeLog*.htm
 ServiceFabricBackup/
-*.rptproj.bak
 MigrationBackup/
+*.rptproj.bak
+*.dbmdl
+*.dbproj.schemaview
 
-# Generated code / temporary folders
-Generated_Code/
-**/*.HTMLClient/GeneratedArtifacts
-**/*.DesktopClient/GeneratedArtifacts
-**/*.Server/GeneratedArtifacts
-_Pvt_Extensions
-.localhistory/
-*.Cache
-Healthchecksdb
-OpenCover/
-
-# SQL / database
+# Database / SQL
 *.mdf
 *.ldf
 *.ndf
 App_Data/*.mdf
 App_Data/*.ldf
-*.dbmdl
-*.dbproj.schemaview
 
-# Certificates / keys / sensitive
+# Secrets / certificates / keys
 *.pfx
 *.snk
-
-# Misc files
-*.Publish.xml
 *.publishsettings
-*.dbmdl
-*.jfm
-*.pfx
-orleans.codegen.cs
+
+# Misc
+.orleans.codegen.cs
 *.plg
 *.opt
 *.vbw
 *.bin
 *.nvuser
-*.rptproj.bak
-*.GhostDoc.xml
-*.GhostDoc.xml
+.localhistory/
+Healthchecksdb
+OpenCover/
 
-# IDE-specific generated settings to ignore (but may be kept if desired)
-# Uncomment to ignore wwwroot if tasks generate static files there
-# wwwroot/
+# Ensure Git ignores these folders even if empty
+.vs/*
+[Bb]in/*
+[Oo]bj/*
+build/*
 
-# Keep package restore config if required by your tool
-!packages/repositories.config
+# Force ignore for common problematic directories
+**/.vs/
+**/bin/
+**/obj/
+**/build/
+**/Debug/
+**/debug/
+**/Release/
+**/release/
 
-# End of file
+# Allow specific files (uncomment if needed)
+# !wwwroot/.gitkeep
+# !packages/repositories.config
+
+# End of 
