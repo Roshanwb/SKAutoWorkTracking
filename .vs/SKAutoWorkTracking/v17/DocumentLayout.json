@@ -1,7 +1,12 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "E:\\Non Theocratic\\SK Auto\\Progrm\\SKAutoWorkTracking\\",
-  "Documents": [],
+  "WorkspaceRootPath": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\controls\\statusindicator.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\controls\\statusindicator.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -18,6 +23,18 @@
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "StatusIndicator.xaml",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Controls\\StatusIndicator.xaml",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\Controls\\StatusIndicator.xaml",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Controls\\StatusIndicator.xaml",
+              "RelativeToolTip": "Source\\SKAuto.UI\\Controls\\StatusIndicator.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-10T10:05:08.242Z",
+              "EditorCaption": ""
             }
           ]
         }

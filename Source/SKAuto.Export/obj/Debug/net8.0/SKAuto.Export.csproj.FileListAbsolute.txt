@@ -1,0 +1,16 @@
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\bin\Debug\net8.0\SKAuto.Export.deps.json
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\bin\Debug\net8.0\SKAuto.Export.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\bin\Debug\net8.0\SKAuto.Export.pdb
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\bin\Debug\net8.0\SKAuto.Core.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\bin\Debug\net8.0\SKAuto.Core.pdb
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.csproj.AssemblyReference.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.GeneratedMSBuildEditorConfig.editorconfig
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.AssemblyInfoInputs.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.AssemblyInfo.cs
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.csproj.CoreCompileInputs.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.sourcelink.json
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.E.A7C493F9.Up2Date
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\refint\SKAuto.Export.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\SKAuto.Export.pdb
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Export\obj\Debug\net8.0\ref\SKAuto.Export.dll

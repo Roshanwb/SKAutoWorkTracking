@@ -1,0 +1,13 @@
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\bin\Debug\net8.0\SKAuto.Core.deps.json
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\bin\Debug\net8.0\SKAuto.Core.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\bin\Debug\net8.0\SKAuto.Core.pdb
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.csproj.AssemblyReference.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.GeneratedMSBuildEditorConfig.editorconfig
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.AssemblyInfoInputs.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.AssemblyInfo.cs
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.csproj.CoreCompileInputs.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.sourcelink.json
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\refint\SKAuto.Core.dll
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\SKAuto.Core.pdb
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Core\obj\Debug\net8.0\ref\SKAuto.Core.dll

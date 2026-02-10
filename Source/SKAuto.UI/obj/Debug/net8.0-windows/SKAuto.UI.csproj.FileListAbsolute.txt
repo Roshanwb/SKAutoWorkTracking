@@ -1,0 +1,5 @@
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.UI\obj\Debug\net8.0-windows\SKAuto.UI.csproj.AssemblyReference.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.UI\obj\Debug\net8.0-windows\MainWindow.g.cs
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.UI\obj\Debug\net8.0-windows\App.g.cs
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.UI\obj\Debug\net8.0-windows\SKAuto.UI_MarkupCompile.cache
+E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.UI\obj\Debug\net8.0-windows\SKAuto.UI_MarkupCompile.lref
