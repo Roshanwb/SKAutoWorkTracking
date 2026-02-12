@@ -42,14 +42,14 @@ namespace SKAuto.Data.Repository
             return orders.Select(WorkOrderDto.FromEntity);
         }
 
-        public async Task<IEnumerable<WorkOrder>> GetByStatusAsync(WorkStatus status)
-        {
-            return await _dbSet
-                .Where(w => w.Status == status)
-                .Include(w => w.Client)
-                .Include(w => w.Vehicle)
-                .ToListAsync();
-        }
+        //public async Task<DailyWorkSummaryDto> GetDailySummaryAsync(DateTime date, WorkStatus status)
+        //{
+        //    return await _dbSet
+        //        .Where(w => w.Status == status)
+        //        .Include(w => w.Client)
+        //        .Include(w => w.Vehicle)
+        //        .ToListAsync();
+        //}
 
         public async Task<IEnumerable<WorkOrder>> GetByClientAsync(int clientId, DateTime? fromDate = null, DateTime? toDate = null)
         {

@@ -16,7 +16,6 @@ namespace SKAuto.Core.Entities
         public string? Phone { get; set; }
         public string Notes { get; set; } = string.Empty; 
         public bool IsActive { get; set; } = true;
-
         public string? ContactNumber { get; set; }
         public string? Email { get; set; }
 

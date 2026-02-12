@@ -1,86 +1,56 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 
 namespace SKAuto.Import.Validators
 {
-    public class ChassisValidator
+    public class ChassisValidator : IChassisValidator
     {
-        private static readonly HashSet<string> ValidPrefixes = new()
+        private static readonly HashSet<string> ValidFrenchPrefixes = new()
         {
-            "VF3", "VF7", "VF1", "VF2", // PSA prefixes
-            "WDB", "WDD", "WDF", // Mercedes
-            "WAU", "TRU", "WVG", "WVW", // Audi, Volkswagen
-            "ZFF", // Ferrari
-            // Add more as needed
+            "VF1", "VF2", "VF3", "VF4", "VF5", "VF6", "VF7", "VF8", // PSA (Peugeot, Citroën, DS, Opel)
+            "VF9", // Other
+            "VNE", // Renault
+            "VNK", // Renault Trucks
+            "VR1", // Renault (alternate)
+            "VSA", // Iveco (French production)
+            "YV1", "YV2", "YV3", "YV4", "YV5", // Volvo (French)
+            "VFU", // Renault (old)
+            "SUU", // Peugeot Motocycles
+            "VF6"  // Citroën (alternative)
         };
 
-        public ValidationResult Validate(string chassisNumber)
+        public ValidationResult Validate(string chassis)
         {
             var result = new ValidationResult();
-
-            if (string.IsNullOrWhiteSpace(chassisNumber))
+            if (string.IsNullOrWhiteSpace(chassis))
             {
-                result.AddError("Chassis", "Chassis number cannot be empty");
+                result.AddError("Chassis", "Cannot be empty");
                 return result;
             }
 
-            if (chassisNumber.Length < 10 || chassisNumber.Length > 17)
-            {
-                result.AddError("Chassis", $"Chassis number must be 10-17 characters, got {chassisNumber.Length}");
-            }
+            var normalized = chassis.ToUpperInvariant()
+                                    .Replace(" ", "")
+                                    .Replace("-", "")
+                                    .Replace(".", "");
 
-            // Check for invalid characters
-            if (chassisNumber.Any(c => !char.IsLetterOrDigit(c)))
-            {
-                result.AddError("Chassis", "Chassis number can only contain letters and digits");
-            }
+            if (normalized.Length < 11 || normalized.Length > 17)
+                result.AddError("Chassis", "Must be 11-17 characters (VIN standard)");
 
-            // Check prefix if we have at least 3 characters
-            if (chassisNumber.Length >= 3)
-            {
-                var prefix = chassisNumber.Substring(0, 3).ToUpper();
-                if (!ValidPrefixes.Contains(prefix))
-                {
-                    result.AddWarning("Chassis", $"Unrecognized chassis prefix: {prefix}");
-                }
-            }
+            if (normalized.Any(c => !char.IsLetterOrDigit(c)))
+                result.AddError("Chassis", "Only letters and digits allowed");
 
-            // French VIN specific rules
-            if (chassisNumber.StartsWith("VF") && chassisNumber.Length != 17)
+            if (normalized.Contains('I') || normalized.Contains('O') || normalized.Contains('Q'))
+                result.AddWarning("Chassis", "Contains letters I, O, Q – not valid in VIN");
+
+            if (normalized.Length >= 3)
             {
-                result.AddWarning("Chassis", "French VIN should be 17 characters");
+                var prefix = normalized.Substring(0, 3);
+                if (!ValidFrenchPrefixes.Contains(prefix))
+                    result.AddWarning("Chassis", $"Non-French manufacturer prefix: {prefix}");
             }
 
             return result;
-        }
-
-        public bool IsValidFrenchVIN(string chassisNumber)
-        {
-            if (chassisNumber.Length != 17 || !chassisNumber.StartsWith("VF"))
-                return false;
-
-            // Basic French VIN validation
-            return chassisNumber.All(c => char.IsLetterOrDigit(c)) &&
-                   !chassisNumber.Contains('I') &&
-                   !chassisNumber.Contains('O') &&
-                   !chassisNumber.Contains('Q');
-        }
-
-        public string NormalizeChassis(string chassisNumber)
-        {
-            if (string.IsNullOrWhiteSpace(chassisNumber))
-                return string.Empty;
-
-            // Remove spaces, hyphens, convert to uppercase
-            return chassisNumber
-                .Replace(" ", "", StringComparison.Ordinal)
-                .Replace("-", "", StringComparison.Ordinal)
-                .Replace(".", "", StringComparison.Ordinal)
-                .ToUpperInvariant();
         }
     }
 }

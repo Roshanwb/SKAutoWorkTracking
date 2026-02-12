@@ -52,6 +52,15 @@ namespace SKAuto.UI
                     //services.AddScoped<ImportService>();
                     //services.AddScoped<ReportService>();
 
+                    // Repositories – already handled via UnitOfWork
+                    services.AddScoped<IUnitOfWork, UnitOfWork>();
+                    services.AddScoped<DatabaseContext>();
+                    services.AddScoped<DatabaseInitializer>();
+
+                    // Validators
+                    services.AddScoped<IChassisValidator, ChassisValidator>();
+                    services.AddScoped<IEODValidationService, EODValidationService>();
+
                     // Main Window
                     services.AddSingleton<MainWindow>();
                 })

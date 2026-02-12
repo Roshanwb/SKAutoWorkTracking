@@ -2,34 +2,29 @@ using Microsoft.EntityFrameworkCore;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SKAuto.Data.Repository
 {
-    public class VehicleRepository : BaseRepository<Vehicle>, IRepository<Vehicle>
+    public class VehicleRepository : BaseRepository<Vehicle>
     {
         public VehicleRepository(DatabaseContext context) : base(context) { }
 
         public async Task<Vehicle?> GetByChassisAsync(string chassisNumber)
         {
-            return await _dbSet.FirstOrDefaultAsync(v => v.ChassisNumber == chassisNumber);
+            return await _dbSet
+                .FirstOrDefaultAsync(v => v.ChassisNumber == chassisNumber);
         }
 
-        public async Task<IEnumerable<Vehicle>> SearchAsync(string searchTerm)
+        public async Task<IEnumerable<Vehicle>> SearchAsync(string term)
         {
             return await _dbSet
-                .Where(v => v.ChassisNumber.Contains(searchTerm) ||
-                           v.Model.Contains(searchTerm) ||
-                           v.Registration != null && v.Registration.Contains(searchTerm))
-                .Take(50)
+                .Where(v => v.ChassisNumber.Contains(term) ||
+                            (v.Model != null && v.Model.Contains(term)))
+                .Take(20)
                 .ToListAsync();
         }
 
-        public async Task<bool> ChassisExistsAsync(string chassisNumber)
+        public async Task<bool> ExistsAsync(string chassisNumber)
         {
             return await _dbSet.AnyAsync(v => v.ChassisNumber == chassisNumber);
         }

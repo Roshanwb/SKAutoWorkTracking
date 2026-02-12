@@ -1,80 +1,58 @@
-﻿using SKAuto.Core.Interfaces;
+﻿using SKAuto.Core.Entities;
+using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
 using SKAuto.Data.Repository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SKAuto.Core.Entities;
-
 namespace SKAuto.Data
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly DatabaseContext _context;
-        private IRepository<Client> _clients;
-        private IRepository<Vehicle> _vehicles;
-        private IRepository<Accessory> _accessories;
-        private IRepository<WorkOrder> _workOrders;
-        private IRepository<WorkTask> _workTasks;
-        private IRepository<Travel> _travels;
-        private IRepository<SourceDocument> _sourceDocuments;
-        private IRepository<ProtectedRate> _protectedRates;
+
+        // Private concrete repository instances
+        private ClientRepository _clientRepository;
+        private VehicleRepository _vehicleRepository;
+        private AccessoryRepository _accessoryRepository;
+        private WorkOrderRepository _workOrderRepository;
+        private WorkTaskRepository _workTaskRepository;
+        private TravelRepository _travelRepository;
+        private SourceDocumentRepository _sourceDocumentRepository;
+        private ProtectedRateRepository _protectedRateRepository;
 
         public UnitOfWork(DatabaseContext context)
         {
             _context = context;
         }
 
+        // Public IRepository<T> properties – matches IUnitOfWork exactly
         public IRepository<Client> Clients =>
-            _clients ??= new ClientRepository(_context);
+            _clientRepository ??= new ClientRepository(_context);
 
         public IRepository<Vehicle> Vehicles =>
-            _vehicles ??= new VehicleRepository(_context);
+            _vehicleRepository ??= new VehicleRepository(_context);
 
         public IRepository<Accessory> Accessories =>
-            _accessories ??= new BaseRepository<Accessory>(_context);
+            _accessoryRepository ??= new AccessoryRepository(_context);
 
         public IRepository<WorkOrder> WorkOrders =>
-            _workOrders ??= new WorkOrderRepository(_context);
+            _workOrderRepository ??= new WorkOrderRepository(_context);
 
         public IRepository<WorkTask> WorkTasks =>
-            _workTasks ??= new BaseRepository<WorkTask>(_context);
+            _workTaskRepository ??= new WorkTaskRepository(_context);
 
         public IRepository<Travel> Travels =>
-            _travels ??= new BaseRepository<Travel>(_context);
+            _travelRepository ??= new TravelRepository(_context);
 
         public IRepository<SourceDocument> SourceDocuments =>
-            _sourceDocuments ??= new BaseRepository<SourceDocument>(_context);
+            _sourceDocumentRepository ??= new SourceDocumentRepository(_context);
 
         public IRepository<ProtectedRate> ProtectedRates =>
-            _protectedRates ??= new BaseRepository<ProtectedRate>(_context);
+            _protectedRateRepository ??= new ProtectedRateRepository(_context);
 
-        public async Task<int> CompleteAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
-        public async Task BeginTransactionAsync()
-        {
-            await _context.Database.BeginTransactionAsync();
-        }
-
-        public async Task CommitTransactionAsync()
-        {
-            await _context.Database.CommitTransactionAsync();
-        }
-
-        public async Task RollbackTransactionAsync()
-        {
-            await _context.Database.RollbackTransactionAsync();
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
-            GC.SuppressFinalize(this);
-        }
+        // Transaction methods
+        public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();
+        public async Task BeginTransactionAsync() => await _context.Database.BeginTransactionAsync();
+        public async Task CommitTransactionAsync() => await _context.Database.CommitTransactionAsync();
+        public async Task RollbackTransactionAsync() => await _context.Database.RollbackTransactionAsync();
+        public void Dispose() => _context.Dispose();
     }
 }
