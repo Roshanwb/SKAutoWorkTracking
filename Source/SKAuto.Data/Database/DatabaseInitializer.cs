@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
 using Microsoft.EntityFrameworkCore;
 using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
 
 namespace SKAuto.Data.Database
 {
@@ -14,86 +8,83 @@ namespace SKAuto.Data.Database
     {
         private readonly DatabaseContext _context;
 
-        public DatabaseInitializer(DatabaseContext context)
-        {
-            _context = context;
-        }
+        public DatabaseInitializer(DatabaseContext context) => _context = context;
 
         public async Task InitializeAsync()
         {
-            // Ensure database is created
             await _context.Database.EnsureCreatedAsync();
-
-            // Run migrations if any
-            await _context.Database.MigrateAsync();
-
-            // Seed initial data if database is empty
-            await SeedInitialDataAsync();
+            await SeedTestDataAsync();
         }
 
-        private async Task SeedInitialDataAsync()
+        private async Task SeedTestDataAsync()
         {
+            // Only seed if tables are empty
             if (!await _context.Clients.AnyAsync())
             {
-                var defaultClients = new List<Client>
+                var testClients = new[]
                 {
-                    new Client { Name = "PSA Group", Type = Core.Enums.ClientType.PSA },
-                    new Client { Name = "EDF", Type = Core.Enums.ClientType.Direct },
-                    new Client { Name = "Veolia", Type = Core.Enums.ClientType.Direct },
-                    new Client { Name = "ProxiServe", Type = Core.Enums.ClientType.Direct }
+                    new Client { Name = "PSA Group", Type = ClientType.PSA },
+                    new Client { Name = "Veolia", Type = ClientType.PSA },
+                    new Client { Name = "SUEZ", Type = ClientType.PSA },
+                    new Client { Name = "EDF", Type = ClientType.PSA },
+                    new Client { Name = "ENGIE", Type = ClientType.PSA },
+                    new Client { Name = "Direct Client (Example)", Type = ClientType.Direct }
                 };
-
-                await _context.Clients.AddRangeAsync(defaultClients);
+                await _context.Clients.AddRangeAsync(testClients);
+                await _context.SaveChangesAsync();
             }
 
             if (!await _context.Accessories.AnyAsync())
             {
-                var defaultAccessories = new List<Accessory>
+                var testAccessories = new[]
                 {
-                    new Accessory { Name = "Roof Rack", PartNumber = "RR-001", StandardFittingTime = 60 },
-                    new Accessory { Name = "Tow Bar", PartNumber = "TB-001", StandardFittingTime = 90 },
-                    new Accessory { Name = "Alloy Wheels", PartNumber = "AW-001", StandardFittingTime = 120 },
-                    new Accessory { Name = "Parking Sensors", PartNumber = "PS-001", StandardFittingTime = 180 },
-                    new Accessory { Name = "Car Mats", PartNumber = "CM-001", StandardFittingTime = 15 }
+                    new Accessory { Name = "Logo",   SellingPrice = 50, StandardFittingTime = 90 },
+                    new Accessory { Name = "Barre de toit", SellingPrice = 40, StandardFittingTime = 40 },
+                    new Accessory { Name = "Attelage",  SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Crochet",  SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Boitier",  SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Controle",  SellingPrice = 0, StandardFittingTime = 10 },
+                    new Accessory { Name = "Grille",  SellingPrice = 90, StandardFittingTime = 90 },
+                    new Accessory { Name = "Housse" , SellingPrice = 30, StandardFittingTime = 30 },
+                    new Accessory { Name = "Balisage",  SellingPrice = 30, StandardFittingTime = 30 },
+                    new Accessory { Name = "Antivol",  SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Alarm",  SellingPrice = 50, StandardFittingTime = 90 },
+                    new Accessory { Name = "Pose Camera SK",  SellingPrice = 0, StandardFittingTime = 60 },
+                    new Accessory { Name = "Pose Ecran SK",  SellingPrice = 0, StandardFittingTime = 60 }
                 };
-
-                await _context.Accessories.AddRangeAsync(defaultAccessories);
+                await _context.Accessories.AddRangeAsync(testAccessories);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task BackupDatabaseAsync(string backupPath)
-        {
-            if (File.Exists(_context.Database.GetDbConnection().DataSource))
+            if (!await _context.Vehicles.AnyAsync())
             {
-                var sourceFile = _context.Database.GetDbConnection().DataSource;
-                var backupFile = Path.Combine(backupPath, $"SKAuto_{DateTime.Now:yyyyMMdd_HHmmss}.db");
-                File.Copy(sourceFile, backupFile, true);
-            }
-        }
-
-        public async Task<bool> ValidateDatabaseAsync()
-        {
-            try
-            {
-                // Test connection
-                await _context.Database.ExecuteSqlRawAsync("SELECT 1");
-
-                // Check if all tables exist
-                var tables = new[] { "Clients", "Vehicles", "Accessories", "WorkOrders", "WorkTasks", "Travels" };
-                foreach (var table in tables)
+                var testVehicles = new[]
                 {
-                    await _context.Database.ExecuteSqlRawAsync($"SELECT COUNT(*) FROM {table}");
-                }
+                    new Vehicle { ChassisNumber = "VF3XXXXXXXXXXXXXX", Make = "Citroën", Model = "Berlingo" },
+                    new Vehicle { ChassisNumber = "VF7YYYYYYYYYYYYYY", Make = "Peugeot", Model = "208" },
+                    new Vehicle { ChassisNumber = "VF1ZZZZZZZZZZZZZZ", Make = "Citroën", Model = "Jumpy" }
+                };
+                await _context.Vehicles.AddRangeAsync(testVehicles);
+                await _context.SaveChangesAsync();
+            }
+        }
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // Log error
-                return false;
-            }
+        public async Task BackupAsync(string backupFolder)
+        {
+            var source = _context.Database.GetDbConnection().DataSource;
+            var fileName = $"SKAuto_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+            var dest = Path.Combine(backupFolder, fileName);
+            Directory.CreateDirectory(backupFolder);
+            File.Copy(source, dest, true);
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> RestoreAsync(string backupFilePath)
+        {
+            if (!File.Exists(backupFilePath)) return false;
+            var currentDb = _context.Database.GetDbConnection().DataSource;
+            File.Copy(backupFilePath, currentDb, true);
+            return true;
         }
     }
 }

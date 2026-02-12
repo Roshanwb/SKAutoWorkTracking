@@ -13,6 +13,7 @@ namespace SKAuto.Core.Entities
         public string? Description { get; set; }
         public int? StandardFittingTime { get; set; } // Minutes
         public decimal? PSAHourlyRate { get; set; }
+        public decimal? SellingPrice { get; set; }
         public bool RequiresPassword { get; set; }
         public bool IsActive { get; set; } = true;
 
