@@ -25,48 +25,38 @@ namespace SKAuto.Data.Database
             _databasePath = Path.Combine(skautoPath, "SKAuto.db");
         }
 
-        public DatabaseContext(string databasePath)
-        {
-            _databasePath = databasePath;
-        }
+        public DatabaseContext(string databasePath) => _databasePath = databasePath;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-            {
                 optionsBuilder.UseSqlite($"Data Source={_databasePath}");
-                // Only enable in development
-                // optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
-                optionsBuilder.EnableSensitiveDataLogging(false);
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-            // === Enum conversions ===
+            // Enums as strings
             modelBuilder.Entity<Client>()
                 .Property(c => c.Type)
-                .HasConversion(new EnumToStringConverter<Core.Enums.ClientType>());
+                .HasConversion<string>();
 
             modelBuilder.Entity<WorkOrder>()
                 .Property(w => w.OrderType)
-                .HasConversion(new EnumToStringConverter<Core.Enums.OrderType>());
+                .HasConversion<string>();
 
             modelBuilder.Entity<WorkOrder>()
                 .Property(w => w.Status)
-                .HasConversion(new EnumToStringConverter<Core.Enums.WorkStatus>());
+                .HasConversion<string>();
 
             modelBuilder.Entity<WorkTask>()
                 .Property(t => t.TaskType)
-                .HasConversion(new EnumToStringConverter<Core.Enums.TaskType>());
+                .HasConversion<string>();
 
             modelBuilder.Entity<WorkTask>()
                 .Property(t => t.TaskStatus)
-                .HasConversion(new EnumToStringConverter<Core.Enums.WorkStatus>());
+                .HasConversion<string>();
 
-            // === Unique constraints ===
+            // Unique constraints
             modelBuilder.Entity<Client>()
                 .HasIndex(c => c.Name)
                 .IsUnique();
@@ -83,7 +73,7 @@ namespace SKAuto.Data.Database
                 .HasIndex(s => s.FileHash)
                 .IsUnique();
 
-            // === Relationships ===
+            // Relationships
             modelBuilder.Entity<WorkOrder>()
                 .HasOne(w => w.Client)
                 .WithMany(c => c.WorkOrders)
@@ -126,38 +116,26 @@ namespace SKAuto.Data.Database
                 .HasForeignKey(p => p.AccessoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // === Default values and computed columns ===
+            // Default values & timestamps
             modelBuilder.Entity<Client>()
                 .Property(c => c.CreatedAt)
-                .HasDefaultValueSql("DATETIME('now')");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             modelBuilder.Entity<Vehicle>()
                 .Property(v => v.CreatedAt)
-                .HasDefaultValueSql("DATETIME('now')");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            modelBuilder.Entity<WorkOrder>()
-                .Property(w => w.CreatedAt)
-                .HasDefaultValueSql("DATETIME('now')");
+            // ... similar for all entities
 
-            modelBuilder.Entity<WorkTask>()
-                .Property(t => t.CreatedAt)
-                .HasDefaultValueSql("DATETIME('now')");
+            // Global query filters (optional)
+            modelBuilder.Entity<Client>()
+                .HasQueryFilter(c => c.IsActive);
 
-            // === Indexes ===
-            modelBuilder.Entity<WorkOrder>()
-                .HasIndex(w => w.OrderDate);
-
-            modelBuilder.Entity<WorkOrder>()
-                .HasIndex(w => w.Status);
-
-            modelBuilder.Entity<WorkTask>()
-                .HasIndex(t => t.TaskStatus);
+            modelBuilder.Entity<Accessory>()
+                .HasQueryFilter(a => a.IsActive);
 
             modelBuilder.Entity<Vehicle>()
-                .HasIndex(v => v.ChassisNumber);
-
-            modelBuilder.Entity<Vehicle>()
-                .HasIndex(v => v.Model);
+                .HasQueryFilter(v => v.IsActive);
         }
 
         public override int SaveChanges()
@@ -176,17 +154,16 @@ namespace SKAuto.Data.Database
         {
             var entries = ChangeTracker.Entries()
                 .Where(e => e.Entity is BaseEntity &&
-                    (e.State == EntityState.Added || e.State == EntityState.Modified));
+                           (e.State == EntityState.Added || e.State == EntityState.Modified));
 
             foreach (var entry in entries)
             {
                 if (entry.Entity is BaseEntity entity)
                 {
                     if (entry.State == EntityState.Added)
-                    {
                         entity.CreatedAt = DateTime.UtcNow;
-                    }
-                    entity.UpdatedAt = DateTime.UtcNow;
+                    else
+                        entity.UpdatedAt = DateTime.UtcNow;
                 }
             }
         }

@@ -14,6 +14,7 @@ namespace SKAuto.Core.Entities
         public int? StandardFittingTime { get; set; } // Minutes
         public decimal? PSAHourlyRate { get; set; }
         public bool RequiresPassword { get; set; }
+        public bool IsActive { get; set; } = true;
 
         // Navigation properties
         public virtual ICollection<WorkTask> WorkTasks { get; set; } = new List<WorkTask>();

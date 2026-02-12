@@ -12,9 +12,11 @@ namespace SKAuto.Core.Entities
         public string? Make { get; set; }
         public int? Year { get; set; }
         public string? Registration { get; set; }
+        public bool IsActive { get; set; } = true;
 
         // Navigation properties
         public virtual ICollection<WorkOrder> WorkOrders { get; set; } = new List<WorkOrder>();
+
 
         // Business methods
         public string GetDisplayName() => $"{Make} {Model} ({ChassisNumber})";
