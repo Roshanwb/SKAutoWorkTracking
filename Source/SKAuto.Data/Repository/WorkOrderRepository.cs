@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SKAuto.Data.Repository;
 
 namespace SKAuto.Data.Repository
 {

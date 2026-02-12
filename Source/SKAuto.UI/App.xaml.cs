@@ -25,6 +25,11 @@ namespace SKAuto.UI
                     services.AddSingleton<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
 
+
+                    // ViewModels
+                    services.AddSingleton<MainViewModel>();
+                    services.AddTransient<WorkOrderViewModel>();
+
                     // Unit of Work
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -39,13 +44,13 @@ namespace SKAuto.UI
                     // ViewModels
                     services.AddSingleton<MainViewModel>();
                     services.AddTransient<WorkOrderViewModel>();
-                    services.AddTransient<ImportViewModel>();
-                    services.AddTransient<ReportsViewModel>();
+                    //services.AddTransient<ImportViewModel>();
+                    //services.AddTransient<ReportsViewModel>();
 
                     // Services
-                    services.AddScoped<DataService>();
-                    services.AddScoped<ImportService>();
-                    services.AddScoped<ReportService>();
+                    //services.AddScoped<DataService>();
+                    //services.AddScoped<ImportService>();
+                    //services.AddScoped<ReportService>();
 
                     // Main Window
                     services.AddSingleton<MainWindow>();

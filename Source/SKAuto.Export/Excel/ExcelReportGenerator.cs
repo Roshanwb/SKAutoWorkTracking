@@ -115,7 +115,8 @@ namespace SKAuto.Export.Excel
 
         public async Task<byte[]> GenerateWorkOrderReportAsync(int workOrderId)
         {
-            var order = await _unitOfWork.WorkOrders.GetWithDetailsAsync(workOrderId);
+            // Replace GetWithDetailsAsync with GetByIdAsync
+            var order = await _unitOfWork.WorkOrders.GetByIdAsync(workOrderId);
             if (order == null)
                 throw new ArgumentException($"Work order {workOrderId} not found");
 

@@ -3,12 +3,39 @@
   "WorkspaceRootPath": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{915C0978-BF5F-4005-B18A-043F414D79D0}|Source\\SKAuto.Export\\SKAuto.Export.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.export\\excel\\excelreportgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{915C0978-BF5F-4005-B18A-043F414D79D0}|Source\\SKAuto.Export\\SKAuto.Export.csproj|solutionrelative:source\\skauto.export\\excel\\excelreportgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{915C0978-BF5F-4005-B18A-043F414D79D0}|Source\\SKAuto.Export\\SKAuto.Export.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.export\\pdf\\pdfreportgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{915C0978-BF5F-4005-B18A-043F414D79D0}|Source\\SKAuto.Export\\SKAuto.Export.csproj|solutionrelative:source\\skauto.export\\pdf\\pdfreportgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rosha\\AppData\\Local\\Temp\\.vsdbgsrc\\aad6be2495d0a786b94b3514a5b6903407fe2d6a75ad7e505df6a9d895927867\\XamlReader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\converters\\statustocolorconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\converters\\statustocolorconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\controls\\workordergrid.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\controls\\workordergrid.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\views\\workorderview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\views\\workorderview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|e:\\non theocratic\\sk auto\\program\\skautoworktracking\\source\\skauto.ui\\views\\vehiclelookupview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{BC86EF2E-B7EB-4D02-BDCA-4A8E0978ABEE}|Source\\SKAuto.UI\\SKAuto.UI.csproj|solutionrelative:source\\skauto.ui\\views\\vehiclelookupview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,25 +45,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 6,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ExcelReportGenerator.cs",
-              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.Export\\Excel\\ExcelReportGenerator.cs",
-              "RelativeDocumentMoniker": "Source\\SKAuto.Export\\Excel\\ExcelReportGenerator.cs",
-              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.Export\\Excel\\ExcelReportGenerator.cs",
-              "RelativeToolTip": "Source\\SKAuto.Export\\Excel\\ExcelReportGenerator.cs",
-              "ViewState": "AgIAAHsBAAAAAAAAAAAzwJUBAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T14:40:50.82Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
@@ -47,15 +57,112 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "App.xaml",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\App.xaml",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\App.xaml",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\App.xaml",
+              "RelativeToolTip": "Source\\SKAuto.UI\\App.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-12T11:56:12.723Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "PdfReportGenerator.cs",
-              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.Export\\Pdf\\PdfReportGenerator.cs",
-              "RelativeDocumentMoniker": "Source\\SKAuto.Export\\Pdf\\PdfReportGenerator.cs",
-              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.Export\\Pdf\\PdfReportGenerator.cs",
-              "RelativeToolTip": "Source\\SKAuto.Export\\Pdf\\PdfReportGenerator.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\App.xaml.cs",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\App.xaml.cs",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\App.xaml.cs",
+              "RelativeToolTip": "Source\\SKAuto.UI\\App.xaml.cs",
+              "ViewState": "AgIAADwAAAAAAAAAAAArwEoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T14:40:53.903Z",
+              "WhenOpened": "2026-02-12T11:56:10.141Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "XamlReader.cs",
+              "DocumentMoniker": "C:\\Users\\rosha\\AppData\\Local\\Temp\\.vsdbgsrc\\aad6be2495d0a786b94b3514a5b6903407fe2d6a75ad7e505df6a9d895927867\\XamlReader.cs",
+              "ToolTip": "C:\\Users\\rosha\\AppData\\Local\\Temp\\.vsdbgsrc\\aad6be2495d0a786b94b3514a5b6903407fe2d6a75ad7e505df6a9d895927867\\XamlReader.cs [Read Only]",
+              "ViewState": "AgIAAI4BAAAAAAAAAAApwLUBAAACAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-12T11:03:10.53Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\MainWindow.xaml.cs",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\MainWindow.xaml.cs",
+              "RelativeToolTip": "Source\\SKAuto.UI\\MainWindow.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-12T11:00:57.908Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\MainWindow.xaml",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\MainWindow.xaml",
+              "RelativeToolTip": "Source\\SKAuto.UI\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-12T10:54:06.925Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "StatusToColorConverter.cs",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Converters\\StatusToColorConverter.cs",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\Converters\\StatusToColorConverter.cs",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Converters\\StatusToColorConverter.cs",
+              "RelativeToolTip": "Source\\SKAuto.UI\\Converters\\StatusToColorConverter.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAYwB0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-12T10:53:44.604Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "WorkOrderGrid.xaml",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Controls\\WorkOrderGrid.xaml",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\Controls\\WorkOrderGrid.xaml",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Controls\\WorkOrderGrid.xaml",
+              "RelativeToolTip": "Source\\SKAuto.UI\\Controls\\WorkOrderGrid.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-12T10:51:57.112Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "WorkOrderView.xaml",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Views\\WorkOrderView.xaml",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\Views\\WorkOrderView.xaml",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Views\\WorkOrderView.xaml",
+              "RelativeToolTip": "Source\\SKAuto.UI\\Views\\WorkOrderView.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-12T10:51:34.031Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "VehicleLookupView.xaml",
+              "DocumentMoniker": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Views\\VehicleLookupView.xaml",
+              "RelativeDocumentMoniker": "Source\\SKAuto.UI\\Views\\VehicleLookupView.xaml",
+              "ToolTip": "E:\\Non Theocratic\\SK Auto\\Program\\SKAutoWorkTracking\\Source\\SKAuto.UI\\Views\\VehicleLookupView.xaml",
+              "RelativeToolTip": "Source\\SKAuto.UI\\Views\\VehicleLookupView.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-12T10:51:06.554Z",
               "EditorCaption": ""
             }
           ]
