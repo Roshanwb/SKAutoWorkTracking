@@ -212,10 +212,5 @@ build/*
 **/debug/*
 **/Release/*
 **/release/*
-# Allow specific files (uncomment if needed)
-# !wwwroot/.gitkeep
-# !packages/repositories.config
-
-# End of 
 /Source/SKAuto.UI/obj
 /.vs
