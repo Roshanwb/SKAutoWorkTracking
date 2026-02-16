@@ -214,3 +214,13 @@ build/*
 **/release/*
 /Source/SKAuto.UI/obj
 /.vs
+/.vs
+/Source/SKAuto.Core/obj
+/Source/SKAuto.Data/obj
+/Source/SKAuto.Export/obj
+/Source/SKAuto.Export/obj
+/Source/SKAuto.Import/bin
+/Source/SKAuto.Import/obj
+/Source/SKAuto.Import/obj
+/Source/SKAuto.UI/obj
+/Source/SKAuto.UI/obj
