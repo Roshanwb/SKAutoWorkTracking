@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:SKAuto.UI"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
         xmlns:vm="clr-namespace:SKAuto.UI.ViewModels"
+        xmlns:enums="clr-namespace:SKAuto.Core.Enums;assembly=SKAuto.Core"
         mc:Ignorable="d"
         Title="SK Auto Work Tracking" 
         Height="700" Width="1200"
@@ -115,26 +116,28 @@
 
                 <TextBlock Text="Update Status" FontWeight="Bold" Margin="0,10,0,5"/>
                 <Button Content="Mark In Progress" 
-                        Command="{Binding UpdateStatusCommand}"
-                        CommandParameter="InProgress"
-                        Margin="0,0,0,5"
-                        Padding="5"
-                        Background="#f39c12"
-                        Foreground="White"/>
+        Command="{Binding UpdateStatusCommand}"
+        CommandParameter="{x:Static enums:WorkStatus.InProgress}"
+        Margin="0,0,0,5"
+        Padding="5"
+        Background="#f39c12"
+        Foreground="White"/>
+
                 <Button Content="Mark Blocked" 
-                        Command="{Binding UpdateStatusCommand}"
-                        CommandParameter="Blocked"
-                        Margin="0,0,0,5"
-                        Padding="5"
-                        Background="#e74c3c"
-                        Foreground="White"/>
+        Command="{Binding UpdateStatusCommand}"
+        CommandParameter="{x:Static enums:WorkStatus.Blocked}"
+        Margin="0,0,0,5"
+        Padding="5"
+        Background="#e74c3c"
+        Foreground="White"/>
+
                 <Button Content="Mark Done" 
-                        Command="{Binding UpdateStatusCommand}"
-                        CommandParameter="Done"
-                        Margin="0,0,0,5"
-                        Padding="5"
-                        Background="#2ecc71"
-                        Foreground="White"/>
+        Command="{Binding UpdateStatusCommand}"
+        CommandParameter="{x:Static enums:WorkStatus.Done}"
+        Margin="0,0,0,5"
+        Padding="5"
+        Background="#2ecc71"
+        Foreground="White"/>
             </StackPanel>
         </Grid>
 

@@ -3,5 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Import Data" Height="450" Width="800">
 	<Grid>
-	</Grid>
+        <StackPanel Margin="10">
+            <Button Content="Select PDF" Command="{Binding SelectPdfCommand}" Margin="5"/>
+            <DataGrid ItemsSource="{Binding PreviewOrders}" AutoGenerateColumns="True" Height="200" Margin="5"/>
+            <Button Content="Import" Command="{Binding ImportCommand}" Margin="5" Padding="10,5"/>
+        </StackPanel>
+    </Grid>
 </Window>

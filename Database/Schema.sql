@@ -2,6 +2,26 @@
 PRAGMA foreign_keys = ON;
 
 -- ============================================
+-- USERS (for authentication and role management)
+-- ============================================
+CREATE TABLE Users (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    PasswordHash TEXT NOT NULL,  -- Store plain for now, will hash later
+    Role TEXT NOT NULL DEFAULT 'User' CHECK(Role IN ('Admin', 'User')),
+    IsActive BOOLEAN DEFAULT 1,
+    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    UpdatedAt TEXT NULL
+);
+
+CREATE INDEX IX_Users_Username ON Users(Username);
+CREATE INDEX IX_Users_Role ON Users(Role);
+
+-- Insert default admin user (password: admin)
+INSERT INTO Users (Username, PasswordHash, Role, IsActive) 
+VALUES ('admin', 'admin', 'Admin', 1);
+
+-- ============================================
 -- CLIENTS (normalized with parent grouping)
 -- ============================================
 CREATE TABLE Clients (
@@ -64,7 +84,7 @@ CREATE INDEX IX_Accessories_Name ON Accessories(Name);
 CREATE INDEX IX_Accessories_Category ON Accessories(Category);
 
 -- ============================================
--- PROTECTED RATES (PSA hourly rates – encrypted on demand)
+-- PROTECTED RATES (PSA hourly rates ï¿½ encrypted on demand)
 -- ============================================
 CREATE TABLE ProtectedRates (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,

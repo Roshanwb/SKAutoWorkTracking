@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 
@@ -12,6 +6,7 @@ namespace SKAuto.Core.DTOs
     public class WorkOrderDto
     {
         public int Id { get; set; }
+        public int ClientId { get; set; }  
         public string ClientName { get; set; } = string.Empty;
         public string VehicleChassis { get; set; } = string.Empty;
         public string VehicleModel { get; set; } = string.Empty;
@@ -28,15 +23,16 @@ namespace SKAuto.Core.DTOs
             return new WorkOrderDto
             {
                 Id = workOrder.Id,
-                ClientName = workOrder.Client.Name,
-                VehicleChassis = workOrder.Vehicle.ChassisNumber,
-                VehicleModel = workOrder.Vehicle.Model,
+                ClientId = workOrder.ClientId,  
+                ClientName = workOrder.Client?.Name ?? string.Empty,
+                VehicleChassis = workOrder.Vehicle?.ChassisNumber ?? string.Empty,
+                VehicleModel = workOrder.Vehicle?.Model ?? string.Empty,
                 OrderType = workOrder.OrderType,
                 OrderDate = workOrder.OrderDate,
                 Status = workOrder.Status,
                 TotalAmount = workOrder.TotalAmount,
-                TaskCount = workOrder.WorkTasks.Count,
-                HasTravel = workOrder.Travels.Any(),
+                TaskCount = workOrder.WorkTasks?.Count ?? 0,
+                HasTravel = workOrder.Travels?.Any() ?? false,
                 Notes = workOrder.Notes
             };
         }

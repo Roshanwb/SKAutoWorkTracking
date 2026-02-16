@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SKAuto.Data.Database
 {
@@ -12,13 +16,40 @@ namespace SKAuto.Data.Database
 
         public async Task InitializeAsync()
         {
+            // Ensure database is created
             await _context.Database.EnsureCreatedAsync();
+
+            // Seed test data if tables are empty
             await SeedTestDataAsync();
         }
 
         private async Task SeedTestDataAsync()
         {
-            // Only seed if tables are empty
+            // Seed Users if empty
+            if (!await _context.Users.AnyAsync())
+            {
+                var users = new[]
+                {
+                    new User
+                    {
+                        Username = "admin",
+                        PasswordHash = "admin",  // In production, hash this!
+                        Role = "Admin",
+                        IsActive = true
+                    },
+                    new User
+                    {
+                        Username = "user",
+                        PasswordHash = "user",
+                        Role = "User",
+                        IsActive = true
+                    }
+                };
+                await _context.Users.AddRangeAsync(users);
+                await _context.SaveChangesAsync();
+            }
+
+            // Seed Clients if empty
             if (!await _context.Clients.AnyAsync())
             {
                 var testClients = new[]
@@ -34,28 +65,30 @@ namespace SKAuto.Data.Database
                 await _context.SaveChangesAsync();
             }
 
+            // Seed Accessories if empty
             if (!await _context.Accessories.AnyAsync())
             {
                 var testAccessories = new[]
                 {
-                    new Accessory { Name = "Logo",   SellingPrice = 50, StandardFittingTime = 90 },
+                    new Accessory { Name = "Logo", SellingPrice = 50, StandardFittingTime = 90 },
                     new Accessory { Name = "Barre de toit", SellingPrice = 40, StandardFittingTime = 40 },
-                    new Accessory { Name = "Attelage",  SellingPrice = 60, StandardFittingTime = 60 },
-                    new Accessory { Name = "Crochet",  SellingPrice = 60, StandardFittingTime = 60 },
-                    new Accessory { Name = "Boitier",  SellingPrice = 60, StandardFittingTime = 60 },
-                    new Accessory { Name = "Controle",  SellingPrice = 0, StandardFittingTime = 10 },
-                    new Accessory { Name = "Grille",  SellingPrice = 90, StandardFittingTime = 90 },
-                    new Accessory { Name = "Housse" , SellingPrice = 30, StandardFittingTime = 30 },
-                    new Accessory { Name = "Balisage",  SellingPrice = 30, StandardFittingTime = 30 },
-                    new Accessory { Name = "Antivol",  SellingPrice = 60, StandardFittingTime = 60 },
-                    new Accessory { Name = "Alarm",  SellingPrice = 50, StandardFittingTime = 90 },
-                    new Accessory { Name = "Pose Camera SK",  SellingPrice = 0, StandardFittingTime = 60 },
-                    new Accessory { Name = "Pose Ecran SK",  SellingPrice = 0, StandardFittingTime = 60 }
+                    new Accessory { Name = "Attelage", SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Crochet", SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Boitier", SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Controle", SellingPrice = 0, StandardFittingTime = 10 },
+                    new Accessory { Name = "Grille", SellingPrice = 90, StandardFittingTime = 90 },
+                    new Accessory { Name = "Housse", SellingPrice = 30, StandardFittingTime = 30 },
+                    new Accessory { Name = "Balisage", SellingPrice = 30, StandardFittingTime = 30 },
+                    new Accessory { Name = "Antivol", SellingPrice = 60, StandardFittingTime = 60 },
+                    new Accessory { Name = "Alarm", SellingPrice = 50, StandardFittingTime = 90 },
+                    new Accessory { Name = "Pose Camera SK", SellingPrice = 0, StandardFittingTime = 60 },
+                    new Accessory { Name = "Pose Ecran SK", SellingPrice = 0, StandardFittingTime = 60 }
                 };
                 await _context.Accessories.AddRangeAsync(testAccessories);
                 await _context.SaveChangesAsync();
             }
 
+            // Seed Vehicles if empty
             if (!await _context.Vehicles.AnyAsync())
             {
                 var testVehicles = new[]

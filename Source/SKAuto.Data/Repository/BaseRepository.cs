@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SKAuto.Core.DTOs;
+using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
 using System;
@@ -68,6 +70,21 @@ namespace SKAuto.Data.Repository
         public virtual async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.CountAsync(predicate);
+        }
+
+        Task<IEnumerable<WorkOrderDto>> IRepository<T>.GetDailyWorkOrdersAsync(DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<DailyWorkSummaryDto> IRepository<T>.GetDailySummaryAsync(DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<WorkOrder?> IRepository<T>.GetWithDetailsAsync(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

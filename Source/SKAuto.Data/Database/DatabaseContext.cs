@@ -14,6 +14,7 @@ namespace SKAuto.Data.Database
         public DbSet<WorkTask> WorkTasks { get; set; }
         public DbSet<Travel> Travels { get; set; }
         public DbSet<SourceDocument> SourceDocuments { get; set; }
+        public DbSet<User> Users { get; set; }
 
         private readonly string _databasePath;
 

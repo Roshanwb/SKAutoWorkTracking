@@ -42,14 +42,6 @@ namespace SKAuto.Data.Repository
             return orders.Select(WorkOrderDto.FromEntity);
         }
 
-        //public async Task<DailyWorkSummaryDto> GetDailySummaryAsync(DateTime date, WorkStatus status)
-        //{
-        //    return await _dbSet
-        //        .Where(w => w.Status == status)
-        //        .Include(w => w.Client)
-        //        .Include(w => w.Vehicle)
-        //        .ToListAsync();
-        //}
 
         public async Task<IEnumerable<WorkOrder>> GetByClientAsync(int clientId, DateTime? fromDate = null, DateTime? toDate = null)
         {
@@ -74,10 +66,8 @@ namespace SKAuto.Data.Repository
             var orders = await _dbSet
                 .Where(w => w.OrderDate.Date == date.Date)
                 .Include(w => w.Client)
-                .Include(w => w.Vehicle)
                 .Include(w => w.WorkTasks)
                     .ThenInclude(t => t.Accessory)
-                .Include(w => w.Travels)
                 .ToListAsync();
 
             var summary = new DailyWorkSummaryDto
@@ -86,13 +76,7 @@ namespace SKAuto.Data.Repository
                 TotalWorkOrders = orders.Count,
                 CompletedOrders = orders.Count(o => o.Status == WorkStatus.Done),
                 InProgressOrders = orders.Count(o => o.Status == WorkStatus.InProgress),
-                TotalRevenue = orders.Where(o => o.TotalAmount.HasValue).Sum(o => o.TotalAmount.Value),
-                TotalPSARevenue = orders
-                    .Where(o => o.Client.Type == ClientType.PSA && o.TotalAmount.HasValue)
-                    .Sum(o => o.TotalAmount.Value),
-                TotalDirectRevenue = orders
-                    .Where(o => o.Client.Type == ClientType.Direct && o.TotalAmount.HasValue)
-                    .Sum(o => o.TotalAmount.Value)
+                TotalRevenue = orders.Where(o => o.TotalAmount.HasValue).Sum(o => o.TotalAmount.Value)
             };
 
             // Client summaries
@@ -106,23 +90,9 @@ namespace SKAuto.Data.Repository
                 })
                 .ToList();
 
-            // Vehicle work
-            summary.VehicleWork = orders
-                .Select(o => new VehicleWorkDto
-                {
-                    ChassisNumber = o.Vehicle.ChassisNumber,
-                    Model = o.Vehicle.Model,
-                    AccessoriesFitted = o.WorkTasks
-                        .Where(t => t.TaskType == TaskType.Fit)
-                        .Select(t => t.Accessory.Name)
-                        .Distinct()
-                        .ToList(),
-                    TotalCost = o.TotalAmount ?? 0
-                })
-                .ToList();
-
             return summary;
         }
+
 
         public async Task<int> GetOrderCountForDateAsync(DateTime date)
         {

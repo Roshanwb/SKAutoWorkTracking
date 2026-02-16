@@ -1,9 +1,11 @@
+using SKAuto.Core.DTOs;
+using SKAuto.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq.Expressions;
 
 namespace SKAuto.Core.Interfaces
 {
@@ -18,5 +20,8 @@ namespace SKAuto.Core.Interfaces
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
         Task<int> CountAsync();
         Task<int> CountAsync(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<WorkOrderDto>> GetDailyWorkOrdersAsync(DateTime date);
+        Task<DailyWorkSummaryDto> GetDailySummaryAsync(DateTime date);
+        Task<WorkOrder?> GetWithDetailsAsync(int id);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data;
 using SKAuto.Data.Database;
@@ -15,7 +16,7 @@ namespace SKAuto.UI
     public partial class App : Application
     {
         private readonly IHost _host;
-
+        public static User CurrentUser { get; set; }
         public App()
         {
             _host = Host.CreateDefaultBuilder()
@@ -61,8 +62,15 @@ namespace SKAuto.UI
                     services.AddScoped<IChassisValidator, ChassisValidator>();
                     services.AddScoped<IEODValidationService, EODValidationService>();
 
+                    services.AddScoped<IUnitOfWork, UnitOfWork>();
+                    services.AddScoped<DatabaseContext>();
+                    services.AddScoped<DatabaseInitializer>();
+
                     // Main Window
                     services.AddSingleton<MainWindow>();
+
+                    //Login
+
                 })
                 .Build();
         }

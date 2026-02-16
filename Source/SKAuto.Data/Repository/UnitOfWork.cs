@@ -2,13 +2,14 @@
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
 using SKAuto.Data.Repository;
+
 namespace SKAuto.Data
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly DatabaseContext _context;
 
-        // Private concrete repository instances
+        // Private repository instances
         private ClientRepository _clientRepository;
         private VehicleRepository _vehicleRepository;
         private AccessoryRepository _accessoryRepository;
@@ -17,13 +18,13 @@ namespace SKAuto.Data
         private TravelRepository _travelRepository;
         private SourceDocumentRepository _sourceDocumentRepository;
         private ProtectedRateRepository _protectedRateRepository;
+        private UserRepository _userRepository;  // ADD THIS
 
         public UnitOfWork(DatabaseContext context)
         {
             _context = context;
         }
 
-        // Public IRepository<T> properties – matches IUnitOfWork exactly
         public IRepository<Client> Clients =>
             _clientRepository ??= new ClientRepository(_context);
 
@@ -47,6 +48,10 @@ namespace SKAuto.Data
 
         public IRepository<ProtectedRate> ProtectedRates =>
             _protectedRateRepository ??= new ProtectedRateRepository(_context);
+
+        // ADD THIS PROPERTY
+        public IRepository<User> Users =>
+            _userRepository ??= new UserRepository(_context);
 
         // Transaction methods
         public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();
