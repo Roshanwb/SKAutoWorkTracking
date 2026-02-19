@@ -1,15 +1,14 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.UI.Views;
-using SKAuto.Data.Repository; 
-
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows; // for MessageBox
 
 namespace SKAuto.UI.ViewModels
 {
@@ -48,11 +47,12 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand CreateWorkOrderCommand { get; }
         public IRelayCommand ImportDataCommand { get; }
         public IAsyncRelayCommand GenerateReportsCommand { get; }
-        public IAsyncRelayCommand<WorkStatus?> UpdateStatusCommand { get; }  // Fixed generic type
+        public IAsyncRelayCommand<WorkStatus?> UpdateStatusCommand { get; }
         public IAsyncRelayCommand RescheduleCommand { get; }
         public IAsyncRelayCommand EditClientCommand { get; }
         public IAsyncRelayCommand OpenWorkOrderDetailCommand { get; }
         public IAsyncRelayCommand<int> MarkDoneCommand { get; }
+        public IAsyncRelayCommand DeleteWorkOrderCommand { get; }
 
         public MainViewModel(IUnitOfWork unitOfWork)
         {
@@ -62,13 +62,13 @@ namespace SKAuto.UI.ViewModels
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
             ImportDataCommand = new RelayCommand(OpenImport);
             GenerateReportsCommand = new AsyncRelayCommand(GenerateReportsAsync);
-            UpdateStatusCommand = new AsyncRelayCommand<WorkStatus?>(UpdateStatusAsync);  // Fixed
+            UpdateStatusCommand = new AsyncRelayCommand<WorkStatus?>(UpdateStatusAsync);
             RescheduleCommand = new AsyncRelayCommand(RescheduleAsync);
             EditClientCommand = new AsyncRelayCommand(EditClient, () => SelectedWorkOrder != null);
             OpenWorkOrderDetailCommand = new AsyncRelayCommand(OpenWorkOrderDetail, () => SelectedWorkOrder != null);
             MarkDoneCommand = new AsyncRelayCommand<int>(MarkDoneAsync);
+            DeleteWorkOrderCommand = new AsyncRelayCommand(DeleteWorkOrderAsync, () => SelectedWorkOrder != null);
 
-            // Load today's work on startup
             LoadTodayWorkCommand.Execute(null);
         }
 
@@ -83,18 +83,15 @@ namespace SKAuto.UI.ViewModels
             {
                 StatusMessage = $"Loading work for {date:dd/MM/yyyy}...";
 
-                // Cast to WorkOrderRepository to access specialized methods
-                var workOrderRepo = (WorkOrderRepository)_unitOfWork.WorkOrders;
+                var workOrderRepo = (Data.Repository.WorkOrderRepository)_unitOfWork.WorkOrders;
 
                 var orders = await workOrderRepo.GetDailyWorkOrdersAsync(date);
                 TodayWorkOrders = new ObservableCollection<WorkOrderDto>(orders);
 
-                // Get summary for the date
                 var summary = await workOrderRepo.GetDailySummaryAsync(date);
                 TotalOrdersToday = summary.TotalWorkOrders;
                 TotalRevenueToday = summary.TotalRevenue;
 
-                // Load undone orders (OrderDate < today && Status != Done)
                 var allUndone = await _unitOfWork.WorkOrders.FindAsync(w =>
                     w.OrderDate < DateTime.Today && w.Status != WorkStatus.Done);
                 UndoneOrders = new ObservableCollection<WorkOrderDto>(
@@ -115,23 +112,24 @@ namespace SKAuto.UI.ViewModels
 
         private void CreateWorkOrder()
         {
-            // Open work order creation dialog
-            // You can implement this later
-        }
-                private void OpenImport()
-        {
-            var importVM = new ImportViewModel(_unitOfWork); // Create ViewModel with DI
-            var importView = new ImportView
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, 0);
+            var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            if (window.ShowDialog() == true)
             {
-                DataContext = importVM // <-- CRITICAL: Set DataContext
-            };
+                LoadTodayWorkCommand.Execute(null);
+            }
+        }
+
+        private void OpenImport()
+        {
+            var importVM = new ImportViewModel(_unitOfWork);
+            var importView = new ImportView { DataContext = importVM };
             importView.ShowDialog();
-            LoadTodayWorkCommand.Execute(null); // refresh main grid
+            LoadTodayWorkCommand.Execute(null);
         }
 
         private async Task GenerateReportsAsync()
         {
-            // Implement later
             await Task.CompletedTask;
         }
 
@@ -197,7 +195,7 @@ namespace SKAuto.UI.ViewModels
                     var win = new ClientEditWindow { DataContext = vm };
                     if (win.ShowDialog() == true)
                     {
-                        await LoadWorkForDateAsync(SelectedDate); // refresh client name in grid
+                        await LoadWorkForDateAsync(SelectedDate);
                         StatusMessage = "Client updated successfully";
                     }
                 }
@@ -212,18 +210,11 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedWorkOrder == null) return;
 
-            // Cast to WorkOrderRepository to access specialized methods
-            var workOrderRepo = (WorkOrderRepository)_unitOfWork.WorkOrders;
-            var order = await workOrderRepo.GetWithDetailsAsync(SelectedWorkOrder.Id);
-
-            if (order != null)
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, SelectedWorkOrder.Id);
+            var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            if (window.ShowDialog() == true)
             {
-                var detailVM = new WorkOrderDetailViewModel(_unitOfWork, order);
-                var window = new WorkOrderDetailWindow { DataContext = detailVM };
-                if (window.ShowDialog() == true)
-                {
-                    await LoadWorkForDateAsync(SelectedDate); // refresh
-                }
+                await LoadWorkForDateAsync(SelectedDate);
             }
         }
 
@@ -231,8 +222,7 @@ namespace SKAuto.UI.ViewModels
         {
             try
             {
-                // Cast to WorkOrderRepository to access specialized methods
-                var workOrderRepo = (WorkOrderRepository)_unitOfWork.WorkOrders;
+                var workOrderRepo = (Data.Repository.WorkOrderRepository)_unitOfWork.WorkOrders;
                 var order = await workOrderRepo.GetWithDetailsAsync(workOrderId);
 
                 if (order != null)
@@ -252,6 +242,37 @@ namespace SKAuto.UI.ViewModels
             {
                 StatusMessage = $"Error marking as done: {ex.Message}";
             }
+        }
+
+        private async Task DeleteWorkOrderAsync()
+        {
+            if (SelectedWorkOrder == null) return;
+
+            var result = MessageBox.Show($"Delete work order #{SelectedWorkOrder.Id}? This action cannot be undone.",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                var order = await _unitOfWork.WorkOrders.GetByIdAsync(SelectedWorkOrder.Id);
+                if (order != null)
+                {
+                    await _unitOfWork.WorkOrders.DeleteAsync(order);
+                    await _unitOfWork.CompleteAsync();
+                    StatusMessage = $"Work order {SelectedWorkOrder.Id} deleted.";
+                    await LoadWorkForDateAsync(SelectedDate);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error deleting: {ex.Message}";
+            }
+        }
+        partial void OnSelectedWorkOrderChanged(WorkOrderDto? value)
+        {
+            DeleteWorkOrderCommand?.NotifyCanExecuteChanged();
+            EditClientCommand?.NotifyCanExecuteChanged();
+            OpenWorkOrderDetailCommand?.NotifyCanExecuteChanged();
         }
     }
 }

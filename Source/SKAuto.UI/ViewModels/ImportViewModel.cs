@@ -30,14 +30,19 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private string _statusMessage = "";
 
+        [ObservableProperty]
+        private bool _allSelected;
+
         public IAsyncRelayCommand SelectFolderCommand { get; }
         public IAsyncRelayCommand ImportCommand { get; }
+        public IRelayCommand SelectAllCommand { get; }
 
         public ImportViewModel(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             SelectFolderCommand = new AsyncRelayCommand(SelectFolderAsync);
-            ImportCommand = new AsyncRelayCommand(ImportAsync, () => PreviewOrders.Any() && !IsImporting);
+            ImportCommand = new AsyncRelayCommand(ImportAsync, () => PreviewOrders.Any(x => x.IsSelected) && !IsImporting);
+            SelectAllCommand = new RelayCommand(ToggleSelectAll);
         }
 
         private async Task SelectFolderAsync()
@@ -61,15 +66,12 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                // Create a temporary working directory
                 string tempDir = Path.Combine(Path.GetTempPath(), "SKAuto_PDF_Import_" + Guid.NewGuid().ToString());
                 Directory.CreateDirectory(tempDir);
 
-                // Path to the Python script (assumed to be in the app's startup folder)
                 string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pdf_accessories_extractor.py");
                 if (!File.Exists(scriptPath))
                 {
-                    // Fallback: look in a "Scripts" subfolder
                     scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts", "pdf_accessories_extractor.py");
                 }
 
@@ -78,19 +80,16 @@ namespace SKAuto.UI.ViewModels
                     throw new FileNotFoundException("Python extractor script not found. Please ensure pdf_accessories_extractor.py is in the application folder.");
                 }
 
-                // Copy script to temp dir to avoid file locks and ensure output.txt is written there
                 string tempScriptPath = Path.Combine(tempDir, "pdf_accessories_extractor.py");
                 File.Copy(scriptPath, tempScriptPath, true);
 
-                // Build arguments: folder path
                 string args = $"\"{folder}\"";
 
-                // Run Python script
                 var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = "python",  // assumes python is in PATH
+                        FileName = "python",
                         Arguments = $"\"{tempScriptPath}\" {args}",
                         WorkingDirectory = tempDir,
                         UseShellExecute = false,
@@ -110,7 +109,6 @@ namespace SKAuto.UI.ViewModels
                     throw new Exception($"Python script failed: {error}");
                 }
 
-                // Read the generated output.txt
                 string outputFile = Path.Combine(tempDir, "output.txt");
                 if (!File.Exists(outputFile))
                 {
@@ -121,21 +119,27 @@ namespace SKAuto.UI.ViewModels
                 var orders = lines
                     .Where(line => !string.IsNullOrWhiteSpace(line))
                     .Select(line => line.Split(','))
-                    .Where(parts => parts.Length >= 4) // date,vin,model,client
+                    .Where(parts => parts.Length >= 4)
                     .Select(parts => new PdfWorkOrder
                     {
                         OrderDate = ParseDate(parts[0]),
                         Chassis = parts[1].Trim(),
                         Model = parts[2].Trim(),
-                        ClientName = parts[3].Trim()
+                        ClientName = parts[3].Trim(),
+                        IsSelected = true // default to selected
                     })
                     .ToList();
 
+                // Attach event handler to each order to notify parent when selection changes
+                foreach (var order in orders)
+                {
+                    order.SelectionChanged += (s, e) => OnItemSelectionChanged();
+                }
+
                 PreviewOrders = new ObservableCollection<PdfWorkOrder>(orders);
                 StatusMessage = $"Found {orders.Count} work orders.";
-
-                // Clean up temp directory (optional, can leave for debugging)
-                // Directory.Delete(tempDir, true);
+                AllSelected = true; // all selected by default
+                ImportCommand.NotifyCanExecuteChanged();
             }
             catch (Exception ex)
             {
@@ -150,19 +154,52 @@ namespace SKAuto.UI.ViewModels
 
         private DateTime ParseDate(string dateStr)
         {
-            // Python outputs as MM/DD/YYYY
             if (DateTime.TryParseExact(dateStr, "MM/dd/yyyy", null, System.Globalization.DateTimeStyles.None, out var date))
                 return date;
-            return DateTime.Today; // fallback
+            return DateTime.Today;
+        }
+
+        private void ToggleSelectAll()
+        {
+            bool newState = !AllSelected;
+            foreach (var item in PreviewOrders)
+            {
+                item.IsSelected = newState;
+            }
+            AllSelected = newState;
+            ImportCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnAllSelectedChanged(bool value)
+        {
+            // When AllSelected changes via checkbox in UI, update all items
+            if (PreviewOrders != null)
+            {
+                foreach (var item in PreviewOrders)
+                {
+                    item.IsSelected = value;
+                }
+                ImportCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        // Called when any item's IsSelected changes
+        private void OnItemSelectionChanged()
+        {
+            AllSelected = PreviewOrders.All(x => x.IsSelected);
+            ImportCommand.NotifyCanExecuteChanged();
         }
 
         private async Task ImportAsync()
         {
+            var selected = PreviewOrders.Where(x => x.IsSelected).ToList();
+            if (!selected.Any()) return;
+
             IsImporting = true;
             try
             {
                 int created = 0;
-                foreach (var item in PreviewOrders)
+                foreach (var item in selected)
                 {
                     // Ensure vehicle exists
                     var vehicle = (await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == item.Chassis)).FirstOrDefault();
@@ -184,14 +221,13 @@ namespace SKAuto.UI.ViewModels
                         client = new Client
                         {
                             Name = item.ClientName,
-                            Type = ClientType.Direct, // default; can be adjusted later
+                            Type = ClientType.Direct,
                             IsActive = true
                         };
                         await _unitOfWork.Clients.AddAsync(client);
                     }
                     else if (client == null)
                     {
-                        // Fallback to "Unknown" client
                         client = (await _unitOfWork.Clients.FindAsync(c => c.Name == "Unknown")).FirstOrDefault();
                         if (client == null)
                         {
@@ -239,12 +275,26 @@ namespace SKAuto.UI.ViewModels
         }
     }
 
-    // DTO for preview – matches Python output
-    public class PdfWorkOrder
+    public class PdfWorkOrder : ObservableObject
     {
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (SetProperty(ref _isSelected, value))
+                {
+                    SelectionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
         public string Chassis { get; set; } = "";
         public string Model { get; set; } = "";
         public string ClientName { get; set; } = "";
         public DateTime OrderDate { get; set; }
+
+        public event EventHandler? SelectionChanged;
     }
 }

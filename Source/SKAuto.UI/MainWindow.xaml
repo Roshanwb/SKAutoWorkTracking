@@ -107,6 +107,8 @@
                         Command="{Binding ImportDataCommand}"
                         Margin="0,0,0,5"
                         Padding="10"/>
+                <Button Content="Delete WO" Command="{Binding DeleteWorkOrderCommand}" 
+        Margin="0,0,0,5" Padding="10" Background="#dc3545" Foreground="White"/>
                 <Button Content="Generate Reports" 
                         Command="{Binding GenerateReportsCommand}"
                         Margin="0,0,0,5"
