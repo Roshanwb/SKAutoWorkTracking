@@ -118,12 +118,15 @@ namespace SKAuto.UI.ViewModels
             // Open work order creation dialog
             // You can implement this later
         }
-
-        private void OpenImport()
+                private void OpenImport()
         {
-            var importView = new ImportView();
+            var importVM = new ImportViewModel(_unitOfWork); // Create ViewModel with DI
+            var importView = new ImportView
+            {
+                DataContext = importVM // <-- CRITICAL: Set DataContext
+            };
             importView.ShowDialog();
-            LoadTodayWorkCommand.Execute(null); // refresh
+            LoadTodayWorkCommand.Execute(null); // refresh main grid
         }
 
         private async Task GenerateReportsAsync()

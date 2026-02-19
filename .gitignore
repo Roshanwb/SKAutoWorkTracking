@@ -1,45 +1,46 @@
-## Elite .gitignore for Visual Studio / .NET (strict)
-# Visual Studio / .NET / Mono
+# === Visual Studio / .NET (strict, recursive) ===
+# Editor and IDE
 .vs/
 .vscode/
-.vsconfig
+.idea/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
 *.rsuser
 *.userprefs
-mono_crash.*
+*.dotSettings.user
 
-# Build output
-[Bb]in/
-[Oo]bj/
-build/
-Build/
-[Bb]uild*/
-[Dd]ebug*/
-[Dd]ebug*/
-[Rr]elease*/
-[Rr]eleases*/
-x64/
-x86/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-artifacts/
-artifacts/**
+# Build outputs - ignore everywhere
+**/bin/
+**/obj/
+**/packages/
+**/artifacts/
+**/out/
+**/publish/
+**/dist/
+**/Build/
+**/[Bb]in/
+**/[Oo]bj/
+**/[Bb]uild*/
+**/[Dd]ebug*/
+**/[Rr]elease*/
 
-# MSBuild / tooling files
-.project.lock.json
+# Common platform folders
+node_modules/
+wwwroot/           # comment out if you intentionally commit generated static files
+
+# MSBuild / NuGet
+project.assets.json
 project.lock.json
 project.fragment.lock.json
 *.nuget.props
 *.nuget.targets
+packages.config
 packages/
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
-packages/**
+!**/packages/**/build/     # allow build targets if intentionally checked in
 
-# Temporary / intermediate files
+# Temporary / intermediate / compilation
 *_i.c
 *_p.c
 *_h.h
@@ -59,29 +60,37 @@ packages/**
 *.tlh
 *.tmp
 *.tmp_proj
-*_wpftmp.csproj
 *.log
 *.builds
-*.pidb
-*.svclog
-*.scc
 *.binlog
 
-# Test results & coverage
+# Test and coverage
+TestResults/
 [Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-*.VisualState.xml
-TestResult.xml
-nunit-*.xml
-BenchmarkDotNet.Artifacts/
-_Chutzpah*/
+*.trx
+coverage/
 coverage*.json
 coverage*.xml
-coverage*.info
 *.coverage
 *.coveragexml
+BenchmarkDotNet.Artifacts/
 
-# Visual C++ / caches / DBs
+# Rider
+.idea/
+*.sln.iml
+*.iml
+.idea_modules/
+
+# ReSharper / JetBrains
+_ReSharper*/
+*.DotSettings.user
+*.DotSettings
+
+# Mono / Xamarin
+*.userprefs
+*.mdb
+
+# Visual C++ caches
 ipch/
 *.aps
 *.ncb
@@ -89,26 +98,14 @@ ipch/
 *.opensdf
 *.sdf
 *.VC.db
-*.VC.VC.opendb
-*.cachefile
 
-# Profiling / trace
-*.psess
-*.vsp
-*.vspx
-*.sap
-*.e2e
-
-# Publish / deployment
-publish/
+# Publish / deployment artifacts
 *.Publish.xml
 *.pubxml
 *.azurePubxml
 PublishScripts/
 AppPackages/
 BundleArtifacts/
-Package.StoreAssociation.xml
-_pkginfo.txt
 *.appx
 *.appxbundle
 *.appxupload
@@ -120,38 +117,32 @@ csx/
 ecf/
 rcf/
 
-# Web / frontend / node
-node_modules/
-ClientBin/
-wwwroot/        # uncomment if you want to track generated static files
-.sass-cache/
+# Logs, db and other local data
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.mdf
+*.ldf
 
-# IDE / extensions / plugins
-_ReSharper*/
-*.[Rr]e[Ss]harper
-*.DotSettings.user
-_TeamCity*/
-*.dotCover
-.axoCover/*
-!.axoCover/settings.json
-_NCrunch_*/
-*.nCrunch*
-nCrunchTemp_*
-_Tf/
-.TeamCity
-.mfractor/
-.ionide/
+# Secrets / certs / keys
+*.pfx
+*.snk
+*.key
+*.pem
+*.der
+*.publishsettings
 
-# User / OS files
-$RECYCLE.BIN/
+# OS files
+.DS_Store
 Thumbs.db
 ehthumbs.db
-.DS_Store
-Desktop.ini
-~$*
-*~
+desktop.ini
+$RECYCLE.BIN/
 
-# Generated code / backups / logs
+# Generated code / backups
 Generated_Code/
 Generated\ Files/
 **/*GeneratedArtifacts*/
@@ -159,68 +150,35 @@ _UpgradeReport_Files/
 Backup*/
 UpgradeLog*.XML
 UpgradeLog*.htm
-ServiceFabricBackup/
-MigrationBackup/
-*.rptproj.bak
-*.dbmdl
-*.dbproj.schemaview
 
-# Database / SQL
-*.mdf
-*.ldf
-*.ndf
-App_Data/*.mdf
-App_Data/*.ldf
+# Profiling / dumps
+*.dmp
+*.mdmp
+*.psess
+*.vsp
+*.vspx
 
-# Secrets / certificates / keys
-*.pfx
-*.snk
-*.publishsettings
+# Coverage / profiling tools
+.opencover/
+.coverage
+*.coverage
 
-# Misc
-.orleans.codegen.cs
-*.plg
-*.opt
-*.vbw
-*.bin
-*.nvuser
-.localhistory/
-Healthchecksdb
-OpenCover/
-
-# Ensure Git ignores these folders even if empty
+# Force-ignore patterns (ensure directories ignored even if empty)
 .vs/*
-[Bb]in/*
-[Oo]bj/*
-build/*
-
-# Force ignore for common problematic directories
-**/.vs/
-**/bin/
-**/obj/
-**/build/
-**/Debug/
-**/debug/
-**/Release/
-**/release/
-
 **/.vs/*
 **/bin/*
 **/obj/*
-**/build/*
 **/Debug/*
 **/debug/*
 **/Release/*
 **/release/*
-/Source/SKAuto.UI/obj
-/.vs
-/.vs
-/Source/SKAuto.Core/obj
-/Source/SKAuto.Data/obj
-/Source/SKAuto.Export/obj
-/Source/SKAuto.Export/obj
-/Source/SKAuto.Import/bin
-/Source/SKAuto.Import/obj
-/Source/SKAuto.Import/obj
-/Source/SKAuto.UI/obj
-/Source/SKAuto.UI/obj
+
+# Per-solution or per-project explicit exceptions (uncomment/edit as needed)
+# !/path/to/explicitly/tracked/file
+# !**/wwwroot/keepfile
+
+# End - minimal follow-up commands:
+# After replacing .gitignore run:
+# git rm -r --cached .
+# git add .
+# git commit -m "Apply strict .gitignore"
