@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="Views\MainWindow.xaml" />
+  </ItemGroup>
+<!-- SKAuto.UI.csproj -->
+<ItemGroup>
+  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+  <ProjectReference Include="..\SKAuto.Core\SKAuto.Core.csproj" />
+  <ProjectReference Include="..\SKAuto.Data\SKAuto.Data.csproj" />
+  <ProjectReference Include="..\SKAuto.Import\SKAuto.Import.csproj" />
+  <ProjectReference Include="..\SKAuto.Export\SKAuto.Export.csproj" />
+</ItemGroup>
+</Project>

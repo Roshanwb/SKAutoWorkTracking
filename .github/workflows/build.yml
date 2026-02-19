@@ -1,0 +1,37 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore SKAuto.sln
+
+    - name: Build
+      run: dotnet build SKAuto.sln --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test SKAuto.sln --no-build --configuration Release --verbosity normal
+
+    - name: Publish (Windows)
+      run: dotnet publish SKAuto.UI/SKAuto.UI.csproj -c Release -r win-x64 --self-contained false -o ./publish
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SKAuto-Win64
+        path: ./publish
