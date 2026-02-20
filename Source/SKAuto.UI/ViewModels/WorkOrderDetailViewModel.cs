@@ -80,6 +80,9 @@ namespace SKAuto.UI.ViewModels
                 var clients = await _unitOfWork.Clients.GetAllAsync();
                 Clients = new ObservableCollection<Client>(clients);
 
+                var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+                Vehicles = new ObservableCollection<Vehicle>(vehicles);
+
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
                 AvailableAccessories = new ObservableCollection<Accessory>(accessories);
 
@@ -89,6 +92,11 @@ namespace SKAuto.UI.ViewModels
                     WorkOrder = await repo.GetWithDetailsAsync(workOrderId);
                     SelectedClient = WorkOrder.Client;
                     SelectedVehicle = WorkOrder.Vehicle;
+                    // Populate the chassis search box with the current vehicle's chassis number
+                    if (SelectedVehicle != null)
+                    {
+                        ChassisSearch = SelectedVehicle.ChassisNumber;
+                    }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
                 }
                 else
@@ -107,7 +115,6 @@ namespace SKAuto.UI.ViewModels
                 MessageBox.Show($"Error initializing: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
         private async Task SearchVehicleAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;

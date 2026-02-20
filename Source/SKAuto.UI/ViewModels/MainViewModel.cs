@@ -46,8 +46,11 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand LoadTodayWorkCommand { get; }
         public IRelayCommand CreateWorkOrderCommand { get; }
         public IRelayCommand ImportDataCommand { get; }
+        public IRelayCommand OpenClientManagementCommand { get; }
+        public IRelayCommand OpenVehicleManagementCommand { get; }
+        public IAsyncRelayCommand<int> EditWorkOrderCommand { get; }
         public IAsyncRelayCommand GenerateReportsCommand { get; }
-        public IAsyncRelayCommand<WorkStatus?> UpdateStatusCommand { get; }
+        public IAsyncRelayCommand<string> UpdateStatusCommand { get; }
         public IAsyncRelayCommand RescheduleCommand { get; }
         public IAsyncRelayCommand EditClientCommand { get; }
         public IAsyncRelayCommand OpenWorkOrderDetailCommand { get; }
@@ -62,12 +65,15 @@ namespace SKAuto.UI.ViewModels
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
             ImportDataCommand = new RelayCommand(OpenImport);
             GenerateReportsCommand = new AsyncRelayCommand(GenerateReportsAsync);
-            UpdateStatusCommand = new AsyncRelayCommand<WorkStatus?>(UpdateStatusAsync);
+            UpdateStatusCommand = new AsyncRelayCommand<string>(UpdateStatusAsync);
             RescheduleCommand = new AsyncRelayCommand(RescheduleAsync);
             EditClientCommand = new AsyncRelayCommand(EditClient, () => SelectedWorkOrder != null);
             OpenWorkOrderDetailCommand = new AsyncRelayCommand(OpenWorkOrderDetail, () => SelectedWorkOrder != null);
             MarkDoneCommand = new AsyncRelayCommand<int>(MarkDoneAsync);
             DeleteWorkOrderCommand = new AsyncRelayCommand(DeleteWorkOrderAsync, () => SelectedWorkOrder != null);
+            OpenClientManagementCommand = new RelayCommand(OpenClientManagement);
+            OpenVehicleManagementCommand = new RelayCommand(OpenVehicleManagement);
+            EditWorkOrderCommand = new AsyncRelayCommand<int>(EditWorkOrderAsync);
 
             LoadTodayWorkCommand.Execute(null);
         }
@@ -133,30 +139,33 @@ namespace SKAuto.UI.ViewModels
             await Task.CompletedTask;
         }
 
-        private async Task UpdateStatusAsync(WorkStatus? status)
+        private async Task UpdateStatusAsync(string? statusString)
         {
-            if (SelectedWorkOrder == null || status == null) return;
+            if (SelectedWorkOrder == null || string.IsNullOrEmpty(statusString)) return;
 
-            try
+            if (Enum.TryParse<WorkStatus>(statusString, out var status))
             {
-                var workOrder = await _unitOfWork.WorkOrders.GetByIdAsync(SelectedWorkOrder.Id);
-                if (workOrder != null)
+                try
                 {
-                    workOrder.Status = status.Value;
+                    var workOrder = await _unitOfWork.WorkOrders.GetByIdAsync(SelectedWorkOrder.Id);
+                    if (workOrder != null)
+                    {
+                        workOrder.Status = status;
 
-                    if (status == WorkStatus.Done)
-                        workOrder.CompletedDate = DateTime.Now;
+                        if (status == WorkStatus.Done)
+                            workOrder.CompletedDate = DateTime.Now;
 
-                    await _unitOfWork.WorkOrders.UpdateAsync(workOrder);
-                    await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.WorkOrders.UpdateAsync(workOrder);
+                        await _unitOfWork.CompleteAsync();
 
-                    StatusMessage = $"Updated order {SelectedWorkOrder.Id} to {status}";
-                    await LoadWorkForDateAsync(SelectedDate);
+                        StatusMessage = $"Updated order {SelectedWorkOrder.Id} to {status}";
+                        await LoadWorkForDateAsync(SelectedDate);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error updating status: {ex.Message}";
+                catch (Exception ex)
+                {
+                    StatusMessage = $"Error updating status: {ex.Message}";
+                }
             }
         }
 
@@ -268,11 +277,40 @@ namespace SKAuto.UI.ViewModels
                 StatusMessage = $"Error deleting: {ex.Message}";
             }
         }
+
         partial void OnSelectedWorkOrderChanged(WorkOrderDto? value)
         {
             DeleteWorkOrderCommand?.NotifyCanExecuteChanged();
             EditClientCommand?.NotifyCanExecuteChanged();
             OpenWorkOrderDetailCommand?.NotifyCanExecuteChanged();
+        }
+
+        private void OpenClientManagement()
+        {
+            var vm = new ClientManagementViewModel(_unitOfWork);
+            var win = new ClientManagementView { DataContext = vm };
+            win.ShowDialog();
+            // Refresh main grid in case client names changed
+            LoadTodayWorkCommand.Execute(null);
+        }
+
+        private void OpenVehicleManagement()
+        {
+            var vm = new VehicleManagementViewModel(_unitOfWork);
+            var win = new VehicleManagementView { DataContext = vm };
+            win.ShowDialog();
+            // Vehicles might affect work orders? Not directly, but could be needed.
+            LoadTodayWorkCommand.Execute(null);
+        }
+
+        private async Task EditWorkOrderAsync(int workOrderId)
+        {
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, workOrderId);
+            var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            if (window.ShowDialog() == true)
+            {
+                await LoadWorkForDateAsync(SelectedDate);
+            }
         }
     }
 }

@@ -39,13 +39,18 @@
                           ItemsSource="{Binding Clients}"
                           SelectedItem="{Binding SelectedClient}"
                           DisplayMemberPath="Name"
-                          Margin="5" Height="30"/>
+                          Margin="5,5,0,5" Height="30" MinWidth="300"
+                          HorizontalAlignment="Left"
+                          HorizontalContentAlignment="Left"
+                          VerticalContentAlignment ="Center"/>
 
                 <!-- Order Date -->
                 <Label Grid.Row="0" Grid.Column="2" Content="Order Date:" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <DatePicker Grid.Row="0" Grid.Column="3" 
                             SelectedDate="{Binding WorkOrder.OrderDate}"
-                            Margin="5" Height="30"/>
+                            Margin="5" Height="30" MinWidth="300"
+                            HorizontalAlignment="Left"
+                            VerticalContentAlignment ="Center"/>
 
                 <!-- Vehicle Search -->
                 <Label Grid.Row="1" Grid.Column="0" Content="Chassis:" VerticalAlignment="Center"/>
@@ -63,14 +68,20 @@
                 <Label Grid.Row="2" Grid.Column="0" Content="Order Type:" VerticalAlignment="Center"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" 
                           ItemsSource="{Binding OrderTypeValues}"
-                          SelectedItem="{Binding WorkOrder.OrderType}"
-                          Margin="5" Height="30"/>
+                          SelectedItem="{Binding WorkOrder.OrderType}"                          
+                          Margin="5" Height="30" MinWidth="300"
+                          HorizontalAlignment="Left"
+                          HorizontalContentAlignment="Left"
+                          VerticalContentAlignment ="Center"/>
 
                 <Label Grid.Row="2" Grid.Column="2" Content="Status:" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <ComboBox Grid.Row="2" Grid.Column="3" 
                           ItemsSource="{Binding WorkStatusValues}"
-                          SelectedItem="{Binding WorkOrder.Status}"
-                          Margin="5" Height="30"/>
+                          SelectedItem="{Binding WorkOrder.Status}"                          
+                          Margin="5" Height="30" MinWidth="200"
+                          HorizontalAlignment="Left"
+                          HorizontalContentAlignment="Left"
+                          VerticalContentAlignment ="Center"/>
             </Grid>
         </GroupBox>
 
@@ -89,9 +100,12 @@
                           ItemsSource="{Binding AvailableAccessories}"
                           SelectedItem="{Binding SelectedAccessory}"
                           DisplayMemberPath="Name"
-                          Margin="5" Height="30"/>
+                          Margin="5" Height="30" MinWidth="300"
+                          HorizontalAlignment="Left"
+                          HorizontalContentAlignment="Left"
+                          VerticalContentAlignment ="Center"/>
 
-                <Label Grid.Column="2" Content="Qty:" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                <Label Grid.Column="2" Content="New Task:" VerticalAlignment="Center" Margin="5,0,0,0"/>
                 <TextBox Grid.Column="3" Text="{Binding Quantity}" Width="50" Margin="5" Height="30" VerticalContentAlignment="Center"/>
 
                 <Button Grid.Column="4" Content="Add" Command="{Binding AddTaskCommand}" 

@@ -33,9 +33,15 @@
         <Label Grid.Row="1" Grid.Column="0" Content="Client Code:" VerticalAlignment="Center"/>
         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Client.ClientCode}" Margin="5" Padding="3"/>
 
-        <!-- Type (read-only for now) -->
+        <!-- Type -->
         <Label Grid.Row="2" Grid.Column="0" Content="Type:" VerticalAlignment="Center"/>
-        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Client.Type}" Margin="5,8" VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="2" Grid.Column="1" 
+          ItemsSource="{Binding ClientTypes}"
+          SelectedItem="{Binding Client.Type}"
+          Margin="5" Height="30" Width="100"
+          HorizontalAlignment="Left"
+          HorizontalContentAlignment="Left"
+          VerticalContentAlignment ="Center"/>
 
         <!-- Address -->
         <Label Grid.Row="3" Grid.Column="0" Content="Address:" VerticalAlignment="Top" Margin="0,5"/>

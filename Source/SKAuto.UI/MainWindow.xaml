@@ -16,138 +16,134 @@
     <Window.Resources>
         <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
     </Window.Resources>
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Import" Command="{Binding ImportDataCommand}"/>
+                <MenuItem Header="_Exit"/>
+            </MenuItem>
+            <MenuItem Header="_Manage">
+                <MenuItem Header="_Clients" Command="{Binding OpenClientManagementCommand}"/>
+                <MenuItem Header="_Vehicles" Command="{Binding OpenVehicleManagementCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Reports">
+                <MenuItem Header="_Generate Daily Report" Command="{Binding GenerateReportsCommand}"/>
+            </MenuItem>
+        </Menu>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <Border Grid.Row="0" Background="#2c3e50" Padding="10">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="SK Auto Work Tracking" 
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#2c3e50" Padding="10">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="SK Auto Work Tracking" 
                            Foreground="White" 
                            FontSize="20" 
                            FontWeight="Bold"
                            VerticalAlignment="Center"/>
-                <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}"
+                    <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}"
                             Margin="20,0,0,0"
                             Width="120"
                             VerticalAlignment="Center"/>
-                <Button Content="Refresh" 
+                    <Button Content="Refresh" 
                         Command="{Binding LoadTodayWorkCommand}"
                         Margin="10,0,0,0"
                         Padding="10,5"
                         VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding StatusMessage}"
+                    <TextBlock Text="{Binding StatusMessage}"
                            Foreground="White"
                            Margin="20,0,0,0"
                            VerticalAlignment="Center"
                            FontStyle="Italic"/>
-            </StackPanel>
-        </Border>
+                </StackPanel>
+            </Border>
 
-        <!-- Main Content -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            <!-- Main Content -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Work Orders List -->
-            <DataGrid Grid.Column="0"
+                <!-- Work Orders List -->
+                <DataGrid Grid.Column="0"
                       ItemsSource="{Binding TodayWorkOrders}"
                       SelectedItem="{Binding SelectedWorkOrder}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       SelectionMode="Single"
                       Margin="10">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                    <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="150"/>
-                    <DataGridTextColumn Header="Vehicle" Binding="{Binding VehicleModel}" Width="120"/>
-                    <DataGridTextColumn Header="Chassis" Binding="{Binding VehicleChassis}" Width="150"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding OrderType}" Width="100"/>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="150"/>
+                        <DataGridTextColumn Header="Vehicle" Binding="{Binding VehicleModel}" Width="120"/>
+                        <DataGridTextColumn Header="Chassis" Binding="{Binding VehicleChassis}" Width="150"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding OrderType}" Width="100"/>
 
-                    <!-- ✅ Status column with color converter – FIXED -->
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource StatusToColorConverter}, ConverterParameter=Foreground}" Width="100">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <!-- ✅ Status column with color converter – FIXED -->
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Tasks" Binding="{Binding TaskCount}" Width="60"/>
-                    <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="80"/>
-                    <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
-                </DataGrid.Columns>
-            </DataGrid>
+                        <DataGridTextColumn Header="Tasks" Binding="{Binding TaskCount}" Width="60"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="80"/>
+                        <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
+                        <DataGridTemplateColumn Header="Edit" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✏️" Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}" Background="Transparent" BorderThickness="0" Foreground="Blue" FontSize="14"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
 
-            <!-- Action Panel -->
-            <StackPanel Grid.Column="1" Width="200" Margin="0,10,10,10">
-                <Border Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="1" Padding="10" Margin="0,0,0,10">
-                    <StackPanel>
-                        <TextBlock Text="Today's Summary" FontWeight="Bold" Margin="0,0,0,5"/>
-                        <TextBlock Text="{Binding TotalOrdersToday, StringFormat='Orders: {0}'}"/>
-                        <TextBlock Text="{Binding TotalRevenueToday, StringFormat='Revenue: {0:C}'}"/>
-                    </StackPanel>
-                </Border>
+                <!-- Action Panel -->
+                <StackPanel Grid.Column="1" Width="200" Margin="0,10,10,10">
+                    <!-- Summary -->
+                    <Border Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="1" Padding="10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Today's Summary" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding TotalOrdersToday, StringFormat='Orders: {0}'}"/>
+                            <TextBlock Text="{Binding TotalRevenueToday, StringFormat='Revenue: {0:C}'}"/>
+                        </StackPanel>
+                    </Border>
 
-                <Button Content="New Work Order" 
-                        Command="{Binding CreateWorkOrderCommand}"
-                        Margin="0,0,0,5"
-                        Padding="10"
-                        Background="#3498db"
-                        Foreground="White"/>
-                <Button Content="Import Data" 
-                        Command="{Binding ImportDataCommand}"
-                        Margin="0,0,0,5"
-                        Padding="10"/>
-                <Button Content="Delete WO" Command="{Binding DeleteWorkOrderCommand}" 
-        Margin="0,0,0,5" Padding="10" Background="#dc3545" Foreground="White"/>
-                <Button Content="Generate Reports" 
-                        Command="{Binding GenerateReportsCommand}"
-                        Margin="0,0,0,5"
-                        Padding="10"
-                        Background="#27ae60"
-                        Foreground="White"/>
+                    <!-- Management buttons -->
+                    <Button Content="Manage Clients" Command="{Binding OpenClientManagementCommand}" Margin="0,0,0,5" Padding="10" Background="#17a2b8" Foreground="White"/>
+                    <Button Content="Manage Vehicles" Command="{Binding OpenVehicleManagementCommand}" Margin="0,0,0,5" Padding="10" Background="#6c757d" Foreground="White"/>
 
-                <TextBlock Text="Update Status" FontWeight="Bold" Margin="0,10,0,5"/>
-                <Button Content="Mark In Progress" 
-        Command="{Binding UpdateStatusCommand}"
-        CommandParameter="{x:Static enums:WorkStatus.InProgress}"
-        Margin="0,0,0,5"
-        Padding="5"
-        Background="#f39c12"
-        Foreground="White"/>
+                    <!-- Existing action buttons -->
+                    <Button Content="New Work Order" Command="{Binding CreateWorkOrderCommand}" Margin="0,0,0,5" Padding="10" Background="#3498db" Foreground="White"/>
+                    <Button Content="Import Data" Command="{Binding ImportDataCommand}" Margin="0,0,0,5" Padding="10"/>
+                    <Button Content="Generate Reports" Command="{Binding GenerateReportsCommand}" Margin="0,0,0,5" Padding="10" Background="#27ae60" Foreground="White"/>
 
-                <Button Content="Mark Blocked" 
-        Command="{Binding UpdateStatusCommand}"
-        CommandParameter="{x:Static enums:WorkStatus.Blocked}"
-        Margin="0,0,0,5"
-        Padding="5"
-        Background="#e74c3c"
-        Foreground="White"/>
+                    <TextBlock Text="Update Status" FontWeight="Bold" Margin="0,10,0,5"/>
+                    <Button Content="Mark In Progress" Command="{Binding UpdateStatusCommand}" CommandParameter="InProgress" Margin="0,0,0,5" Padding="5" Background="#f39c12" Foreground="White"/>
+                    <Button Content="Mark Blocked" Command="{Binding UpdateStatusCommand}" CommandParameter="Blocked" Margin="0,0,0,5" Padding="5" Background="#e74c3c" Foreground="White"/>
+                    <Button Content="Mark Done" Command="{Binding UpdateStatusCommand}" CommandParameter="Done" Margin="0,0,0,5" Padding="5" Background="#2ecc71" Foreground="White"/>
 
-                <Button Content="Mark Done" 
-        Command="{Binding UpdateStatusCommand}"
-        CommandParameter="{x:Static enums:WorkStatus.Done}"
-        Margin="0,0,0,5"
-        Padding="5"
-        Background="#2ecc71"
-        Foreground="White"/>
-            </StackPanel>
-        </Grid>
+                    <TextBlock Text="Actions" FontWeight="Bold" Margin="0,10,0,5"/>
+                    <Button Content="Delete Work Order" Command="{Binding DeleteWorkOrderCommand}" Margin="0,0,0,5" Padding="5" Background="#dc3545" Foreground="White"/>
+                </StackPanel>
+            </Grid>
 
-        <!-- Footer -->
-        <Border Grid.Row="2" Background="#ecf0f1" Padding="10">
-            <TextBlock Text="SK Auto Work Tracking System v1.0 - © 2026 by Insights" 
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#ecf0f1" Padding="10">
+                <TextBlock Text="SK Auto Work Tracking System v1.0 - © 2026 by Insights" 
                        HorizontalAlignment="Center"
                        Foreground="#7f8c8d"/>
-        </Border>
-    </Grid>
+            </Border>
+        </Grid>
+    </DockPanel>
 </Window>
