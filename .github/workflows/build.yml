@@ -1,37 +1,37 @@
-name: Build & Test
+name: Build
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2025
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup .NET 8
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore SKAuto.sln
+      run: dotnet restore SKAutoWorkTracking.sln   # ✅ Fixed
 
     - name: Build
-      run: dotnet build SKAuto.sln --no-restore --configuration Release
+      run: dotnet build SKAutoWorkTracking.sln --configuration Release --no-restore   # ✅ Fixed
 
     - name: Test
-      run: dotnet test SKAuto.sln --no-build --configuration Release --verbosity normal
+      run: dotnet test SKAutoWorkTracking.sln --configuration Release --no-build --verbosity normal   # ✅ Fixed
 
-    - name: Publish (Windows)
-      run: dotnet publish SKAuto.UI/SKAuto.UI.csproj -c Release -r win-x64 --self-contained false -o ./publish
+    - name: Publish (optional)
+      run: dotnet publish SKAutoWorkTracking.sln --configuration Release --output ./publish   # ✅ Fixed
 
-    - name: Upload Artifact
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: SKAuto-Win64
+        name: build-output
         path: ./publish
