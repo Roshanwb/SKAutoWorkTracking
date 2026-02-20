@@ -1,3 +1,4 @@
+
 # SK Auto Work Tracking System - User Guide
 ![.net](https://img.shields.io/badge/.NET-C%23-007396?style=flat)
 ## Quick Start
@@ -33,6 +34,14 @@
 - Add multiple accessories per vehicle
 - Track work status (Planned → In Progress → Done)
 - Add travel records for mobile service
+  
+
+> #### Understanding Work Orders and Tasks
+>- A Work Order represents all work performed for a specific vehicle on a specific date.
+>- All tasks (accessories fitted, services performed) under that Work Order share the same date.
+>- If the same vehicle returns for work on another day, you create a new Work Order for that new date.
+>- This keeps your records organized and accurately reflects daily work schedules.
+
 
 ### 2. Vehicle Lookup
 - Search by chassis number
