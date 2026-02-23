@@ -1,9 +1,43 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using SKAuto.Import.Parsers;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using SKAuto.Core.DTOs;
+using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
+using SKAuto.Core.Interfaces;
+using SKAuto.Import.Parsers;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using SKAuto.Core.DTOs;
+using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
+using SKAuto.Core.Interfaces;
+using SKAuto.Import.Parsers;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -19,7 +53,7 @@ namespace SKAuto.UI.ViewModels
         private readonly IUnitOfWork _unitOfWork;
 
         [ObservableProperty]
-        private ObservableCollection<PdfWorkOrder> _previewOrders = new();
+        private ObservableCollection<ImportWorkOrderItem> _previewOrders = new();
 
         [ObservableProperty]
         private bool _isImporting;
@@ -34,15 +68,82 @@ namespace SKAuto.UI.ViewModels
         private bool _allSelected;
 
         public IAsyncRelayCommand SelectFolderCommand { get; }
+        public IAsyncRelayCommand SelectExcelCommand { get; }
+        public IRelayCommand ClearAllCommand { get; }
         public IAsyncRelayCommand ImportCommand { get; }
         public IRelayCommand SelectAllCommand { get; }
+        public IAsyncRelayCommand SelectImportFileCommand { get; }
 
         public ImportViewModel(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             SelectFolderCommand = new AsyncRelayCommand(SelectFolderAsync);
+            SelectExcelCommand = new AsyncRelayCommand(SelectExcelAsync);
+            ClearAllCommand = new RelayCommand(ClearAll);
             ImportCommand = new AsyncRelayCommand(ImportAsync, () => PreviewOrders.Any(x => x.IsSelected) && !IsImporting);
             SelectAllCommand = new RelayCommand(ToggleSelectAll);
+            SelectImportFileCommand = new AsyncRelayCommand(SelectImportFileAsync);
+        }
+
+        private async Task SelectImportFileAsync()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Select Excel or CSV file (ParcCarrières, export rdv)",
+                Filter = "Supported files|*.xlsx;*.xls;*.xlsm;*.xltx;*.xltm;*.csv|Excel files|*.xlsx;*.xls;*.xlsm;*.xltx;*.xltm|CSV files|*.csv",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                await ProcessImportFileAsync(dialog.FileName);
+            }
+        }
+
+        private async Task ProcessImportFileAsync(string filePath)
+        {
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+            var excelExtensions = new[] { ".xlsx", ".xls", ".xlsm", ".xltx", ".xltm" };
+            var csvExtensions = new[] { ".csv" };
+
+            if (!excelExtensions.Contains(extension) && !csvExtensions.Contains(extension))
+            {
+                MessageBox.Show($"Unsupported file type: {extension}\nPlease select an Excel or CSV file.",
+                    "Invalid File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsImporting = true;
+            StatusMessage = "Parsing file...";
+
+            try
+            {
+                List<ImportWorkOrderDto> orders;
+
+                if (excelExtensions.Contains(extension))
+                {
+                    var parser = new ExcelImportParser();
+                    orders = parser.Parse(filePath);
+                }
+                else // CSV
+                {
+                    var parser = new CsvImportParser();
+                    orders = parser.Parse(filePath);
+                }
+
+                AddOrders(orders);
+                StatusMessage = $"Added {orders.Count} work orders from {Path.GetFileName(filePath)}.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show($"Error parsing file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsImporting = false;
+            }
         }
 
         private async Task SelectFolderAsync()
@@ -120,26 +221,18 @@ namespace SKAuto.UI.ViewModels
                     .Where(line => !string.IsNullOrWhiteSpace(line))
                     .Select(line => line.Split(','))
                     .Where(parts => parts.Length >= 4)
-                    .Select(parts => new PdfWorkOrder
+                    .Select(parts => new ImportWorkOrderDto
                     {
                         OrderDate = ParseDate(parts[0]),
                         Chassis = parts[1].Trim(),
                         Model = parts[2].Trim(),
                         ClientName = parts[3].Trim(),
-                        IsSelected = true // default to selected
+                        Source = "PDF"
                     })
                     .ToList();
 
-                // Attach event handler to each order to notify parent when selection changes
-                foreach (var order in orders)
-                {
-                    order.SelectionChanged += (s, e) => OnItemSelectionChanged();
-                }
-
-                PreviewOrders = new ObservableCollection<PdfWorkOrder>(orders);
-                StatusMessage = $"Found {orders.Count} work orders.";
-                AllSelected = true; // all selected by default
-                ImportCommand.NotifyCanExecuteChanged();
+                AddOrders(orders);
+                StatusMessage = $"Added {orders.Count} work orders from PDFs.";
             }
             catch (Exception ex)
             {
@@ -150,6 +243,72 @@ namespace SKAuto.UI.ViewModels
             {
                 IsImporting = false;
             }
+        }
+
+        private async Task SelectExcelAsync()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Select Excel file (ParcCarrières)",
+                Filter = "Excel files|*.xlsx;*.xls,*.csv",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                await ProcessExcelFileAsync(dialog.FileName);
+            }
+        }
+
+        private async Task ProcessExcelFileAsync(string filePath)
+        {
+            // Validate file extension
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            var supported = new[] { ".xlsx", ".xls", ".xlsm", ".xltx", ".xltm" };
+            if (!supported.Contains(extension))
+            {
+                MessageBox.Show($"Unsupported file type: {extension}\nPlease select an Excel file (.xlsx, .xls, .xlsm, .xltx, .xltm).",
+                    "Invalid File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsImporting = true;
+            StatusMessage = "Parsing Excel file...";
+
+            try
+            {
+                var parser = new ExcelImportParser();
+                var orders = parser.Parse(filePath);
+                AddOrders(orders);
+                StatusMessage = $"Added {orders.Count} work orders from Excel.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show($"Error parsing Excel file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsImporting = false;
+            }
+        }
+
+        private void AddOrders(List<ImportWorkOrderDto> newOrders)
+        {
+            foreach (var dto in newOrders)
+            {
+                var item = new ImportWorkOrderItem(dto);
+                item.SelectionChanged += (s, e) => OnItemSelectionChanged();
+                PreviewOrders.Add(item);
+            }
+            OnItemSelectionChanged();
+        }
+
+        private void ClearAll()
+        {
+            PreviewOrders.Clear();
+            OnItemSelectionChanged();
+            StatusMessage = "Cleared all items.";
         }
 
         private DateTime ParseDate(string dateStr)
@@ -172,7 +331,6 @@ namespace SKAuto.UI.ViewModels
 
         partial void OnAllSelectedChanged(bool value)
         {
-            // When AllSelected changes via checkbox in UI, update all items
             if (PreviewOrders != null)
             {
                 foreach (var item in PreviewOrders)
@@ -183,7 +341,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // Called when any item's IsSelected changes
         private void OnItemSelectionChanged()
         {
             AllSelected = PreviewOrders.All(x => x.IsSelected);
@@ -201,26 +358,28 @@ namespace SKAuto.UI.ViewModels
                 int created = 0;
                 foreach (var item in selected)
                 {
+                    var dto = item.Data;
+
                     // Ensure vehicle exists
-                    var vehicle = (await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == item.Chassis)).FirstOrDefault();
+                    var vehicle = (await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == dto.Chassis)).FirstOrDefault();
                     if (vehicle == null)
                     {
                         vehicle = new Vehicle
                         {
-                            ChassisNumber = item.Chassis,
-                            Model = item.Model,
+                            ChassisNumber = dto.Chassis,
+                            Model = dto.Model,
                             IsActive = true
                         };
                         await _unitOfWork.Vehicles.AddAsync(vehicle);
                     }
 
                     // Ensure client exists
-                    var client = (await _unitOfWork.Clients.FindAsync(c => c.Name == item.ClientName)).FirstOrDefault();
-                    if (client == null && !string.IsNullOrWhiteSpace(item.ClientName))
+                    var client = (await _unitOfWork.Clients.FindAsync(c => c.Name == dto.ClientName)).FirstOrDefault();
+                    if (client == null && !string.IsNullOrWhiteSpace(dto.ClientName))
                     {
                         client = new Client
                         {
-                            Name = item.ClientName,
+                            Name = dto.ClientName,
                             Type = ClientType.Direct,
                             IsActive = true
                         };
@@ -240,10 +399,10 @@ namespace SKAuto.UI.ViewModels
                     {
                         ClientId = client.Id,
                         VehicleId = vehicle.Id,
-                        OrderDate = item.OrderDate,
+                        OrderDate = dto.OrderDate,
                         Status = WorkStatus.Planned,
                         OrderType = OrderType.Direct_Fitting,
-                        Notes = $"Imported from PDF"
+                        Notes = $"Imported from {dto.Source}"
                     };
                     await _unitOfWork.WorkOrders.AddAsync(workOrder);
                     created++;
@@ -273,28 +432,5 @@ namespace SKAuto.UI.ViewModels
                     break;
                 }
         }
-    }
-
-    public class PdfWorkOrder : ObservableObject
-    {
-        private bool _isSelected;
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                if (SetProperty(ref _isSelected, value))
-                {
-                    SelectionChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
-
-        public string Chassis { get; set; } = "";
-        public string Model { get; set; } = "";
-        public string ClientName { get; set; } = "";
-        public DateTime OrderDate { get; set; }
-
-        public event EventHandler? SelectionChanged;
     }
 }
