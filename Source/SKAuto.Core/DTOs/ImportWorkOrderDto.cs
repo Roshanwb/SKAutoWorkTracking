@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SKAuto.Core.Enums;
+using System;
 
 namespace SKAuto.Core.DTOs
 {
@@ -9,5 +10,6 @@ namespace SKAuto.Core.DTOs
         public string ClientName { get; set; } = "";
         public DateTime OrderDate { get; set; }
         public string Source { get; set; } = ""; // "PDF" or "Excel"
+        public OrderType TypeOfWork { get; set; } = OrderType.PSA_Contract;
     }
 }

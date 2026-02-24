@@ -105,7 +105,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         OrderDate = DateTime.Today,
                         Status = WorkStatus.Planned,
-                        OrderType = OrderType.Direct_Fitting
+                        OrderType = OrderType.PSA_Contract
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                 }

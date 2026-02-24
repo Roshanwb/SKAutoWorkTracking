@@ -39,7 +39,7 @@ namespace SKAuto.Import.Parsers
             int modeleCol = FindColumn(headerList, new[] { "Modèle"}); // first choice
             //int marqueCol = FindColumn(headerList, new[] { "Marque" });           // fallback for model
             int finPrepCol = FindColumn(headerList, new[] { "Fin prép.", "Fin prep.", "Fin", "Date fin" });
-            int livreurCol = FindColumn(headerList, new[] { "Livreur", "Type de livraison" });
+            int livreurCol = FindColumn(headerList, new[] { "Livreur"});
 
             // Use modeleCol if found, otherwise use marqueCol
             int modelCol = modeleCol != -1 ? modeleCol : 3;
@@ -73,6 +73,7 @@ namespace SKAuto.Import.Parsers
                 string client = SafeGet(fields, clientCol);
                 string model = SafeGet(fields, modelCol);
                 string finPrepStr = SafeGet(fields, finPrepCol);
+                string livreur = SafeGet(fields, livreurCol);
 
                 if (string.IsNullOrWhiteSpace(finPrepStr))
                 {
@@ -108,7 +109,8 @@ namespace SKAuto.Import.Parsers
                     Model = model,
                     ClientName = client,
                     OrderDate = orderDate.Value,
-                    Source = "CSV"
+                    Source = "CSV",
+                    TypeOfWork =  Core.Enums.OrderType.PSA_Contract
                 });
                 imported++;
             }

@@ -13,7 +13,7 @@ from typing import List, Dict, Optional, Tuple
 # ==========================================
 
 # Client name noise removal
-EXCLUDED_WORDS = ["ok", "acc", "kit", "logos", "conforme", "pneus","att.","att. RV"]
+EXCLUDED_WORDS = ["ok", "acc", "kit", "logos", "conforme", "pneus","att.","att. RV", "66", "relavage","tapis"]
 CLIENT_CLEAN_PATTERN = re.compile(
     r'\b(' + '|'.join(map(re.escape, EXCLUDED_WORDS)) + r')\b',
     re.IGNORECASE

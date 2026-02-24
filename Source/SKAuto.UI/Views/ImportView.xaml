@@ -16,6 +16,10 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <!-- new for progress bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- new for operation text -->
         </Grid.RowDefinitions>
 
         <!-- Top buttons: folder and excel -->
@@ -23,7 +27,7 @@
             <Button Content="Select PDF Folder" Command="{Binding SelectFolderCommand}" 
                     Padding="10,5" Width="120" Margin="0,0,10,0"/>
             <Button Content="Select Excel File" Command="{Binding SelectExcelCommand}" 
-                    Padding="10,5" Width="120" Margin="0,0,10,0"/>
+                    Padding="10,5" Width="120" Margin="0,0,10,0" Visibility="Collapsed"/>
             <Button Content="Select Excel/CSV File" Command="{Binding SelectImportFileCommand}" 
         Padding="10,5" Width="140" Margin="0,0,10,0"/>
             <Button Content="Clear All" Command="{Binding ClearAllCommand}" 
@@ -43,8 +47,8 @@
                   Margin="0,0,0,10" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False"
-                  SelectionMode="Single"
-                  SelectionUnit="CellOrRowHeader">
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow">
             <DataGrid.Columns>
                 <!-- Checkbox column -->
                 <DataGridCheckBoxColumn Header="Select" 
@@ -58,17 +62,18 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- Select All and Import buttons -->
+        <!-- Select and Import buttons -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5">
             <CheckBox Content="Select All" IsChecked="{Binding AllSelected}" Margin="0,0,20,0" VerticalAlignment="Center"/>
+            <Button Content="Mark Selected" Click="MarkSelected_Click" 
+                Padding="10,5" Width="100" Margin="0,0,10,0"/>
             <Button Content="Import" Command="{Binding ImportCommand}"
-                    Padding="10,5" Width="100" Margin="0,0,10,0"/>
+            Padding="10,5" Width="100" Margin="0,0,10,0"/>
             <Button Content="Cancel" IsCancel="True" Padding="10,5" Width="100"/>
         </StackPanel>
 
         <!-- Progress bar -->
-        <ProgressBar Grid.Row="4" IsIndeterminate="{Binding IsImporting}" 
-                     Height="5" Margin="0,10,0,0" 
-                     Visibility="{Binding IsImporting, Converter={StaticResource BoolToVis}}"/>
+        <ProgressBar Grid.Row="5" Value="{Binding ImportProgress}" Height="5" Margin="0,10,0,0" 
+             Visibility="{Binding IsImporting, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </Window>

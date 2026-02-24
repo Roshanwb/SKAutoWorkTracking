@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Services;
 using SKAuto.Data;
 using SKAuto.Data.Database;
 using SKAuto.Export.Excel;
@@ -16,6 +18,7 @@ namespace SKAuto.UI
     public partial class App : Application
     {
         private readonly IHost _host;
+
         public static User CurrentUser { get; set; }
         public App()
         {
@@ -68,6 +71,9 @@ namespace SKAuto.UI
 
                     // Main Window
                     services.AddSingleton<MainWindow>();
+
+                    //log services
+                    services.AddSingleton<ILoggingService, LoggingService>();
 
                     //Login
 

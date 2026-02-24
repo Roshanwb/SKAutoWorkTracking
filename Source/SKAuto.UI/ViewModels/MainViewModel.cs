@@ -128,7 +128,10 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenImport()
         {
-            var importVM = new ImportViewModel(_unitOfWork);
+            var importVM = new ImportViewModel(
+                _unitOfWork,
+                App.GetService<ILoggingService>(),
+                App.GetService<IServiceProvider>());
             var importView = new ImportView { DataContext = importVM };
             importView.ShowDialog();
             LoadTodayWorkCommand.Execute(null);
