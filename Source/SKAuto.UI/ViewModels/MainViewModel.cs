@@ -8,7 +8,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows; // for MessageBox
+using System.Windows;
+using System.Windows.Input; // for MessageBox
 
 namespace SKAuto.UI.ViewModels
 {
@@ -56,6 +57,7 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand OpenWorkOrderDetailCommand { get; }
         public IAsyncRelayCommand<int> MarkDoneCommand { get; }
         public IAsyncRelayCommand DeleteWorkOrderCommand { get; }
+        public ICommand ShowAccessoryManagementCommand { get; }
 
         public MainViewModel(IUnitOfWork unitOfWork)
         {
@@ -74,6 +76,7 @@ namespace SKAuto.UI.ViewModels
             OpenClientManagementCommand = new RelayCommand(OpenClientManagement);
             OpenVehicleManagementCommand = new RelayCommand(OpenVehicleManagement);
             EditWorkOrderCommand = new AsyncRelayCommand<int>(EditWorkOrderAsync);
+            ShowAccessoryManagementCommand = new RelayCommand(ShowAccessoryManagement);
 
             LoadTodayWorkCommand.Execute(null);
         }
@@ -170,6 +173,26 @@ namespace SKAuto.UI.ViewModels
                     StatusMessage = $"Error updating status: {ex.Message}";
                 }
             }
+        }
+
+        private void ShowAccessoryManagement()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var view = new AccessoryManagementView
+            {
+                DataContext = new AccessoryManagementViewModel(_unitOfWork, logger)
+            };
+
+            var window = new Window
+            {
+                Title = "Manage Accessories",
+                Content = view,
+                Width = 900,
+                Height = 700,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Application.Current.MainWindow
+            };
+            window.ShowDialog();
         }
 
         private async Task RescheduleAsync()
