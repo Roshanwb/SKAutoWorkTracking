@@ -82,13 +82,20 @@
                       Margin="10">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTemplateColumn Header="Edit" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✏️" Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}" Background="Transparent" BorderThickness="0" Foreground="Blue" FontSize="14"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="150"/>
-                        <DataGridTextColumn Header="Vehicle" Binding="{Binding VehicleModel}" Width="120"/>
-                        <DataGridTextColumn Header="Chassis" Binding="{Binding VehicleChassis}" Width="150"/>
+                        <DataGridTextColumn Header="Vehicle" Binding="{Binding VehicleModel}" Width="80"/>
+                        <DataGridTextColumn Header="Chassis" Binding="{Binding VehicleChassis}" Width="80"/>
                         <DataGridTextColumn Header="Type" Binding="{Binding OrderType}" Width="100"/>
 
                         <!-- ✅ Status column with color converter – FIXED -->
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80">
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
@@ -101,13 +108,7 @@
                         <DataGridTextColumn Header="Tasks" Binding="{Binding TaskCount}" Width="60"/>
                         <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="80"/>
                         <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
-                        <DataGridTemplateColumn Header="Edit" Width="50">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="✏️" Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}" Background="Transparent" BorderThickness="0" Foreground="Blue" FontSize="14"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                        
                     </DataGrid.Columns>
                 </DataGrid>
 

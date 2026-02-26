@@ -86,12 +86,15 @@ namespace SKAuto.UI.ViewModels
             ImportProgress = 0;
             CurrentOperation = "Starting Python script...";
 
-            IProgress<ProgressReport> progress = new System.Progress<ProgressReport>();
-
+            IProgress<ProgressReport> progress = new System.Progress<ProgressReport>(p =>
+            {
+                ImportProgress = p.Percent;
+                CurrentOperation = p.Operation;
+            });
 
             try
             {
-                await Task.Run(async () =>
+                List<ImportWorkOrderDto> parsedOrders = await Task.Run(() =>
                 {
                     progress.Report(new ProgressReport { Percent = 10, Operation = "Preparing temp directory..." });
                     string tempDir = Path.Combine(Path.GetTempPath(), "SKAuto_PDF_Import_" + Guid.NewGuid());
@@ -124,9 +127,9 @@ namespace SKAuto.UI.ViewModels
                         }
                     };
                     process.Start();
-                    string output = await process.StandardOutput.ReadToEndAsync();
-                    string error = await process.StandardError.ReadToEndAsync();
-                    await process.WaitForExitAsync();
+                    string output = process.StandardOutput.ReadToEnd(); // synchronous read
+                    string error = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
 
                     if (process.ExitCode != 0)
                         throw new Exception($"Python script failed: {error}");
@@ -135,7 +138,7 @@ namespace SKAuto.UI.ViewModels
                     if (!File.Exists(outputFile))
                         throw new Exception("Python script did not produce output.txt");
 
-                    var lines = await File.ReadAllLinesAsync(outputFile);
+                    var lines = File.ReadAllLines(outputFile);
                     var orders = lines
                         .Where(l => !string.IsNullOrWhiteSpace(l))
                         .Select(l => l.Split(','))
@@ -151,12 +154,46 @@ namespace SKAuto.UI.ViewModels
                         .ToList();
 
                     progress.Report(new ProgressReport { Percent = 90, Operation = "Processing results..." });
-
-                    await Application.Current.Dispatcher.InvokeAsync(() => AddOrders(orders));
-                    _loggingService.LogInfo($"PDF import: {orders.Count} orders from {folder}");
+                    return orders;
                 });
 
-                StatusMessage = $"Added {PreviewOrders.Count(o => o.Source == "PDF")} work orders from PDFs.";
+                // Now filter against database (in background, with fresh scope)
+                List<ImportWorkOrderDto> filteredOrders;
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                    filteredOrders = await Task.Run(async () =>   // <-- added 'async'
+                    {
+                        var result = new List<ImportWorkOrderDto>();
+                        int total = parsedOrders.Count;
+                        int processed = 0;
+                        foreach (var dto in parsedOrders)
+                        {
+                            processed++;
+                            // Normalize
+                            dto.Chassis = NormalizeChassis(dto.Chassis);
+                            dto.ClientName = NormalizeClientName(dto.ClientName);
+                            dto.Model = dto.Model?.Trim() ?? "";
+
+                            var exists = (await unitOfWork.WorkOrders
+                                .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
+                                .Any();
+                            if (!exists)
+                                result.Add(dto);
+
+                            if (processed % 50 == 0)
+                            {
+                                int percent = 10 + (int)((double)processed / total * 80);
+                                progress.Report(new ProgressReport { Percent = percent, Operation = $"Checked {processed}/{total}" });
+                            }
+                        }
+                        return result;
+                    });
+                }
+
+                await Application.Current.Dispatcher.InvokeAsync(() => AddOrders(filteredOrders));
+                _loggingService.LogInfo($"PDF import: {filteredOrders.Count} new orders from {folder}");
+                StatusMessage = $"Added {filteredOrders.Count} new work orders from PDFs.";
             }
             catch (Exception ex)
             {
@@ -433,7 +470,14 @@ namespace SKAuto.UI.ViewModels
                         foreach (var item in selected)
                         {
                             var dto = item.Data;
-
+                            var alreadyExists = (await unitOfWork.WorkOrders
+                                    .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
+                                    .Any();
+                            if (alreadyExists)
+                            {
+                                _loggingService.LogWarning($"Skipped duplicate during import: {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                                continue;
+                            }
                             // Ensure vehicle exists
                             var vehicle = (await unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == dto.Chassis)).FirstOrDefault();
                             if (vehicle == null)
