@@ -123,7 +123,7 @@
                     <!-- Previous Week (double left) -->
                     <Button Style="{StaticResource WeekIconButton}"
                             Command="{Binding PreviousWeekCommand}"
-                            Content="&#xE892;" FontSize="16"
+                            Content="&#xeb9e;" FontSize="24"
                             ToolTip="Previous Week"/>
 
                     <!-- Previous Day (single left) -->
@@ -145,7 +145,7 @@
                     <!-- Next Week (double right) -->
                     <Button Style="{StaticResource WeekIconButton}"
                             Command="{Binding NextWeekCommand}"
-                            Content="&#xE893;" FontSize="16" Margin="0,0,5,0"
+                            Content="&#xeb9d;" FontSize="24" Margin="0,0,5,0"
                             ToolTip="Next Week"/>
 
                     <!-- Refresh Button -->
