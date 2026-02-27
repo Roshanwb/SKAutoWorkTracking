@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Manage Vehicles" Height="500" Width="900"
         WindowStartupLocation="CenterOwner">
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -10,7 +11,10 @@
         </Grid.RowDefinitions>
 
         <DataGrid Grid.Row="0" ItemsSource="{Binding Vehicles}" SelectedItem="{Binding SelectedVehicle}"
-                  AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10">
+                  AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10"
+                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                  BorderBrush="#dee2e6" BorderThickness="1"
+                  RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                 <DataGridTextColumn Header="Chassis" Binding="{Binding ChassisNumber}" Width="150"/>
@@ -24,10 +28,18 @@
         </DataGrid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Add" Command="{Binding AddVehicleCommand}" Width="80" Margin="5"/>
-            <Button Content="Edit" Command="{Binding EditVehicleCommand}" Width="80" Margin="5"/>
-            <Button Content="Delete" Command="{Binding DeleteVehicleCommand}" Width="80" Margin="5"/>
-            <Button Content="Close" Command="{Binding CloseCommand}" Width="80" Margin="5"/>
+            <Button Content="Add" Command="{Binding AddVehicleCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#4CAF50"
+                    Width="80" Margin="5"/>
+            <Button Content="Edit" Command="{Binding EditVehicleCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#3498db"
+                    Width="80" Margin="5"/>
+            <Button Content="Delete" Command="{Binding DeleteVehicleCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#dc3545"
+                    Width="80" Margin="5"/>
+            <Button Content="Close" Command="{Binding CloseCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#6c757d"
+                    Width="80" Margin="5"/>
         </StackPanel>
     </Grid>
 </Window>

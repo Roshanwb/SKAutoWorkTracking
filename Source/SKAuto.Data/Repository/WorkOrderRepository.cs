@@ -107,5 +107,39 @@ namespace SKAuto.Data.Repository
 
             return total;
         }
+
+        public async Task<WeeklySummaryDto> GetWeeklySummaryAsync(DateTime date)
+        {
+            // Determine week boundaries (Monday to Sunday)
+            var culture = System.Globalization.CultureInfo.CurrentCulture;
+            var diff = (7 + (date.DayOfWeek - culture.DateTimeFormat.FirstDayOfWeek)) % 7;
+            var weekStart = date.AddDays(-diff).Date;
+            var weekEnd = weekStart.AddDays(7).AddSeconds(-1); // end of Sunday
+
+            var orders = await _dbSet
+                .Where(w => w.OrderDate >= weekStart && w.OrderDate <= weekEnd)
+                .Include(w => w.Client)
+                .ToListAsync();
+
+            var summary = new WeeklySummaryDto
+            {
+                WeekStart = weekStart,
+                WeekEnd = weekEnd,
+                TotalWorkOrders = orders.Count,
+                CompletedOrders = orders.Count(o => o.Status == WorkStatus.Done),
+                InProgressOrders = orders.Count(o => o.Status == WorkStatus.InProgress),
+                TotalRevenue = orders.Where(o => o.TotalAmount.HasValue).Sum(o => o.TotalAmount.Value),
+                ClientSummaries = orders
+                    .GroupBy(o => o.Client.Name)
+                    .Select(g => new ClientSummaryDto
+                    {
+                        ClientName = g.Key,
+                        OrderCount = g.Count(),
+                        TotalAmount = g.Where(o => o.TotalAmount.HasValue).Sum(o => o.TotalAmount.Value)
+                    })
+                    .ToList()
+            };
+            return summary;
+        }
     }
 }

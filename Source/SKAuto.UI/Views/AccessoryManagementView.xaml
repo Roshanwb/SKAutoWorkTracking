@@ -6,6 +6,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
 
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,16 +19,16 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock Text="Accessory Catalog" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+        <TextBlock Text="Accessory Catalog" Style="{StaticResource SectionHeader}" FontSize="18" Margin="0,0,0,10"/>
 
         <!-- Search and Add Bar -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                     Width="300" Margin="0,0,10,0"
+                     Width="300" Margin="0,0,10,0" BorderBrush="#dee2e6"
                      ToolTip="Search by name, part number, or description"/>
             <Button Content="Add New Accessory" Padding="10,5" 
                     Command="{Binding AddAccessoryCommand}"
-                    Background="#4CAF50" Foreground="White"/>
+                    Style="{StaticResource ActionButton}" Background="#4CAF50"/>
         </StackPanel>
 
         <!-- Data Grid -->
@@ -34,7 +38,10 @@
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   SelectionMode="Single"
-                  Margin="0,0,0,10">
+                  Margin="0,0,0,10"
+                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                  BorderBrush="#dee2e6" BorderThickness="1"
+                  RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
@@ -51,11 +58,12 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Edit" Margin="2" Padding="5,2"
                                         Command="{Binding DataContext.EditAccessoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}"/>
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource ActionButton}" Background="#3498db" Height="28"/>
                                 <Button Content="Delete" Margin="2" Padding="5,2"
                                         Command="{Binding DataContext.DeleteAccessoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
-                                        Background="#f44336" Foreground="White"/>
+                                        Style="{StaticResource ActionButton}" Background="#f44336" Height="28"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -63,17 +71,18 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- Edit Panel (visible when adding/editing) -->
+        <!-- Edit Panel -->
         <Border Grid.Row="3" 
-                Background="#f5f5f5" 
-                BorderBrush="#ddd" 
+                Background="#f8f9fa" 
+                BorderBrush="#dee2e6" 
                 BorderThickness="1" 
                 Padding="10"
+                CornerRadius="4"
                 Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
 
             <StackPanel>
                 <TextBlock Text="{Binding CurrentEditAccessory.Id, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse, FallbackValue=Add New Accessory}" 
-                           FontWeight="Bold" Margin="0,0,0,10"/>
+                           FontWeight="SemiBold" Margin="0,0,0,10" Foreground="#2c3e50"/>
 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -90,25 +99,25 @@
 
                     <!-- Row 1 -->
                     <Label Grid.Row="0" Grid.Column="0" Content="Name:*" Margin="5"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" Margin="5" 
+                    <TextBox Grid.Row="0" Grid.Column="1" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.Name}"/>
 
                     <Label Grid.Row="0" Grid.Column="2" Content="Part #:" Margin="5"/>
-                    <TextBox Grid.Row="0" Grid.Column="3" Margin="5" 
+                    <TextBox Grid.Row="0" Grid.Column="3" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.PartNumber}"/>
 
                     <!-- Row 2 -->
                     <Label Grid.Row="1" Grid.Column="0" Content="Description:" Margin="5"/>
-                    <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" 
+                    <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.Description}"/>
 
                     <!-- Row 3 -->
                     <Label Grid.Row="2" Grid.Column="0" Content="Fitting Time (min):" Margin="5"/>
-                    <TextBox Grid.Row="2" Grid.Column="1" Margin="5" 
+                    <TextBox Grid.Row="2" Grid.Column="1" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.StandardFittingTime}"/>
 
                     <Label Grid.Row="2" Grid.Column="2" Content="PSA Hourly Rate (€):" Margin="5"/>
-                    <TextBox Grid.Row="2" Grid.Column="3" Margin="5" 
+                    <TextBox Grid.Row="2" Grid.Column="3" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.PSAHourlyRate}"/>
                 </Grid>
 
@@ -121,7 +130,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Grid.Column="0" Content="Selling Price (€):" Margin="5"/>
-                    <TextBox Grid.Column="1" Margin="5" 
+                    <TextBox Grid.Column="1" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.SellingPrice}"/>
 
                     <CheckBox Grid.Column="2" Grid.ColumnSpan="2" 
@@ -137,9 +146,10 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
                     <Button Content="Save" Padding="15,5" Margin="5"
                             Command="{Binding SaveAccessoryCommand}"
-                            Background="#4CAF50" Foreground="White"/>
+                            Style="{StaticResource ActionButton}" Background="#4CAF50"/>
                     <Button Content="Cancel" Padding="15,5" Margin="5"
-                            Command="{Binding CancelEditCommand}"/>
+                            Command="{Binding CancelEditCommand}"
+                            Style="{StaticResource ActionButton}" Background="#6c757d"/>
                 </StackPanel>
             </StackPanel>
         </Border>

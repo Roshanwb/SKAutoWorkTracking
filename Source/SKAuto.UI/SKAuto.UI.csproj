@@ -9,7 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\VehicleLookupView.xaml.cs" />
+    <Compile Remove="Views\WorkOrderView.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Remove="Views\MainWindow.xaml" />
+    <Page Remove="Views\VehicleLookupView.xaml" />
+    <Page Remove="Views\WorkOrderView.xaml" />
   </ItemGroup>
 <!-- SKAuto.UI.csproj -->
 <ItemGroup>

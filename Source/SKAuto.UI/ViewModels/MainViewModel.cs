@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using SKAuto.Data.Repository;
 using SKAuto.UI.Views;
 using System;
 using System.Collections.ObjectModel;
@@ -44,6 +45,13 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private DateTime _rescheduleDate = DateTime.Today;
 
+        [ObservableProperty]
+        private WeeklySummaryDto _weeklySummary = new();
+
+        public IRelayCommand PreviousDayCommand { get; }
+        public IRelayCommand NextDayCommand { get; }
+        public IRelayCommand PreviousWeekCommand { get; }
+        public IRelayCommand NextWeekCommand { get; }
         public IAsyncRelayCommand LoadTodayWorkCommand { get; }
         public IRelayCommand CreateWorkOrderCommand { get; }
         public IRelayCommand ImportDataCommand { get; }
@@ -77,6 +85,10 @@ namespace SKAuto.UI.ViewModels
             OpenVehicleManagementCommand = new RelayCommand(OpenVehicleManagement);
             EditWorkOrderCommand = new AsyncRelayCommand<int>(EditWorkOrderAsync);
             ShowAccessoryManagementCommand = new RelayCommand(ShowAccessoryManagement);
+            PreviousDayCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-1));
+            NextDayCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(1));
+            PreviousWeekCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-7));
+            NextWeekCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(7));
 
             LoadTodayWorkCommand.Execute(null);
         }
@@ -107,6 +119,7 @@ namespace SKAuto.UI.ViewModels
                     allUndone.Select(WorkOrderDto.FromEntity));
 
                 StatusMessage = $"Loaded {TodayWorkOrders.Count} work orders";
+                await LoadWeeklySummaryAsync(date);
             }
             catch (Exception ex)
             {
@@ -117,6 +130,7 @@ namespace SKAuto.UI.ViewModels
         partial void OnSelectedDateChanged(DateTime value)
         {
             LoadTodayWorkCommand.Execute(null);
+            _ = LoadWeeklySummaryAsync(value);
         }
 
         private void CreateWorkOrder()
@@ -126,6 +140,19 @@ namespace SKAuto.UI.ViewModels
             if (window.ShowDialog() == true)
             {
                 LoadTodayWorkCommand.Execute(null);
+            }
+        }
+
+        private async Task LoadWeeklySummaryAsync(DateTime date)
+        {
+            try
+            {
+                var workOrderRepo = (WorkOrderRepository)_unitOfWork.WorkOrders;
+                WeeklySummary = await workOrderRepo.GetWeeklySummaryAsync(date);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error loading weekly summary: {ex.Message}";
             }
         }
 

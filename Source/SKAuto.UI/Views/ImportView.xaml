@@ -1,7 +1,6 @@
 <Window x:Class="SKAuto.UI.Views.ImportView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:SKAuto.UI.Views"
         Title="Import Work Orders" Height="600" Width="900"
         WindowStartupLocation="CenterOwner">
 
@@ -17,21 +16,20 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <!-- new for progress bar -->
             <RowDefinition Height="Auto"/>
-            <!-- new for operation text -->
         </Grid.RowDefinitions>
 
-        <!-- Top buttons: folder and excel -->
+        <!-- Top buttons -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
             <Button Content="Select PDF Folder" Command="{Binding SelectFolderCommand}" 
-                    Padding="10,5" Width="120" Margin="0,0,10,0"/>
-            <Button Content="Select Excel File" Command="{Binding SelectExcelCommand}" 
-                    Padding="10,5" Width="120" Margin="0,0,10,0" Visibility="Collapsed"/>
+                    Style="{StaticResource ActionButton}" Background="#17a2b8"
+                    Width="120" Margin="0,0,10,0"/>
             <Button Content="Select Excel/CSV File" Command="{Binding SelectImportFileCommand}" 
-        Padding="10,5" Width="140" Margin="0,0,10,0"/>
+                    Style="{StaticResource ActionButton}" Background="#6c757d"
+                    Width="140" Margin="0,0,10,0"/>
             <Button Content="Clear All" Command="{Binding ClearAllCommand}" 
-                    Padding="10,5" Width="80"/>
+                    Style="{StaticResource ActionButton}" Background="#dc3545"
+                    Width="80"/>
             <TextBlock Text="{Binding SelectedFolder}" Margin="10,0,0,0" 
                        VerticalAlignment="Center" FontWeight="Bold"/>
         </StackPanel>
@@ -40,7 +38,7 @@
         <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Margin="0,0,0,10" 
                    Foreground="Gray" FontStyle="Italic"/>
 
-        <!-- Preview grid with checkboxes -->
+        <!-- Preview grid -->
         <DataGrid x:Name="PreviewGrid" Grid.Row="2" 
                   ItemsSource="{Binding PreviewOrders}" 
                   AutoGenerateColumns="False"
@@ -48,9 +46,10 @@
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False"
                   SelectionMode="Extended"
-                  SelectionUnit="FullRow">
+                  SelectionUnit="FullRow"
+                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                  BorderBrush="#dee2e6" BorderThickness="1">
             <DataGrid.Columns>
-                <!-- Checkbox column -->
                 <DataGridCheckBoxColumn Header="Select" 
                                         Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                                         Width="50"/>
@@ -66,14 +65,19 @@
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5">
             <CheckBox Content="Select All" IsChecked="{Binding AllSelected}" Margin="0,0,20,0" VerticalAlignment="Center"/>
             <Button Content="Mark Selected" Click="MarkSelected_Click" 
-                Padding="10,5" Width="100" Margin="0,0,10,0"/>
+                    Style="{StaticResource ActionButton}" Background="#3498db"
+                    Width="100" Margin="0,0,10,0"/>
             <Button Content="Import" Command="{Binding ImportCommand}"
-            Padding="10,5" Width="100" Margin="0,0,10,0"/>
-            <Button Content="Cancel" IsCancel="True" Padding="10,5" Width="100"/>
+                    Style="{StaticResource ActionButton}" Background="#4CAF50"
+                    Width="100" Margin="0,0,10,0"/>
+            <Button Content="Cancel" IsCancel="True" 
+                    Style="{StaticResource ActionButton}" Background="#6c757d"
+                    Width="100"/>
         </StackPanel>
 
         <!-- Progress bar -->
         <ProgressBar Grid.Row="5" Value="{Binding ImportProgress}" Height="5" Margin="0,10,0,0" 
-             Visibility="{Binding IsImporting, Converter={StaticResource BoolToVis}}"/>
+                     Visibility="{Binding IsImporting, Converter={StaticResource BoolToVis}}"
+                     Background="#e0e0e0" Foreground="#4CAF50"/>
     </Grid>
 </Window>

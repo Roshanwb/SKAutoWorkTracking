@@ -1,10 +1,6 @@
 ﻿<Window x:Class="SKAuto.UI.Views.ClientEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SKAuto.UI.Views"
-        mc:Ignorable="d"
         Title="Edit Client" Height="450" Width="500"
         WindowStartupLocation="CenterOwner">
 
@@ -25,48 +21,42 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Name -->
         <Label Grid.Row="0" Grid.Column="0" Content="Name:" VerticalAlignment="Center"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Client.Name}" Margin="5" Padding="3"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Client.Name}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <!-- Client Code -->
         <Label Grid.Row="1" Grid.Column="0" Content="Client Code:" VerticalAlignment="Center"/>
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Client.ClientCode}" Margin="5" Padding="3"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Client.ClientCode}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <!-- Type -->
         <Label Grid.Row="2" Grid.Column="0" Content="Type:" VerticalAlignment="Center"/>
         <ComboBox Grid.Row="2" Grid.Column="1" 
-          ItemsSource="{Binding ClientTypes}"
-          SelectedItem="{Binding Client.Type}"
-          Margin="5" Height="30" Width="100"
-          HorizontalAlignment="Left"
-          HorizontalContentAlignment="Left"
-          VerticalContentAlignment ="Center"/>
+                  ItemsSource="{Binding ClientTypes}"
+                  SelectedItem="{Binding Client.Type}"
+                  Margin="5" Height="30" Width="100"
+                  HorizontalAlignment="Left"/>
 
-        <!-- Address -->
         <Label Grid.Row="3" Grid.Column="0" Content="Address:" VerticalAlignment="Top" Margin="0,5"/>
-        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Client.Address}" Margin="5" Padding="3" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Client.Address}" Margin="5" Padding="3" Height="60" TextWrapping="Wrap" AcceptsReturn="True" BorderBrush="#dee2e6"/>
 
-        <!-- Phone -->
         <Label Grid.Row="4" Grid.Column="0" Content="Phone:" VerticalAlignment="Center"/>
-        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Client.Phone}" Margin="5" Padding="3"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Client.Phone}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <!-- Email -->
         <Label Grid.Row="5" Grid.Column="0" Content="Email:" VerticalAlignment="Center"/>
-        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Client.Email}" Margin="5" Padding="3"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Client.Email}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <!-- Notes -->
         <Label Grid.Row="6" Grid.Column="0" Content="Notes:" VerticalAlignment="Top" Margin="0,5"/>
-        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Client.Notes}" Margin="5" Padding="3" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Client.Notes}" Margin="5" Padding="3" Height="60" TextWrapping="Wrap" AcceptsReturn="True" BorderBrush="#dee2e6"/>
 
-        <!-- Is Active -->
         <Label Grid.Row="7" Grid.Column="0" Content="Active:" VerticalAlignment="Center"/>
         <CheckBox Grid.Row="7" Grid.Column="1" IsChecked="{Binding Client.IsActive}" Margin="5" VerticalAlignment="Center"/>
 
         <!-- Buttons -->
         <StackPanel Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-            <Button Content="Save" Command="{Binding SaveCommand}" Width="80" Height="30" Margin="5" Background="#4CAF50" Foreground="White"/>
-            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="80" Height="30" Margin="5"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#4CAF50"
+                    Width="80" Height="30" Margin="5"/>
+            <Button Content="Cancel" Command="{Binding CancelCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#6c757d"
+                    Width="80" Height="30" Margin="5"/>
         </StackPanel>
     </Grid>
 </Window>
