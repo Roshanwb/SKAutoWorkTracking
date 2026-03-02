@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>car.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,10 @@
     <Page Remove="Views\MainWindow.xaml" />
     <Page Remove="Views\VehicleLookupView.xaml" />
     <Page Remove="Views\WorkOrderView.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="car.ico" />
   </ItemGroup>
 <!-- SKAuto.UI.csproj -->
 <ItemGroup>

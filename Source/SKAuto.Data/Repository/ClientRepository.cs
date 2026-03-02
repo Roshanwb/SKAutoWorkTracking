@@ -28,5 +28,9 @@ namespace SKAuto.Data.Repository
         {
             return await _dbSet.Where(c => c.Type == Core.Enums.ClientType.Direct).ToListAsync();
         }
+        public async Task<List<Client>> GetByNamesAsync(IEnumerable<string> names)
+        {
+            return await _dbSet.Where(c => names.Contains(c.Name)).ToListAsync();
+        }
     }
 }

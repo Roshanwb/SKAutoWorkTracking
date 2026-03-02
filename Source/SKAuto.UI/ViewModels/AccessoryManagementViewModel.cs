@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace SKAuto.UI.ViewModels
@@ -14,6 +15,11 @@ namespace SKAuto.UI.ViewModels
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _logger;
+
+        // Fields for commands that need CanExecute updates
+        private IRelayCommand<Accessory>? _editAccessoryCommand;
+        private IAsyncRelayCommand? _deleteAccessoryCommand;
+        private IAsyncRelayCommand? _saveAccessoryCommand;
 
         [ObservableProperty]
         private ObservableCollection<Accessory> _accessories = new();
@@ -30,37 +36,32 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _isEditMode;
 
-        // Commands (stored as IRelayCommand to access NotifyCanExecuteChanged)
-        private IRelayCommand? _editAccessoryCommand;
-        private IRelayCommand? _deleteAccessoryCommand;
-        private IRelayCommand? _saveAccessoryCommand;
-
-        public ICommand LoadAccessoriesCommand { get; }
-        public ICommand AddAccessoryCommand { get; }
-        public ICommand EditAccessoryCommand => _editAccessoryCommand!;
-        public ICommand DeleteAccessoryCommand => _deleteAccessoryCommand!;
-        public ICommand SaveAccessoryCommand => _saveAccessoryCommand!;
-        public ICommand CancelEditCommand { get; }
+        // Public command properties
+        public IAsyncRelayCommand LoadAccessoriesCommand { get; }
+        public IRelayCommand AddAccessoryCommand { get; }
+        public IRelayCommand<Accessory> EditAccessoryCommand => _editAccessoryCommand!;
+        public IAsyncRelayCommand DeleteAccessoryCommand => _deleteAccessoryCommand!;
+        public IAsyncRelayCommand SaveAccessoryCommand => _saveAccessoryCommand!;
+        public IRelayCommand CancelEditCommand { get; }
 
         public AccessoryManagementViewModel(IUnitOfWork unitOfWork, ILoggingService logger)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
 
-            LoadAccessoriesCommand = new RelayCommand(async () => await LoadAccessoriesAsync());
+            LoadAccessoriesCommand = new AsyncRelayCommand(LoadAccessoriesAsync);
             AddAccessoryCommand = new RelayCommand(AddAccessory);
-            _editAccessoryCommand = new RelayCommand(EditAccessory, () => SelectedAccessory != null);
-            _deleteAccessoryCommand = new RelayCommand(async () => await DeleteAccessoryAsync(), () => SelectedAccessory != null);
-            _saveAccessoryCommand = new RelayCommand(async () => await SaveAccessoryAsync(), () => CurrentEditAccessory != null);
+            _editAccessoryCommand = new RelayCommand<Accessory>(EditAccessory, a => a != null);
+            _deleteAccessoryCommand = new AsyncRelayCommand(DeleteAccessoryAsync, () => SelectedAccessory != null);
+            _saveAccessoryCommand = new AsyncRelayCommand(SaveAccessoryAsync, () => CurrentEditAccessory != null);
             CancelEditCommand = new RelayCommand(CancelEdit);
 
             // Load immediately
-            Task.Run(async () => await LoadAccessoriesAsync());
+            LoadAccessoriesCommand.Execute(null);
         }
 
         partial void OnSelectedAccessoryChanged(Accessory? value)
         {
-            // Notify commands that depend on SelectedAccessory
             _editAccessoryCommand?.NotifyCanExecuteChanged();
             _deleteAccessoryCommand?.NotifyCanExecuteChanged();
         }
@@ -107,23 +108,11 @@ namespace SKAuto.UI.ViewModels
             IsEditMode = true;
         }
 
-        private void EditAccessory()
+        private void EditAccessory(Accessory? accessory)
         {
-            if (SelectedAccessory == null) return;
+            if (accessory == null) return;
 
-            // Clone for editing
-            CurrentEditAccessory = new Accessory
-            {
-                Id = SelectedAccessory.Id,
-                PartNumber = SelectedAccessory.PartNumber,
-                Name = SelectedAccessory.Name,
-                Description = SelectedAccessory.Description,
-                StandardFittingTime = SelectedAccessory.StandardFittingTime,
-                PSAHourlyRate = SelectedAccessory.PSAHourlyRate,
-                SellingPrice = SelectedAccessory.SellingPrice,
-                RequiresPassword = SelectedAccessory.RequiresPassword,
-                IsActive = SelectedAccessory.IsActive
-            };
+            CurrentEditAccessory = accessory;   // edit directly – changes will be saved from this instance
             IsEditMode = true;
         }
 
@@ -162,32 +151,19 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                if (string.IsNullOrWhiteSpace(CurrentEditAccessory.Name))
-                {
-                    System.Windows.MessageBox.Show("Accessory name is required", "Validation");
-                    return;
-                }
-
                 if (CurrentEditAccessory.Id == 0)
-                {
                     await _unitOfWork.Accessories.AddAsync(CurrentEditAccessory);
-                }
                 else
-                {
-                    await _unitOfWork.Accessories.UpdateAsync(CurrentEditAccessory);
-                }
+                    await _unitOfWork.Accessories.UpdateAsync(CurrentEditAccessory); // tracked instance
 
                 await _unitOfWork.CompleteAsync();
-                await LoadAccessoriesAsync();
-
-                IsEditMode = false;
-                CurrentEditAccessory = null;
-                _logger?.LogInfo($"Saved accessory: {CurrentEditAccessory?.Name}");
+                await LoadAccessoriesAsync(); // refresh list
+                CancelEdit();
             }
             catch (Exception ex)
             {
-                _logger?.LogError($"Failed to save: {ex.Message}");
-                System.Windows.MessageBox.Show($"Save failed: {ex.Message}", "Error");
+                _logger?.LogError("Failed to save accessory", ex);
+                MessageBox.Show($"Error saving accessory: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

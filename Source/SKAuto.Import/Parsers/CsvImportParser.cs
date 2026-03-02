@@ -81,36 +81,33 @@ namespace SKAuto.Import.Parsers
                     continue;
                 }
 
-                // Parse date – try common formats
-                DateTime? orderDate = null;
-                string[] formats = { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
-                foreach (var fmt in formats)
+                DateTime orderDate= new DateTime();
+                bool hasDate = false;
+
+                if (!string.IsNullOrWhiteSpace(finPrepStr))
                 {
-                    if (DateTime.TryParseExact(finPrepStr, fmt, CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
+                    string[] formats = { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
+                    foreach (var fmt in formats)
                     {
-                        orderDate = d;
-                        break;
+                        if (DateTime.TryParseExact(finPrepStr, fmt, CultureInfo.InvariantCulture, DateTimeStyles.None, out orderDate))
+                        {
+                            hasDate = true;
+                            break;
+                        }
                     }
+                    if (!hasDate && DateTime.TryParse(finPrepStr, out orderDate))
+                        hasDate = true;
                 }
 
-                if (!orderDate.HasValue)
-                {
-                    if (!DateTime.TryParse(finPrepStr, out var d))
-                    {
-                        skippedDateParse++;
-                        continue;
-                    }
-                    orderDate = d;
-                }
-
+                // If hasDate is false, orderDate remains default (DateTime.MinValue)
                 results.Add(new ImportWorkOrderDto
                 {
                     Chassis = vin,
                     Model = model,
                     ClientName = client,
-                    OrderDate = orderDate.Value,
-                    Source = "CSV",
-                    TypeOfWork =  Core.Enums.OrderType.PSA_Contract
+                    OrderDate = hasDate ? orderDate : DateTime.MinValue,
+                    HasDate = hasDate,
+                    Source = "CSV"
                 });
                 imported++;
             }

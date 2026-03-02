@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SKAuto.Data.Database
 {
@@ -82,7 +83,8 @@ namespace SKAuto.Data.Database
                     new Accessory { Name = "Antivol", SellingPrice = 60, StandardFittingTime = 60 },
                     new Accessory { Name = "Alarm", SellingPrice = 50, StandardFittingTime = 90 },
                     new Accessory { Name = "Pose Camera SK", SellingPrice = 0, StandardFittingTime = 60 },
-                    new Accessory { Name = "Pose Ecran SK", SellingPrice = 0, StandardFittingTime = 60 }
+                    new Accessory { Name = "Pose Ecran SK", SellingPrice = 0, StandardFittingTime = 60 },
+                    new Accessory { Name = "Nettoyage Préparation", PSAHourlyRate = 40, StandardFittingTime = 30,PartNumber = "WASH001", Description = "Washing and preparation service",}
                 };
                 await _context.Accessories.AddRangeAsync(testAccessories);
                 await _context.SaveChangesAsync();

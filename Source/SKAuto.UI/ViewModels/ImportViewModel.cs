@@ -1,18 +1,20 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection; // for IServiceProvider
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Import.Parsers;
+using SKAuto.UI.Converters;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using System;
-using Microsoft.Extensions.DependencyInjection; // for IServiceProvider
+using SKAuto.Data.Repository;   
 
 
 namespace SKAuto.UI.ViewModels
@@ -281,12 +283,12 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ===== PARCCARRI�RES CSV IMPORT (with duplicate check) =====
+        // ===== PARCCARRIÈRES CSV IMPORT (with duplicate check) =====
         private async Task SelectParcCarrieresAsync()
         {
             var dialog = new OpenFileDialog
             {
-                Title = "Select ParcCarri�res CSV file",
+                Title = "Select ParcCarrières CSV file",
                 Filter = "CSV files|*.csv",
                 Multiselect = false
             };
@@ -298,7 +300,7 @@ namespace SKAuto.UI.ViewModels
         private async Task ProcessParcCarrieresFileAsync(string filePath)
         {
             IsImporting = true;
-            StatusMessage = "Processing ParcCarri�res file...";
+            StatusMessage = "Processing ParcCarrières file...";
             ImportProgress = 0;
             CurrentOperation = "Reading file...";
 
@@ -355,12 +357,12 @@ namespace SKAuto.UI.ViewModels
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() => AddOrders(filteredOrders));
-                _loggingService.LogInfo($"ParcCarri�res import: {filteredOrders.Count} new orders from {Path.GetFileName(filePath)}");
-                StatusMessage = $"Added {filteredOrders.Count} new work orders from ParcCarri�res.";
+                _loggingService.LogInfo($"ParcCarrières import: {filteredOrders.Count} new orders from {Path.GetFileName(filePath)}");
+                StatusMessage = $"Added {filteredOrders.Count} new work orders from ParcCarrières.";
             }
             catch (Exception ex)
             {
-                _loggingService.LogError($"ParcCarri�res import failed: {filePath}", ex);
+                _loggingService.LogError($"ParcCarrières import failed: {filePath}", ex);
                 StatusMessage = $"Error: {ex.Message}";
                 MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -447,7 +449,7 @@ namespace SKAuto.UI.ViewModels
 
             IsImporting = true;
             ImportProgress = 0;
-            CurrentOperation = "Starting import...";
+            CurrentOperation = "Preparing import...";
 
             IProgress<ProgressReport> progress = new Progress<ProgressReport>(p =>
             {
@@ -457,63 +459,148 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                int total = selected.Count;
-                int processed = 0;
-
-                // Use a fresh scope to avoid any threading issues with shared DbContext
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                    var vehicleRepo = (VehicleRepository)unitOfWork.Vehicles;
+                    var clientRepo = (ClientRepository)unitOfWork.Clients;
+                    var workOrderRepo = (WorkOrderRepository)unitOfWork.WorkOrders;
+                    var workTaskRepo = (WorkTaskRepository)unitOfWork.WorkTasks;
 
-                    await Task.Run(async () =>
+                    // ---- 1. Collect distinct cleaned client names and chassis numbers ----
+                    var clientNames = selected
+                        .Select(x => CleanClientName(x.Data.ClientName))
+                        .Where(n => !string.IsNullOrWhiteSpace(n))
+                        .Distinct()
+                        .ToList();
+
+                    var vinList = selected
+                        .Select(x => x.Data.Chassis)
+                        .Distinct()
+                        .ToList();
+
+                    // ---- 2. Fetch existing clients and vehicles ----
+                    var existingClients = await clientRepo.GetByNamesAsync(clientNames);
+                    var clientDict = existingClients.ToDictionary(c => c.Name, c => c);
+
+                    var existingVehicles = await vehicleRepo.GetByChassisNumbersAsync(vinList);
+                    var vehicleDict = existingVehicles.ToDictionary(v => v.ChassisNumber, v => v);
+
+                    // ---- 3. Create new clients (batch) ----
+                    var newClients = new List<Client>();
+                    foreach (var name in clientNames)
                     {
-                        foreach (var item in selected)
+                        if (!clientDict.ContainsKey(name))
                         {
-                            var dto = item.Data;
-                            var alreadyExists = (await unitOfWork.WorkOrders
-                                    .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
-                                    .Any();
-                            if (alreadyExists)
+                            var newClient = new Client
                             {
-                                _loggingService.LogWarning($"Skipped duplicate during import: {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                                Name = name,
+                                Type = ClientType.Direct,
+                                IsActive = true
+                            };
+                            newClients.Add(newClient);
+                            clientDict[name] = newClient; // placeholder, will get real ID after save
+                        }
+                    }
+                    if (newClients.Any())
+                    {
+                        await clientRepo.AddRangeAsync(newClients);
+                        await unitOfWork.CompleteAsync(); // now IDs are assigned
+                                                          // Update dictionary with the now‑assigned IDs
+                        foreach (var c in newClients)
+                            clientDict[c.Name] = c;
+                    }
+
+                    // ---- 4. Create new vehicles (batch) ----
+                    var newVehicles = new List<Vehicle>();
+                    foreach (var vin in vinList)
+                    {
+                        if (!vehicleDict.ContainsKey(vin))
+                        {
+                            // We need a model – we'll take the first occurrence's model
+                            var firstDto = selected.First(x => x.Data.Chassis == vin).Data;
+                            var newVehicle = new Vehicle
+                            {
+                                ChassisNumber = vin,
+                                Model = firstDto.Model,
+                                IsActive = true
+                            };
+                            newVehicles.Add(newVehicle);
+                            vehicleDict[vin] = newVehicle;
+                        }
+                    }
+                    if (newVehicles.Any())
+                    {
+                        await vehicleRepo.AddRangeAsync(newVehicles);
+                        await unitOfWork.CompleteAsync();
+                    }
+
+                    // ---- 5. Ensure Unknown client exists (if needed) ----
+                    if (!clientDict.ContainsKey("Unknown"))
+                    {
+                        var unknown = new Client { Name = "Unknown", Type = ClientType.Direct, IsActive = true };
+                        await clientRepo.AddAsync(unknown);
+                        await unitOfWork.CompleteAsync();
+                        clientDict["Unknown"] = unknown;
+                    }
+
+                    // ---- 6. Check if any row needs washing and get/create accessory ----
+                    bool anyNeedsWashing = selected.Any(x => NeedsWashing(x.Data.ClientName));
+                    int washingAccessoryId = 0;
+                    if (anyNeedsWashing)
+                    {
+                        var washing = (await unitOfWork.Accessories
+                            .FindAsync(a => a.Name == "Nettoyage Préparation"))
+                            .FirstOrDefault();
+                        if (washing == null)
+                        {
+                            washing = new Accessory
+                            {
+                                Name = "Nettoyage Préparation",
+                                PartNumber = "WASH001",
+                                Description = "Washing and preparation service",
+                                StandardFittingTime = 30,
+                                PSAHourlyRate = 40,    
+                                IsActive = true
+                            };
+                            await unitOfWork.Accessories.AddAsync(washing);
+                            await unitOfWork.CompleteAsync();
+                        }
+                        washingAccessoryId = washing.Id;
+                    }
+
+                    // ---- 7. Process each row: create work orders and collect washing flags ----
+                    var workOrdersToAdd = new List<WorkOrder>();
+                    var needsWashingList = new List<bool>();
+                    int total = selected.Count;
+                    int processed = 0;
+                    int skipped = 0;
+
+                    foreach (var item in selected)
+                    {
+                        processed++;
+                        var dto = item.Data;
+                        string originalClient = dto.ClientName;
+                        string cleanClient = CleanClientName(originalClient);
+                        bool hasWashing = NeedsWashing(originalClient);
+
+                        var vehicle = vehicleDict[dto.Chassis];
+                        var client = clientDict.TryGetValue(cleanClient, out var cli) ? cli : clientDict["Unknown"];
+
+                        // If we have a date, create work order (with duplicate check)
+                        if (dto.HasDate)
+                        {
+                            // Duplicate check (VIN + date) – use the DB inside loop because we need per-row check
+                            var exists = (await workOrderRepo
+                                .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
+                                .Any();
+                            if (exists)
+                            {
+                                _loggingService.LogWarning($"Skipped duplicate: {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                                skipped++;
                                 continue;
                             }
-                            // Ensure vehicle exists
-                            var vehicle = (await unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == dto.Chassis)).FirstOrDefault();
-                            if (vehicle == null)
-                            {
-                                vehicle = new Vehicle
-                                {
-                                    ChassisNumber = dto.Chassis,
-                                    Model = dto.Model,
-                                    IsActive = true
-                                };
-                                await unitOfWork.Vehicles.AddAsync(vehicle);
-                            }
 
-                            // Ensure client exists
-                            var client = (await unitOfWork.Clients.FindAsync(c => c.Name == dto.ClientName)).FirstOrDefault();
-                            if (client == null && !string.IsNullOrWhiteSpace(dto.ClientName))
-                            {
-                                client = new Client
-                                {
-                                    Name = dto.ClientName,
-                                    Type = ClientType.Direct,
-                                    IsActive = true
-                                };
-                                await unitOfWork.Clients.AddAsync(client);
-                            }
-                            else if (client == null)
-                            {
-                                client = (await unitOfWork.Clients.FindAsync(c => c.Name == "Unknown")).FirstOrDefault();
-                                if (client == null)
-                                {
-                                    client = new Client { Name = "Unknown", Type = ClientType.Direct, IsActive = true };
-                                    await unitOfWork.Clients.AddAsync(client);
-                                }
-                            }
-
-                            // Create work order (Done status, with CompletedDate = OrderDate)
                             var workOrder = new WorkOrder
                             {
                                 ClientId = client.Id,
@@ -524,25 +611,77 @@ namespace SKAuto.UI.ViewModels
                                 OrderType = OrderType.PSA_Contract,
                                 Notes = $"Imported from {dto.Source}"
                             };
-                            await unitOfWork.WorkOrders.AddAsync(workOrder);
-
-                            processed++;
-                            int percent = (int)((double)processed / total * 100);
-                            progress.Report(new ProgressReport
-                            {
-                                Percent = percent,
-                                Operation = $"Importing {processed}/{total}: {dto.Chassis}"
-                            });
-
-                            _loggingService.LogInfo($"Imported WO for {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd} from {dto.Source}");
+                            workOrdersToAdd.Add(workOrder);
+                            needsWashingList.Add(hasWashing);
+                            _loggingService.LogInfo($"Prepared WO for {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                        }
+                        else
+                        {
+                            _loggingService.LogInfo($"Vehicle-only record: {dto.Chassis} (client {cleanClient})");
                         }
 
-                        await unitOfWork.CompleteAsync();
-                    });
-                }
+                        int percent = (int)((double)processed / total * 100);
+                        progress.Report(new ProgressReport
+                        {
+                            Percent = percent,
+                            Operation = $"Processing {processed}/{total}: {dto.Chassis}"
+                        });
+                    }
 
-                MessageBox.Show($"Successfully imported {selected.Count} work orders.", "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                CloseWindow(true);
+                    // ---- 8. Save all work orders (batch) ----
+                    if (workOrdersToAdd.Any())
+                    {
+                        await workOrderRepo.AddRangeAsync(workOrdersToAdd);
+                        await unitOfWork.CompleteAsync(); // IDs assigned
+                    }
+
+                    // ---- 9. Add washing tasks (batch) ----
+                    if (anyNeedsWashing && workOrdersToAdd.Any())
+                    {
+                        var washingAccessory = await unitOfWork.Accessories.GetByIdAsync(washingAccessoryId);
+                        decimal? fittingPrice = washingAccessory?.PSAHourlyRate;
+
+                        var tasksToAdd = new List<WorkTask>();
+                        for (int i = 0; i < workOrdersToAdd.Count; i++)
+                        {
+                            if (needsWashingList[i])
+                            {
+                                tasksToAdd.Add(new WorkTask
+                                {
+                                    WorkOrderId = workOrdersToAdd[i].Id,
+                                    AccessoryId = washingAccessoryId,
+                                    TaskType = TaskType.Fit,
+                                    Quantity = 1,
+                                    TaskStatus = WorkStatus.Done,
+                                    FittingPrice = fittingPrice    // price from accessory
+                                });
+                            }
+                        }
+
+                        if (tasksToAdd.Any())
+                        {
+                            await workTaskRepo.AddRangeAsync(tasksToAdd);
+                            // Update each work order's total amount based on its tasks
+                            foreach (var wo in workOrdersToAdd)
+                            {
+                                var woTasks = tasksToAdd.Where(t => t.WorkOrderId == wo.Id).ToList();
+                                decimal woTotal = woTasks.Sum(t => (t.FittingPrice ?? 0) * t.Quantity);
+                                wo.TotalAmount = woTotal;
+                            }
+                            await unitOfWork.CompleteAsync();      // save tasks and updated totals
+                        }
+                    }
+
+                    int importedCount = workOrdersToAdd.Count;
+                    int vehicleOnlyCount = selected.Count - importedCount - skipped;
+                    _loggingService.LogInfo($"Import completed: added {importedCount} work orders, {newClients.Count} new clients, {newVehicles.Count} new vehicles.");
+                    MessageBox.Show($"Successfully imported {importedCount} work orders.\n" +
+                                    $"Vehicle‑only records: {vehicleOnlyCount}\n" +
+                                    $"New clients: {newClients.Count}\n" +
+                                    $"New vehicles: {newVehicles.Count}",
+                        "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CloseWindow(true);
+                }
             }
             catch (Exception ex)
             {
@@ -573,5 +712,21 @@ namespace SKAuto.UI.ViewModels
             public int Percent { get; set; }
             public string Operation { get; set; } = "";
         }
+        private bool NeedsWashing(string clientName)
+        {
+            if (string.IsNullOrWhiteSpace(clientName)) return false;
+            var parts = clientName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 0 && parts.Last() == "66";
+        }
+
+        private string CleanClientName(string clientName)
+        {
+            if (string.IsNullOrWhiteSpace(clientName)) return "";
+            var parts = clientName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0 && parts.Last() == "66")
+                return string.Join(" ", parts.Take(parts.Length - 1));
+            return clientName.Trim();
+        }
+
     }
 }
