@@ -5,12 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SKAuto.Core.Entities
 {
     public class WorkOrder : BaseEntity
     {
-        public int ClientId { get; set; }
         public int VehicleId { get; set; }
         public string? OrderReference { get; set; }
         public OrderType OrderType { get; set; }
@@ -22,8 +22,7 @@ namespace SKAuto.Core.Entities
         public string? Notes { get; set; }
 
         // Navigation properties
-        public virtual Client Client { get; set; } = null!;
-        public virtual Vehicle Vehicle { get; set; } = null!;
+        public virtual Vehicle Vehicle { get; set; } = null!;               // client is now accessed via Vehicle.Client
         public virtual ICollection<WorkTask> WorkTasks { get; set; } = new List<WorkTask>();
         public virtual ICollection<Travel> Travels { get; set; } = new List<Travel>();
         public virtual ICollection<SourceDocument> SourceDocuments { get; set; } = new List<SourceDocument>();

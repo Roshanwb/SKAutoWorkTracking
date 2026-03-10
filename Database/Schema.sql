@@ -7,10 +7,10 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE Users (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     Username TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    PasswordHash TEXT NOT NULL,  -- Store plain for now, will hash later
+    PasswordHash TEXT NOT NULL,
     Role TEXT NOT NULL DEFAULT 'User' CHECK(Role IN ('Admin', 'User')),
     IsActive BOOLEAN DEFAULT 1,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL
 );
 
@@ -22,7 +22,7 @@ INSERT INTO Users (Username, PasswordHash, Role, IsActive)
 VALUES ('admin', 'admin', 'Admin', 1);
 
 -- ============================================
--- CLIENTS (normalized with parent grouping)
+-- CLIENTS (master client list)
 -- ============================================
 CREATE TABLE Clients (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +35,7 @@ CREATE TABLE Clients (
     Email TEXT NULL,
     Notes TEXT NULL,
     IsActive BOOLEAN DEFAULT 1,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL,
     FOREIGN KEY (ParentClientId) REFERENCES Clients(Id) ON DELETE SET NULL
 );
@@ -44,47 +44,56 @@ CREATE INDEX IX_Clients_Name ON Clients(Name);
 CREATE INDEX IX_Clients_ParentClientId ON Clients(ParentClientId);
 
 -- ============================================
--- VEHICLES (chassis is the real-world unique key)
+-- VEHICLES (now with ClientId – one client per vehicle)
 -- ============================================
 CREATE TABLE Vehicles (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     ChassisNumber TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    ClientId INTEGER NOT NULL,                     -- each vehicle belongs to one client
     Make TEXT NULL,
     Model TEXT NULL,
     Year INTEGER NULL,
     Registration TEXT NULL,
     Notes TEXT NULL,
     IsActive BOOLEAN DEFAULT 1,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
-    UpdatedAt TEXT NULL
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TEXT NULL,
+    FOREIGN KEY (ClientId) REFERENCES Clients(Id) ON DELETE RESTRICT
 );
 
 CREATE INDEX IX_Vehicles_ChassisNumber ON Vehicles(ChassisNumber);
 CREATE INDEX IX_Vehicles_Model ON Vehicles(Model);
+CREATE INDEX IX_Vehicles_ClientId ON Vehicles(ClientId);
 
 -- ============================================
--- ACCESSORIES CATALOG (with PSA rates & pricing)
+-- ACCESSORIES CATALOG (with category and single price)
 -- ============================================
 CREATE TABLE Accessories (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     PartNumber TEXT NULL UNIQUE,
     Name TEXT NOT NULL COLLATE NOCASE UNIQUE,
-    Category TEXT NULL,                  -- e.g., 'Sticker', 'Electrical', 'Exterior'
-    UnitPrice DECIMAL(10,2) NULL,
-    FittingPrice DECIMAL(10,2) NULL,
-    StandardFittingTime INTEGER NULL,    -- minutes (PSA duration)
-    RequiresPassword BOOLEAN DEFAULT 0,  -- for PSA protected rates
+    Description TEXT NULL,
+    Category TEXT NULL,                  -- e.g., 'Fitting', 'Selling', 'Preparation', 'Déplacement'
+    Price DECIMAL(10,2) NULL,            -- single price (instead of separate Price/FittingPrice)
+    Time INTEGER NULL,     -- minutes (PSA duration)
+    Price DECIMAL(10,2) NULL,    -- optional, if needed
+    RequiresPassword BOOLEAN DEFAULT 0,
     IsActive BOOLEAN DEFAULT 1,
-    Notes TEXT NULL,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL
 );
 
 CREATE INDEX IX_Accessories_Name ON Accessories(Name);
 CREATE INDEX IX_Accessories_Category ON Accessories(Category);
 
+-- Seed default accessory for washing (66)
+INSERT INTO Accessories (Name, Category, Price, Time, IsActive) 
+VALUES ('Nettoyage Préparation', 'Preparation', 30.00, 30, 1);
+
+-- You can add others later (e.g., 'Relavage' for 11, etc.)
+
 -- ============================================
--- PROTECTED RATES (PSA hourly rates � encrypted on demand)
+-- PROTECTED RATES (keep if still needed)
 -- ============================================
 CREATE TABLE ProtectedRates (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,54 +102,51 @@ CREATE TABLE ProtectedRates (
     ValidTo TEXT NULL,
     HourlyRate DECIMAL(10,2) NOT NULL,
     Currency TEXT DEFAULT 'EUR',
-    EncryptedData BLOB NULL,            -- for future encryption
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    EncryptedData BLOB NULL,
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (AccessoryId) REFERENCES Accessories(Id) ON DELETE CASCADE
 );
 
 CREATE INDEX IX_ProtectedRates_AccessoryId ON ProtectedRates(AccessoryId);
 
 -- ============================================
--- WORK ORDERS (grouping of tasks per vehicle per day)
+-- WORK ORDERS (no longer have ClientId – client is determined via vehicle)
 -- ============================================
 CREATE TABLE WorkOrders (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ClientId INTEGER NOT NULL,
     VehicleId INTEGER NOT NULL,
-    OrderReference TEXT NULL UNIQUE,    -- e.g., "TW1357/VEOLIA"
+    OrderReference TEXT NULL UNIQUE,
     OrderType TEXT NOT NULL DEFAULT 'Direct_Fitting' CHECK(OrderType IN ('PSA_Contract', 'Direct_Fitting', 'Direct_Sale')),
-    OrderDate TEXT NOT NULL,            -- "Date Assigned"
+    OrderDate TEXT NOT NULL,
     PlannedDate TEXT NULL,
     CompletedDate TEXT NULL,
     Status TEXT NOT NULL DEFAULT 'Planned' CHECK(Status IN ('Planned', 'InProgress', 'Blocked', 'Done')),
     Notes TEXT NULL,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    TotalAmount DECIMAL(10,2) NULL,
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL,
-    FOREIGN KEY (ClientId) REFERENCES Clients(Id) ON DELETE RESTRICT,
     FOREIGN KEY (VehicleId) REFERENCES Vehicles(Id) ON DELETE RESTRICT
 );
 
 CREATE INDEX IX_WorkOrders_OrderDate ON WorkOrders(OrderDate);
-CREATE INDEX IX_WorkOrders_ClientId ON WorkOrders(ClientId);
 CREATE INDEX IX_WorkOrders_VehicleId ON WorkOrders(VehicleId);
 CREATE INDEX IX_WorkOrders_Status ON WorkOrders(Status);
 
 -- ============================================
--- WORK TASKS (each row from your daily work sheet)
+-- WORK TASKS (simplified pricing: only Price column)
 -- ============================================
 CREATE TABLE WorkTasks (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     WorkOrderId INTEGER NOT NULL,
     AccessoryId INTEGER NOT NULL,
-    TaskType TEXT NOT NULL DEFAULT 'Fit' CHECK(TaskType IN ('Fit', 'Sell', 'Remove')),
+    TaskType TEXT NOT NULL DEFAULT 'Fit' CHECK(TaskType IN ('Fit', 'Sell', 'Remove', 'Preparation', 'Déplacement')),
     Quantity INTEGER NOT NULL DEFAULT 1 CHECK(Quantity > 0),
-    UnitPrice DECIMAL(10,2) NULL,       -- captured at time of task
-    FittingPrice DECIMAL(10,2) NULL,    -- captured at time of task
-    EstimatedMinutes INTEGER NULL,      -- from catalog at creation time
-    ActualMinutes INTEGER NULL,         -- filled later
+    Price DECIMAL(10,2) NULL,             -- single price at task level
+    EstimatedMinutes INTEGER NULL,
+    ActualMinutes INTEGER NULL,
     TaskStatus TEXT NOT NULL DEFAULT 'Planned' CHECK(TaskStatus IN ('Planned', 'InProgress', 'Blocked', 'Done')),
     Notes TEXT NULL,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL,
     FOREIGN KEY (WorkOrderId) REFERENCES WorkOrders(Id) ON DELETE CASCADE,
     FOREIGN KEY (AccessoryId) REFERENCES Accessories(Id) ON DELETE RESTRICT
@@ -160,7 +166,7 @@ CREATE TABLE Travels (
     DistanceKm DECIMAL(6,1) NULL,
     TravelCost DECIMAL(10,2) NULL,
     Notes TEXT NULL,
-    CreatedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (WorkOrderId) REFERENCES WorkOrders(Id) ON DELETE CASCADE
 );
 
@@ -172,16 +178,16 @@ CREATE TABLE SourceDocuments (
     WorkOrderId INTEGER NOT NULL,
     DocumentType TEXT NOT NULL CHECK(DocumentType IN ('PSA_Plan', 'Client_Order', 'Invoice')),
     FilePath TEXT NOT NULL,
-    FileHash TEXT NOT NULL UNIQUE,      -- SHA256 for duplicate prevention
+    FileHash TEXT NOT NULL UNIQUE,
     OriginalFilename TEXT NOT NULL,
-    ImportedAt TEXT NOT NULL DEFAULT (DATETIME('now')),
+    ImportedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (WorkOrderId) REFERENCES WorkOrders(Id) ON DELETE CASCADE
 );
 
 CREATE INDEX IX_SourceDocuments_FileHash ON SourceDocuments(FileHash);
 
 -- ============================================
--- VIEW: Daily Work Summary (mirrors your Excel report)
+-- VIEW: Daily Work Summary (updated to get client from vehicle)
 -- ============================================
 CREATE VIEW DailyWorkSummary AS
 SELECT 
@@ -196,7 +202,7 @@ SELECT
     wt.ActualMinutes,
     wo.CompletedDate
 FROM WorkOrders wo
-JOIN Clients c ON wo.ClientId = c.Id
 JOIN Vehicles v ON wo.VehicleId = v.Id
+JOIN Clients c ON v.ClientId = c.Id
 JOIN WorkTasks wt ON wo.Id = wt.WorkOrderId
 JOIN Accessories a ON wt.AccessoryId = a.Id;

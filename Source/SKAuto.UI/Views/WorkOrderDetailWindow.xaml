@@ -39,6 +39,7 @@
                           SelectedItem="{Binding SelectedClient}"
                           DisplayMemberPath="Name"
                           Margin="5,5,0,5" Height="30" MinWidth="300"
+                          IsEditable="True"
                           HorizontalAlignment="Left"/>
 
                 <Label Grid.Row="0" Grid.Column="2" Content="Order Date:" VerticalAlignment="Center" Margin="10,0,0,0"/>
@@ -65,6 +66,7 @@
                           ItemsSource="{Binding OrderTypeValues}"
                           SelectedItem="{Binding WorkOrder.OrderType}"                          
                           Margin="5" Height="30" MinWidth="300"
+                          IsEditable="True"
                           HorizontalAlignment="Left"/>
 
                 <Label Grid.Row="2" Grid.Column="2" Content="Status:" VerticalAlignment="Center" Margin="10,0,0,0"/>
@@ -72,6 +74,7 @@
                           ItemsSource="{Binding WorkStatusValues}"
                           SelectedItem="{Binding WorkOrder.Status}"                          
                           Margin="5" Height="30" MinWidth="200"
+                          IsEditable="True"
                           HorizontalAlignment="Left"/>
             </Grid>
         </GroupBox>
@@ -86,13 +89,14 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Label Grid.Column="0" Content="Accessory:" VerticalAlignment="Center"/>
+                <Label Grid.Column="0" Content="Task:" VerticalAlignment="Center"/>
                 <ComboBox Grid.Column="1" 
                           ItemsSource="{Binding AvailableAccessories}"
                           SelectedItem="{Binding SelectedAccessory}"
                           DisplayMemberPath="Name"
                           Margin="5" Height="30" MinWidth="300"
-                          HorizontalAlignment="Left"/>
+                          HorizontalAlignment="Left"
+                          IsEditable="True"/>
 
                 <Label Grid.Column="2" Content="Qty:" VerticalAlignment="Center" Margin="5,0,0,0"/>
                 <TextBox Grid.Column="3" Text="{Binding Quantity}" Width="50" Margin="5" Height="30" VerticalContentAlignment="Center" BorderBrush="#dee2e6"/>
@@ -113,7 +117,7 @@
                     <DataGridTextColumn Header="Accessory" Binding="{Binding Accessory.Name}" Width="*"/>
                     <DataGridTextColumn Header="Type" Binding="{Binding TaskType}" Width="80"/>
                     <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
-                    <DataGridTextColumn Header="Unit Price" Binding="{Binding UnitPrice, StringFormat=C}" Width="80"/>
+                    <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
                     <DataGridTextColumn Header="Est. Minutes" Binding="{Binding EstimatedMinutes}" Width="80"/>
                     <DataGridTextColumn Header="Status" Binding="{Binding TaskStatus}" Width="80"/>
                     <DataGridTemplateColumn Header="Action" Width="60">

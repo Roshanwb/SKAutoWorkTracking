@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SKAuto.Core.Entities;
 
@@ -31,7 +31,10 @@ namespace SKAuto.Data.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.EnableSensitiveDataLogging();   // <-- ADD THIS
                 optionsBuilder.UseSqlite($"Data Source={_databasePath}");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -74,19 +77,28 @@ namespace SKAuto.Data.Database
                 .HasIndex(s => s.FileHash)
                 .IsUnique();
 
-            // Relationships
-            modelBuilder.Entity<WorkOrder>()
-                .HasOne(w => w.Client)
-                .WithMany(c => c.WorkOrders)
-                .HasForeignKey(w => w.ClientId)
+            // Client self‑reference (parent)
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.ParentClient)
+                .WithMany(c => c.ChildClients)
+                .HasForeignKey(c => c.ParentClientId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Vehicle → Client (one client, many vehicles)
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(v => v.Client)
+                .WithMany(c => c.Vehicles)
+                .HasForeignKey(v => v.ClientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // WorkOrder → Vehicle (each order belongs to one vehicle)
             modelBuilder.Entity<WorkOrder>()
                 .HasOne(w => w.Vehicle)
                 .WithMany(v => v.WorkOrders)
                 .HasForeignKey(w => w.VehicleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // WorkTask relationships (unchanged)
             modelBuilder.Entity<WorkTask>()
                 .HasOne(t => t.WorkOrder)
                 .WithMany(w => w.WorkTasks)
@@ -99,25 +111,28 @@ namespace SKAuto.Data.Database
                 .HasForeignKey(t => t.AccessoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Travel (unchanged)
             modelBuilder.Entity<Travel>()
                 .HasOne(t => t.WorkOrder)
                 .WithMany(w => w.Travels)
                 .HasForeignKey(t => t.WorkOrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // SourceDocument (unchanged)
             modelBuilder.Entity<SourceDocument>()
                 .HasOne(s => s.WorkOrder)
                 .WithMany(w => w.SourceDocuments)
                 .HasForeignKey(s => s.WorkOrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ProtectedRate (unchanged)
             modelBuilder.Entity<ProtectedRate>()
                 .HasOne(p => p.Accessory)
                 .WithMany(a => a.ProtectedRates)
                 .HasForeignKey(p => p.AccessoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Default values & timestamps
+            // Default timestamps
             modelBuilder.Entity<Client>()
                 .Property(c => c.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -126,7 +141,7 @@ namespace SKAuto.Data.Database
                 .Property(v => v.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            // ... similar for all entities
+            // ... similar for other entities (if not already set)
 
             // Global query filters (optional)
             modelBuilder.Entity<Client>()
@@ -170,3 +185,4 @@ namespace SKAuto.Data.Database
         }
     }
 }
+

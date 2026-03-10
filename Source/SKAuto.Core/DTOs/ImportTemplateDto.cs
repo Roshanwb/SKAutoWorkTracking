@@ -21,7 +21,7 @@ namespace SKAuto.Core.DTOs
         public string AccessoryName { get; set; } = string.Empty;
         public string TaskType { get; set; } = string.Empty; // "fit", "sell"
         public int Quantity { get; set; } = 1;
-        public decimal? UnitPrice { get; set; }
+        public decimal? Price { get; set; }
         public decimal? FittingPrice { get; set; }
         public int? EstimatedMinutes { get; set; }
     }

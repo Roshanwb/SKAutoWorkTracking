@@ -8,6 +8,7 @@ namespace SKAuto.Core.Entities
     public class Vehicle : BaseEntity
     {
         public string ChassisNumber { get; set; } = string.Empty;
+        public int ClientId { get; set; }
         public string Model { get; set; } = string.Empty;
         public string? Make { get; set; }
         public int? Year { get; set; }
@@ -16,6 +17,7 @@ namespace SKAuto.Core.Entities
 
         // Navigation properties
         public virtual ICollection<WorkOrder> WorkOrders { get; set; } = new List<WorkOrder>();
+        public virtual Client Client { get; set; } = null!;
 
 
         // Business methods

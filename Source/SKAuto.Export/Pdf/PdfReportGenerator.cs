@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-// PdfReportGenerator.cs
 using iText.Kernel.Colors;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -15,6 +8,10 @@ using iText.Layout.Properties;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Enums;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SKAuto.Export.Pdf
 {
@@ -22,7 +19,7 @@ namespace SKAuto.Export.Pdf
     {
         public async Task<byte[]> GenerateInvoiceAsync(WorkOrder workOrder)
         {
-            using var memoryStream = new MemoryStream();
+            using var memoryStream = new System.IO.MemoryStream();
             using var writer = new PdfWriter(memoryStream);
             using var pdf = new PdfDocument(writer);
             using var document = new Document(pdf, PageSize.A4);
@@ -51,13 +48,14 @@ namespace SKAuto.Export.Pdf
             table.AddCell(new Cell().Add(new Paragraph($"#{workOrder.Id}").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
             document.Add(table);
 
-            // Client info
+            // Client info (from Vehicle.Client)
+            var client = workOrder.Vehicle?.Client;
             document.Add(new Paragraph("Bill To:").SetBold().SetMarginTop(20));
-            document.Add(new Paragraph(workOrder.Client?.Name ?? ""));
-            if (!string.IsNullOrEmpty(workOrder.Client?.Address))
-                document.Add(new Paragraph(workOrder.Client.Address));
-            if (!string.IsNullOrEmpty(workOrder.Client?.ContactNumber))
-                document.Add(new Paragraph($"Tel: {workOrder.Client.ContactNumber}"));
+            document.Add(new Paragraph(client?.Name ?? ""));
+            if (!string.IsNullOrEmpty(client?.Address))
+                document.Add(new Paragraph(client.Address));
+            if (!string.IsNullOrEmpty(client?.Phone))
+                document.Add(new Paragraph($"Tel: {client.Phone}"));
 
             // Order details
             document.Add(new Paragraph(" ").SetMarginTop(20));
@@ -90,8 +88,24 @@ namespace SKAuto.Export.Pdf
             {
                 itemsTable.AddCell(task.Accessory?.Name ?? "");
                 itemsTable.AddCell(task.Quantity.ToString());
-                itemsTable.AddCell($"€{task.UnitPrice ?? 0:0.00}");
-                itemsTable.AddCell($"€{task.FittingPrice ?? 0:0.00}");
+
+                // Split price based on TaskType
+                if (task.TaskType == TaskType.Sell)
+                {
+                    itemsTable.AddCell($"€{task.Price ?? 0:0.00}");
+                    itemsTable.AddCell($"€0.00");
+                }
+                else if (task.TaskType == TaskType.Fit || task.TaskType ==  TaskType.Preparation || task.TaskType == TaskType.Travel)
+                {
+                    itemsTable.AddCell($"€0.00");
+                    itemsTable.AddCell($"€{task.Price ?? 0:0.00}");
+                }
+                else
+                {
+                    itemsTable.AddCell($"€0.00");
+                    itemsTable.AddCell($"€0.00");
+                }
+
                 itemsTable.AddCell($"€{task.CalculateTotal():0.00}");
             }
 
@@ -153,7 +167,7 @@ namespace SKAuto.Export.Pdf
 
         public async Task<byte[]> GenerateDailyReportAsync(DailyWorkSummaryDto summary)
         {
-            using var memoryStream = new MemoryStream();
+            using var memoryStream = new System.IO.MemoryStream();
             using var writer = new PdfWriter(memoryStream);
             using var pdf = new PdfDocument(writer);
             using var document = new Document(pdf, PageSize.A4);
@@ -194,8 +208,8 @@ namespace SKAuto.Export.Pdf
 
             document.Add(summaryTable);
 
-            // Client breakdown
-            if (summary.ClientSummaries.Any())
+            // Client breakdown (if summary has it)
+            if (summary.ClientSummaries?.Any() == true)
             {
                 document.Add(new Paragraph(" ").SetMarginTop(30));
                 document.Add(new Paragraph("Clients").SetBold().SetFontSize(14));
@@ -216,7 +230,7 @@ namespace SKAuto.Export.Pdf
             }
 
             // Vehicle work
-            if (summary.VehicleWork.Any())
+            if (summary.VehicleWork?.Any() == true)
             {
                 document.Add(new Paragraph(" ").SetMarginTop(30));
                 document.Add(new Paragraph("Vehicles").SetBold().SetFontSize(14));

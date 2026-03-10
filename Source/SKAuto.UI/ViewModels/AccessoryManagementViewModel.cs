@@ -99,9 +99,8 @@ namespace SKAuto.UI.ViewModels
                 Name = "",
                 PartNumber = "",
                 Description = "",
-                StandardFittingTime = 30,
-                PSAHourlyRate = null,
-                SellingPrice = null,
+                Time = 30,
+                Price = null,
                 RequiresPassword = false,
                 IsActive = true
             };

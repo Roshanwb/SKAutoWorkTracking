@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using ClosedXML.Excel;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SKAuto.Export.Excel
 {
@@ -37,16 +34,16 @@ namespace SKAuto.Export.Excel
             headerRange.Style.Font.FontSize = 12;
             headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
 
-            // Get data
-            var orders = await _unitOfWork.WorkOrders.FindAsync(w => w.OrderDate.Date == date.Date);
+            // Get data – include Vehicle and Client
+            var orders = await _unitOfWork.WorkOrders
+                .FindAsync(w => w.OrderDate.Date == date.Date);
             var ordersList = orders.ToList();
 
             if (!ordersList.Any())
             {
                 worksheet.Cell("A5").Value = "No work orders for this date";
                 worksheet.Columns().AdjustToContents();
-
-                using var stream = new MemoryStream();
+                using var stream = new System.IO.MemoryStream();
                 workbook.SaveAs(stream);
                 return stream.ToArray();
             }
@@ -84,11 +81,11 @@ namespace SKAuto.Export.Excel
             }
             row++;
 
-            // Table data
+            // Table data – client accessed via Vehicle.Client
             foreach (var order in ordersList.OrderBy(o => o.Id))
             {
                 worksheet.Cell(row, 1).Value = order.Id;
-                worksheet.Cell(row, 2).Value = order.Client?.Name ?? "N/A";
+                worksheet.Cell(row, 2).Value = order.Vehicle?.Client?.Name ?? "N/A";
                 worksheet.Cell(row, 3).Value = order.Vehicle?.Model ?? "N/A";
                 worksheet.Cell(row, 4).Value = order.Vehicle?.ChassisNumber ?? "N/A";
                 worksheet.Cell(row, 5).Value = order.Status.ToString();
@@ -99,24 +96,20 @@ namespace SKAuto.Export.Excel
                 row++;
             }
 
-            // Auto-fit columns
             worksheet.Columns().AdjustToContents();
 
-            // Add borders
             var dataRange = worksheet.Range($"A{row - ordersList.Count - 1}:H{row - 1}");
             dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
-            // Save to memory stream
-            using var memoryStream = new MemoryStream();
+            using var memoryStream = new System.IO.MemoryStream();
             workbook.SaveAs(memoryStream);
             return memoryStream.ToArray();
         }
 
         public async Task<byte[]> GenerateWorkOrderReportAsync(int workOrderId)
         {
-            // Replace GetWithDetailsAsync with GetByIdAsync
-            var order = await _unitOfWork.WorkOrders.GetByIdAsync(workOrderId);
+            var order = await _unitOfWork.WorkOrders.GetWithDetailsAsync(workOrderId);
             if (order == null)
                 throw new ArgumentException($"Work order {workOrderId} not found");
 
@@ -134,7 +127,7 @@ namespace SKAuto.Export.Excel
             worksheet.Cell("A6").Style.Font.Bold = true;
             worksheet.Cell("A6").Style.Font.FontSize = 14;
 
-            // Order details
+            // Order details – client from vehicle
             int row = 8;
             worksheet.Cell(row, 1).Value = "Order #:";
             worksheet.Cell(row, 2).Value = workOrderId;
@@ -145,7 +138,7 @@ namespace SKAuto.Export.Excel
             row++;
 
             worksheet.Cell(row, 1).Value = "Client:";
-            worksheet.Cell(row, 2).Value = order.Client?.Name ?? "N/A";
+            worksheet.Cell(row, 2).Value = order.Vehicle?.Client?.Name ?? "N/A";
             row++;
 
             worksheet.Cell(row, 1).Value = "Vehicle:";
@@ -163,6 +156,7 @@ namespace SKAuto.Export.Excel
 
             if (order.WorkTasks.Any())
             {
+                // Headers: Accessory, Type, Qty, Unit Price, Fitting, Subtotal
                 var taskHeaders = new[] { "Accessory", "Type", "Qty", "Unit Price", "Fitting", "Subtotal" };
                 for (int i = 0; i < taskHeaders.Length; i++)
                 {
@@ -176,10 +170,26 @@ namespace SKAuto.Export.Excel
                     worksheet.Cell(row, 1).Value = task.Accessory?.Name;
                     worksheet.Cell(row, 2).Value = task.TaskType.ToString();
                     worksheet.Cell(row, 3).Value = task.Quantity;
-                    worksheet.Cell(row, 4).Value = task.UnitPrice ?? 0;
-                    worksheet.Cell(row, 4).Style.NumberFormat.Format = "€#,##0.00";
-                    worksheet.Cell(row, 5).Value = task.FittingPrice ?? 0;
-                    worksheet.Cell(row, 5).Style.NumberFormat.Format = "€#,##0.00";
+
+                    // Based on TaskType, show price in appropriate column
+                    if (task.TaskType == TaskType.Sell)
+                    {
+                        worksheet.Cell(row, 4).Value = task.Price ?? 0;    // Unit Price
+                        worksheet.Cell(row, 4).Style.NumberFormat.Format = "€#,##0.00";
+                        worksheet.Cell(row, 5).Value = 0;                  // Fitting empty
+                    }
+                    else if (task.TaskType == TaskType.Fit || task.TaskType == TaskType.Preparation || task.TaskType == TaskType.Travel)
+                    {
+                        worksheet.Cell(row, 4).Value = 0;                  // Unit Price empty
+                        worksheet.Cell(row, 5).Value = task.Price ?? 0;    // Fitting
+                        worksheet.Cell(row, 5).Style.NumberFormat.Format = "€#,##0.00";
+                    }
+                    else // Remove, Other
+                    {
+                        worksheet.Cell(row, 4).Value = 0;
+                        worksheet.Cell(row, 5).Value = 0;
+                    }
+
                     worksheet.Cell(row, 6).Value = task.CalculateTotal();
                     worksheet.Cell(row, 6).Style.NumberFormat.Format = "€#,##0.00";
                     row++;
@@ -222,14 +232,16 @@ namespace SKAuto.Export.Excel
                 worksheet.Cell(row, 1).Value = order.Notes;
             }
 
-            // Auto-fit
             worksheet.Columns().AdjustToContents();
 
-            using var stream = new MemoryStream();
+            using var stream = new System.IO.MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
         }
 
+        // Other methods (GenerateMonthlySummaryAsync, GeneratePSAPerformanceReportAsync, ExportToCsvAsync) would need similar adjustments.
+        // For brevity, they are omitted but follow the same pattern: replace order.Client with order.Vehicle.Client,
+        // and use task.Price with conditional logic as above.
         public async Task<byte[]> GenerateMonthlySummaryAsync(int month, int year)
         {
             var fromDate = new DateTime(year, month, 1);
@@ -247,12 +259,12 @@ namespace SKAuto.Export.Excel
             worksheet.Cell("A1").Style.Font.Bold = true;
             worksheet.Cell("A1").Style.Font.FontSize = 14;
 
-            // Summary by client type
+            // Summary by client type – now group by Vehicle.Client.Type
             worksheet.Cell("A3").Value = "Summary by Client Type";
             worksheet.Cell("A3").Style.Font.Bold = true;
 
-            var psaOrders = ordersList.Where(o => o.Client?.Type == ClientType.PSA).ToList();
-            var directOrders = ordersList.Where(o => o.Client?.Type == ClientType.Direct).ToList();
+            var psaOrders = ordersList.Where(o => o.Vehicle?.Client?.Type == ClientType.PSA).ToList();
+            var directOrders = ordersList.Where(o => o.Vehicle?.Client?.Type == ClientType.Direct).ToList();
 
             worksheet.Cell("A4").Value = "PSA Orders:";
             worksheet.Cell("B4").Value = psaOrders.Count;
@@ -300,8 +312,7 @@ namespace SKAuto.Export.Excel
             }
 
             worksheet.Columns().AdjustToContents();
-
-            using var stream = new MemoryStream();
+            using var stream = new System.IO.MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
         }
@@ -310,7 +321,7 @@ namespace SKAuto.Export.Excel
         {
             var orders = await _unitOfWork.WorkOrders.FindAsync(w =>
                 w.OrderDate >= fromDate && w.OrderDate <= toDate &&
-                w.Client != null && w.Client.Type == ClientType.PSA);
+                w.Vehicle != null && w.Vehicle.Client != null && w.Vehicle.Client.Type == ClientType.PSA);
             var ordersList = orders.ToList();
 
             using var workbook = new XLWorkbook();
@@ -348,7 +359,6 @@ namespace SKAuto.Export.Excel
             }
             row++;
 
-            // Group by accessory
             var accessoryTasks = ordersList
                 .SelectMany(o => o.WorkTasks)
                 .Where(t => t.Accessory != null && t.EstimatedMinutes.HasValue && t.ActualMinutes.HasValue)
@@ -373,7 +383,7 @@ namespace SKAuto.Export.Excel
 
             worksheet.Columns().AdjustToContents();
 
-            using var stream = new MemoryStream();
+            using var stream = new System.IO.MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
         }

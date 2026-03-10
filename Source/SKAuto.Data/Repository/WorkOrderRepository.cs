@@ -20,8 +20,8 @@ namespace SKAuto.Data.Repository
         public async Task<WorkOrder?> GetWithDetailsAsync(int id)
         {
             return await _dbSet
-                .Include(w => w.Client)
                 .Include(w => w.Vehicle)
+                    .ThenInclude(v => v.Client)          // now we can access client name
                 .Include(w => w.WorkTasks)
                     .ThenInclude(t => t.Accessory)
                 .Include(w => w.Travels)
@@ -33,8 +33,8 @@ namespace SKAuto.Data.Repository
         {
             var orders = await _dbSet
                 .Where(w => w.OrderDate.Date == date.Date)
-                .Include(w => w.Client)
                 .Include(w => w.Vehicle)
+                    .ThenInclude(v => v.Client)
                 .Include(w => w.WorkTasks)
                 .Include(w => w.Travels)
                 .ToListAsync();
@@ -43,16 +43,14 @@ namespace SKAuto.Data.Repository
         }
 
 
+
         public async Task<IEnumerable<WorkOrder>> GetByClientAsync(int clientId, DateTime? fromDate = null, DateTime? toDate = null)
         {
-            var query = _dbSet.Where(w => w.ClientId == clientId);
-
+            var query = _dbSet.Where(w => w.Vehicle.ClientId == clientId);   // now filter by Vehicle.ClientId
             if (fromDate.HasValue)
                 query = query.Where(w => w.OrderDate >= fromDate.Value);
-
             if (toDate.HasValue)
                 query = query.Where(w => w.OrderDate <= toDate.Value);
-
             return await query
                 .Include(w => w.Vehicle)
                 .Include(w => w.WorkTasks)
@@ -65,7 +63,8 @@ namespace SKAuto.Data.Repository
         {
             var orders = await _dbSet
                 .Where(w => w.OrderDate.Date == date.Date)
-                .Include(w => w.Client)
+                .Include(w => w.Vehicle)
+                    .ThenInclude(v => v.Client)
                 .Include(w => w.WorkTasks)
                     .ThenInclude(t => t.Accessory)
                 .ToListAsync();
@@ -81,7 +80,7 @@ namespace SKAuto.Data.Repository
 
             // Client summaries
             summary.ClientSummaries = orders
-                .GroupBy(o => o.Client.Name)
+                .GroupBy(o => o.Vehicle.Client.Name)
                 .Select(g => new ClientSummaryDto
                 {
                     ClientName = g.Key,
@@ -118,7 +117,7 @@ namespace SKAuto.Data.Repository
 
             var orders = await _dbSet
                 .Where(w => w.OrderDate >= weekStart && w.OrderDate <= weekEnd)
-                .Include(w => w.Client)
+                .Include(w => w.Vehicle.Client)
                 .ToListAsync();
 
             var summary = new WeeklySummaryDto
@@ -130,7 +129,7 @@ namespace SKAuto.Data.Repository
                 InProgressOrders = orders.Count(o => o.Status == WorkStatus.InProgress),
                 TotalRevenue = orders.Where(o => o.TotalAmount.HasValue).Sum(o => o.TotalAmount.Value),
                 ClientSummaries = orders
-                    .GroupBy(o => o.Client.Name)
+                    .GroupBy(o => o.Vehicle.Client.Name)
                     .Select(g => new ClientSummaryDto
                     {
                         ClientName = g.Key,

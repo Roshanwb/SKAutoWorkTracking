@@ -13,8 +13,7 @@ namespace SKAuto.Core.Entities
         public int AccessoryId { get; set; }
         public TaskType TaskType { get; set; }
         public int Quantity { get; set; } = 1;
-        public decimal? UnitPrice { get; set; }
-        public decimal? FittingPrice { get; set; }
+        public decimal? Price { get; set; }
         public int? EstimatedMinutes { get; set; }
         public int? ActualMinutes { get; set; }
         public WorkStatus TaskStatus { get; set; } = WorkStatus.Planned;
@@ -29,11 +28,9 @@ namespace SKAuto.Core.Entities
         {
             decimal total = 0;
 
-            if (UnitPrice.HasValue)
-                total += UnitPrice.Value * Quantity;
+            if (Price.HasValue)
+                total += Price.Value * Quantity;
 
-            if (FittingPrice.HasValue)
-                total += FittingPrice.Value;
 
             return total;
         }

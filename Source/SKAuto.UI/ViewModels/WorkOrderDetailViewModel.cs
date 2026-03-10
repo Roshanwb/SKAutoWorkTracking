@@ -8,7 +8,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows; // <-- ADD THIS for MessageBox
+using System.Windows;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -67,7 +67,7 @@ namespace SKAuto.UI.ViewModels
             AddTaskCommand = new RelayCommand(AddTask);
             RemoveTaskCommand = new RelayCommand<WorkTask>(RemoveTask);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
-            CancelCommand = new RelayCommand(() => CloseWindow()); // FIXED: lambda for parameterless call
+            CancelCommand = new RelayCommand(() => CloseWindow());
             DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew);
 
             InitializeAsync(workOrderId).ConfigureAwait(false);
@@ -90,12 +90,12 @@ namespace SKAuto.UI.ViewModels
                 {
                     var repo = (WorkOrderRepository)_unitOfWork.WorkOrders;
                     WorkOrder = await repo.GetWithDetailsAsync(workOrderId);
-                    SelectedClient = WorkOrder.Client;
                     SelectedVehicle = WorkOrder.Vehicle;
-                    // Populate the chassis search box with the current vehicle's chassis number
                     if (SelectedVehicle != null)
                     {
                         ChassisSearch = SelectedVehicle.ChassisNumber;
+                        // Automatically set the client from the vehicle
+                        SelectedClient = SelectedVehicle.Client;
                     }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
                 }
@@ -105,7 +105,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         OrderDate = DateTime.Today,
                         Status = WorkStatus.Planned,
-                        OrderType = OrderType.PSA_Contract
+                        OrderType = OrderType.Direct_Fitting
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                 }
@@ -115,17 +115,21 @@ namespace SKAuto.UI.ViewModels
                 MessageBox.Show($"Error initializing: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private async Task SearchVehicleAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;
 
             try
             {
-                var vehicle = (await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == ChassisSearch)).FirstOrDefault();
+                // Use the repository method that includes the client
+                var repo = (VehicleRepository)_unitOfWork.Vehicles;
+                var vehicle = await repo.GetByChassisWithClientAsync(ChassisSearch);
                 if (vehicle != null)
                 {
                     SelectedVehicle = vehicle;
-                    WorkOrder.VehicleId = vehicle.Id;
+                    // Client is automatically set via the vehicle's navigation property
+                    SelectedClient = vehicle.Client;
                 }
                 else
                 {
@@ -133,18 +137,31 @@ namespace SKAuto.UI.ViewModels
                         "Create Vehicle", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     if (result == MessageBoxResult.Yes)
                     {
+                        // Need a client for the new vehicle – we'll use the currently selected client
+                        // or prompt the user to select one. For simplicity, we'll use the first client.
+                        if (SelectedClient == null && Clients.Any())
+                        {
+                            SelectedClient = Clients.First();
+                        }
+                        if (SelectedClient == null)
+                        {
+                            MessageBox.Show("Please select a client first.", "No Client", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
+
                         vehicle = new Vehicle
                         {
                             ChassisNumber = ChassisSearch,
                             Model = "Unknown",
+                            ClientId = SelectedClient.Id,
                             IsActive = true
                         };
                         await _unitOfWork.Vehicles.AddAsync(vehicle);
                         await _unitOfWork.CompleteAsync();
                         SelectedVehicle = vehicle;
-                        WorkOrder.VehicleId = vehicle.Id;
-                        var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
-                        Vehicles = new ObservableCollection<Vehicle>(vehicles);
+                        // Refresh vehicles list
+                        var allVehicles = await _unitOfWork.Vehicles.GetAllAsync();
+                        Vehicles = new ObservableCollection<Vehicle>(allVehicles);
                     }
                 }
             }
@@ -154,16 +171,25 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        partial void OnSelectedClientChanged(Client? value)
-        {
-            if (value != null)
-                WorkOrder.ClientId = value.Id;
-        }
-
         partial void OnSelectedVehicleChanged(Vehicle? value)
         {
             if (value != null)
-                WorkOrder.VehicleId = value.Id;
+            {
+                // Client is automatically determined from the vehicle
+                SelectedClient = value.Client;
+                // WorkOrder.VehicleId is set automatically when we assign SelectedVehicle
+                // because the ViewModel sets the ID in the property setter? Actually we need to update WorkOrder.VehicleId.
+                if (WorkOrder != null)
+                {
+                    WorkOrder.VehicleId = value.Id;
+                }
+            }
+        }
+
+        partial void OnSelectedClientChanged(Client? value)
+        {
+            // Client is read-only when vehicle is selected; this is just for display.
+            // We don't set anything on WorkOrder because client is determined by vehicle.
         }
 
         private void AddTask()
@@ -172,13 +198,14 @@ namespace SKAuto.UI.ViewModels
 
             var task = new WorkTask
             {
+                WorkOrderId = WorkOrder.Id,
                 AccessoryId = SelectedAccessory.Id,
                 Accessory = SelectedAccessory,
                 Quantity = Quantity,
                 TaskType = TaskType.Fit,
                 TaskStatus = WorkStatus.Planned,
-                UnitPrice = SelectedAccessory.SellingPrice,
-                EstimatedMinutes = SelectedAccessory.StandardFittingTime
+                Price = SelectedAccessory.Price,
+                EstimatedMinutes = SelectedAccessory.Time
             };
             Tasks.Add(task);
             WorkOrder.WorkTasks.Add(task);
@@ -197,16 +224,14 @@ namespace SKAuto.UI.ViewModels
         {
             try
             {
-                if (WorkOrder.ClientId == 0 || SelectedClient == null)
-                {
-                    MessageBox.Show("Please select a client.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                // Validate required fields
                 if (WorkOrder.VehicleId == 0 || SelectedVehicle == null)
                 {
                     MessageBox.Show("Please select a vehicle.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
+                // Client is automatically determined by vehicle, so no separate check needed
 
                 WorkOrder.CalculateTotal();
 
