@@ -176,13 +176,23 @@ namespace SKAuto.UI.ViewModels
                         .Where(l => !string.IsNullOrWhiteSpace(l))
                         .Select(l => l.Split(','))
                         .Where(p => p.Length >= 4)
-                        .Select(p => new ImportWorkOrderDto
+                        .Select(p =>
                         {
-                            OrderDate = ParseDate(p[0]),
-                            Chassis = p[1].Trim(),
-                            Model = p[2].Trim(),
-                            ClientName = p[3].Trim(),
-                            Source = "PDF"
+                            // Parse date; if the original string is "Unknown", we treat it as no date.
+                            string dateStr = p[0].Trim();
+                            DateTime orderDate;
+                            bool hasDate = DateTime.TryParseExact(dateStr, "MM/dd/yyyy", null,
+                                            System.Globalization.DateTimeStyles.None, out orderDate);
+
+                            return new ImportWorkOrderDto
+                            {
+                                OrderDate = hasDate ? orderDate : DateTime.Today, // fallback, but HasDate will be false
+                                HasDate = hasDate,
+                                Chassis = p[1].Trim(),
+                                Model = p[2].Trim(),
+                                ClientName = p[3].Trim(),
+                                Source = "PDF"
+                            };
                         })
                         .ToList();
 
@@ -727,6 +737,7 @@ namespace SKAuto.UI.ViewModels
                                 Notes = $"Imported from {dto.Source}"
                             };
                             workOrdersToAdd.Add(workOrder);
+                            _loggingService.LogInfo($"Prepared WO for {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
                             perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, code));
                         }
                         else
