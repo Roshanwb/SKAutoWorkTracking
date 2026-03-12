@@ -44,7 +44,7 @@
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
 
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" SortDirection="Ascending"/>
                 <DataGridTextColumn Header="Part #" Binding="{Binding PartNumber}" Width="40"/>
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="100"/>
                 <DataGridTextColumn Header="Fitting Time (min)" Binding="{Binding Time}" Width="50"/>

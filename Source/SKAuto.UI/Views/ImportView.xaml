@@ -56,7 +56,7 @@
                                         Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                                         Width="50"/>
                 <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="60"/>
-                <DataGridTextColumn Header="Date" Binding="{Binding OrderDate, Converter={StaticResource DateVisibilityConverter}}" Width="80"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding OrderDate, Converter={StaticResource DateVisibilityConverter}}" Width="80" SortDirection="Descending"/>
                 <DataGridTextColumn Header="Chassis" Binding="{Binding Chassis}" Width="150"/>
                 <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="100"/>
                 <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="*"/>

@@ -26,20 +26,23 @@ namespace SKAuto.UI.ViewModels
         private readonly IServiceProvider _serviceProvider;
 
         // ---------- TASK CODE MAPPING ----------
-        private static readonly Dictionary<string, string> CodeToTaskName = new(StringComparer.OrdinalIgnoreCase)
-        {
-            { "66", "Nettoyage Préparation" },
-            { "11", "Relavage" },
-            // Add more codes here as they become known
+        private static readonly Dictionary<string, TaskInfo> CodeToTaskInfo = new(StringComparer.OrdinalIgnoreCase)
+        { 
+            { "66", new TaskInfo("Nettoyage Préparation 66€", 66) },
+            { "11", new TaskInfo("Relavage 11€", 11) },
+            { "Relavage", new TaskInfo("Relavage 11€", 11) },      // non‑numeric variation
+            { "Relavag", new TaskInfo("Relavage 11€", 11) },       // common misspelling
+            { "68", new TaskInfo("Nettoyage Préparation 68€", 68) },
+            // Add more codes as needed
         };
-        private static readonly HashSet<string> KnownCodes = new(CodeToTaskName.Keys, StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> KnownCodes = new(CodeToTaskInfo.Keys, StringComparer.OrdinalIgnoreCase);
 
         // ---------- CLIENT NAME NOISE WORDS ----------
         // Words that should be removed from client names (case‑insensitive).
         private static readonly HashSet<string> ExcludedWords = new(StringComparer.OrdinalIgnoreCase)
         {
             "ok", "acc", "kit", "logos", "conforme", "pneus", "att.", "att. rv", "att rv",
-            "66", "11", "68", "31", "10", "tapis", "relavage", "gravage", "pose", "camera",
+            "66", "11", "68", "31", "10", "tapis", "relavage","relavag", "gravage", "pose", "camera",
             "ecran", "sk", "bois", "serrure", "cradel", "grille", "barre", "toit", "balisage",
             "alarme", "antivol", "crochet", "attelage", "boitier", "controle", "housse"
         };
@@ -425,6 +428,13 @@ namespace SKAuto.UI.ViewModels
                 item.SelectionChanged += (s, e) => OnItemSelectionChanged();
                 PreviewOrders.Add(item);
             }
+
+            // Sort the entire collection by OrderDate descending (latest first)
+            var sorted = PreviewOrders.OrderByDescending(x => x.OrderDate).ToList();
+            PreviewOrders.Clear();
+            foreach (var item in sorted)
+                PreviewOrders.Add(item);
+
             OnItemSelectionChanged();
         }
 
@@ -586,7 +596,7 @@ namespace SKAuto.UI.ViewModels
                     var workOrderRepo = (WorkOrderRepository)unitOfWork.WorkOrders;
                     var workTaskRepo = (WorkTaskRepository)unitOfWork.WorkTasks;
 
-                    // ---- 1. Collect distinct cleaned client names (case‑insensitive), chassis numbers, and required codes ----
+                    // ---- 1. Collect distinct cleaned client names, chassis numbers, and all required codes ----
                     var clientNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     var vinList = new HashSet<string>();
                     var requiredCodes = new HashSet<string>();
@@ -604,7 +614,6 @@ namespace SKAuto.UI.ViewModels
                     }
 
                     // ---- 2. Fetch existing clients and vehicles ----
-                    // Get all clients (small dataset) and build a case‑insensitive dictionary
                     var allClients = await clientRepo.GetAllAsync();
                     var clientDict = new Dictionary<string, Client>(StringComparer.OrdinalIgnoreCase);
                     foreach (var c in allClients)
@@ -626,7 +635,7 @@ namespace SKAuto.UI.ViewModels
                                 IsActive = true
                             };
                             newClients.Add(newClient);
-                            clientDict[name] = newClient; // placeholder
+                            clientDict[name] = newClient;
                         }
                     }
                     if (newClients.Any())
@@ -634,7 +643,7 @@ namespace SKAuto.UI.ViewModels
                         await clientRepo.AddRangeAsync(newClients);
                         await unitOfWork.CompleteAsync(); // IDs assigned
                         foreach (var c in newClients)
-                            clientDict[c.Name] = c;      // update with real IDs
+                            clientDict[c.Name] = c;
                     }
 
                     // ---- 4. Ensure "Unknown" client exists ----
@@ -646,22 +655,22 @@ namespace SKAuto.UI.ViewModels
                         clientDict["Unknown"] = unknown;
                     }
 
-                    // ---- 5. Ensure all required accessories exist ----
+                    // ---- 5. Ensure all required accessories exist (with price 0 as placeholder) ----
                     var accessoryIdByCode = new Dictionary<string, int>();
                     foreach (var code in requiredCodes)
                     {
-                        if (!CodeToTaskName.TryGetValue(code, out var accessoryName))
+                        if (!CodeToTaskInfo. TryGetValue(code, out var accessoryName))
                             continue;
 
                         var accessory = (await unitOfWork.Accessories
-                            .FindAsync(a => a.Name == accessoryName))
+                            .FindAsync(a => a.Name == accessoryName.Name))
                             .FirstOrDefault();
                         if (accessory == null)
                         {
                             accessory = new Accessory
                             {
-                                Name = accessoryName,
-                                Price = code == "66" ? 40 : 30,
+                                Name = accessoryName.Name,
+                                Price = 0,           // price will come from the import
                                 Time = 30,
                                 IsActive = true
                             };
@@ -671,7 +680,7 @@ namespace SKAuto.UI.ViewModels
                         accessoryIdByCode[code] = accessory.Id;
                     }
 
-                    // ---- 6. Create new vehicles (batch) – must set ClientId ----
+                    // ---- 6. Create new vehicles (batch) – set ClientId ----
                     var newVehicles = new List<Vehicle>();
                     foreach (var vin in vinList)
                     {
@@ -696,12 +705,13 @@ namespace SKAuto.UI.ViewModels
                     if (newVehicles.Any())
                     {
                         await vehicleRepo.AddRangeAsync(newVehicles);
-                        await unitOfWork.CompleteAsync();
+                        await unitOfWork.CompleteAsync(); // vehicles now have IDs
                     }
 
-                    // ---- 7. Process each row: create work orders and capture codes ----
+                    // ---- 7. Process each row: create work orders and capture code & price ----
                     var workOrdersToAdd = new List<WorkOrder>();
-                    var perWorkOrderTaskInfo = new List<(int WorkOrderIndex, string? Code)>();
+                    // Store for each work order: index, accessory ID, and price from code
+                    var perWorkOrderTaskInfo = new List<(int WorkOrderIndex, int? AccessoryId, decimal? PriceFromCode)>();
                     int total = selected.Count;
                     int processed = 0;
                     int skipped = 0;
@@ -711,6 +721,19 @@ namespace SKAuto.UI.ViewModels
                         processed++;
                         var dto = item.Data;
                         string code = ExtractCodeFromClient(dto.ClientName, out string _);
+                        decimal? priceFromCode = null;
+                        if (!string.IsNullOrEmpty(code))
+                        {
+                            if (decimal.TryParse(code, out decimal parsedPrice))
+                            {
+                                priceFromCode = parsedPrice;          // numeric code → use its value as price
+                            }
+                            else if (CodeToTaskInfo.TryGetValue(code, out var taskInfo))
+                            {
+                                priceFromCode = taskInfo.DefaultPrice; // non‑numeric code → use the default price from mapping
+                            }
+                        }
+
                         string cleanClient = CleanClientName(dto.ClientName);
                         var vehicle = vehicleDict[dto.Chassis];
                         var client = clientDict.TryGetValue(cleanClient, out var cli) ? cli : clientDict["Unknown"];
@@ -726,19 +749,24 @@ namespace SKAuto.UI.ViewModels
                                 skipped++;
                                 continue;
                             }
-
+                            var tempworkStatus = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done;
                             var workOrder = new WorkOrder
                             {
                                 VehicleId = vehicle.Id,
                                 OrderDate = dto.OrderDate,
-                                Status = WorkStatus.Done,
+                                Status = tempworkStatus,
                                 CompletedDate = dto.OrderDate,
                                 OrderType = OrderType.PSA_Contract,
                                 Notes = $"Imported from {dto.Source}"
                             };
                             workOrdersToAdd.Add(workOrder);
-                            _loggingService.LogInfo($"Prepared WO for {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
-                            perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, code));
+
+                            // Determine accessory ID for this code (if any)
+                            int? accessoryId = null;
+                            if (code != null && accessoryIdByCode.TryGetValue(code, out int aid))
+                                accessoryId = aid;
+
+                            perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, accessoryId, priceFromCode));
                         }
                         else
                         {
@@ -757,32 +785,40 @@ namespace SKAuto.UI.ViewModels
                     if (workOrdersToAdd.Any())
                     {
                         await workOrderRepo.AddRangeAsync(workOrdersToAdd);
-                        await unitOfWork.CompleteAsync();
+                        await unitOfWork.CompleteAsync(); // IDs assigned
                     }
 
-                    // ---- 9. Add tasks for work orders that have a known code ----
+                    // ---- 9. Add tasks for work orders that have an accessory ----
                     var tasksToAdd = new List<WorkTask>();
-                    foreach (var (index, code) in perWorkOrderTaskInfo)
+                    foreach (var (index, accessoryId, priceFromCode) in perWorkOrderTaskInfo)
                     {
-                        if (code == null || !accessoryIdByCode.TryGetValue(code, out int accessoryId))
+                        if (accessoryId == null)
                             continue;
 
                         var workOrder = workOrdersToAdd[index];
-                        var accessory = await unitOfWork.Accessories.GetByIdAsync(accessoryId);
+                        // Use price from code if available; otherwise fallback to accessory's price (should be 0)
+                        decimal? taskPrice = priceFromCode;
+                        if (taskPrice == null)
+                        {
+                            var accessory = await unitOfWork.Accessories.GetByIdAsync(accessoryId.Value);
+                            taskPrice = accessory?.Price;
+                        }
+
                         tasksToAdd.Add(new WorkTask
                         {
                             WorkOrderId = workOrder.Id,
-                            AccessoryId = accessoryId,
-                            TaskType = TaskType.Fit,
+                            AccessoryId = accessoryId.Value,
+                            TaskType = TaskType.Preparation,          // you can later differentiate based on code if needed
                             Quantity = 1,
                             TaskStatus = WorkStatus.Done,
-                            Price = accessory?.Price
+                            Price = taskPrice
                         });
                     }
 
                     if (tasksToAdd.Any())
                     {
                         await workTaskRepo.AddRangeAsync(tasksToAdd);
+                        // Update work order totals
                         foreach (var wo in workOrdersToAdd)
                         {
                             var woTasks = tasksToAdd.Where(t => t.WorkOrderId == wo.Id).ToList();
@@ -830,6 +866,17 @@ namespace SKAuto.UI.ViewModels
         {
             public int Percent { get; set; }
             public string Operation { get; set; } = "";
+        }
+        public class TaskInfo
+        {
+            public string Name { get; set; }
+            public decimal DefaultPrice { get; set; }
+
+            public TaskInfo(string name, decimal defaultPrice)
+            {
+                Name = name;
+                DefaultPrice = defaultPrice;
+            }
         }
     }
 }

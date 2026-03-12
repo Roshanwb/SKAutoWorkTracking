@@ -17,7 +17,7 @@
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Chassis" Binding="{Binding ChassisNumber}" Width="150"/>
+                <DataGridTextColumn Header="Chassis" Binding="{Binding ChassisNumber}" Width="150" SortDirection="Ascending"/>
                 <DataGridTextColumn Header="Make" Binding="{Binding Make}" Width="80"/>
                 <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="100"/>
                 <DataGridTextColumn Header="Year" Binding="{Binding Year}" Width="60"/>

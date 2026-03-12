@@ -17,7 +17,7 @@
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150" SortDirection="Ascending"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80"/>
                 <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="100"/>
                 <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="150"/>

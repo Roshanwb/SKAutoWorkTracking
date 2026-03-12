@@ -114,7 +114,7 @@
                       BorderBrush="#dee2e6" BorderThickness="1"
                       RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Accessory" Binding="{Binding Accessory.Name}" Width="*"/>
+                    <DataGridTextColumn Header="Accessory" Binding="{Binding Accessory.Name}" Width="*" SortDirection="Ascending"/>
                     <DataGridTextColumn Header="Type" Binding="{Binding TaskType}" Width="80"/>
                     <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
                     <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>

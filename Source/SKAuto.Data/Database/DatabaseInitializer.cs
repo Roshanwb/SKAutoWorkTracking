@@ -84,7 +84,6 @@ namespace SKAuto.Data.Database
             new Accessory { Name = "Alarm", Price = 50, Time = 90 },
             new Accessory { Name = "Pose Camera SK", Price = 0, Time = 60 },
             new Accessory { Name = "Pose Ecran SK", Price = 0, Time = 60 },
-            new Accessory { Name = "Nettoyage Préparation", Price = 40, Time = 30, PartNumber = "WASH001", Description = "Washing and preparation service" }
         };
                 await _context.Accessories.AddRangeAsync(testAccessories);
                 await _context.SaveChangesAsync();

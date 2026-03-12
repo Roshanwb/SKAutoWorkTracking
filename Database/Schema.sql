@@ -86,11 +86,7 @@ CREATE TABLE Accessories (
 CREATE INDEX IX_Accessories_Name ON Accessories(Name);
 CREATE INDEX IX_Accessories_Category ON Accessories(Category);
 
--- Seed default accessory for washing (66)
-INSERT INTO Accessories (Name, Category, Price, Time, IsActive) 
-VALUES ('Nettoyage Préparation', 'Preparation', 30.00, 30, 1);
 
--- You can add others later (e.g., 'Relavage' for 11, etc.)
 
 -- ============================================
 -- PROTECTED RATES (keep if still needed)

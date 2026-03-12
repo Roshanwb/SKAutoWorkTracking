@@ -103,11 +103,10 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 StatusMessage = $"Loading work for {date:dd/MM/yyyy}...";
-
-                var workOrderRepo = (Data.Repository.WorkOrderRepository)_unitOfWork.WorkOrders;
-
+                var workOrderRepo = (WorkOrderRepository)_unitOfWork.WorkOrders;
                 var orders = await workOrderRepo.GetDailyWorkOrdersAsync(date);
-                TodayWorkOrders = new ObservableCollection<WorkOrderDto>(orders);
+                // Sort by ID descending (latest work orders first)
+                TodayWorkOrders = new ObservableCollection<WorkOrderDto>(orders.OrderByDescending(o => o.VehicleChassis));
 
                 var summary = await workOrderRepo.GetDailySummaryAsync(date);
                 TotalOrdersToday = summary.TotalWorkOrders;
