@@ -655,29 +655,35 @@ namespace SKAuto.UI.ViewModels
                         clientDict["Unknown"] = unknown;
                     }
 
-                    // ---- 5. Ensure all required accessories exist (with price 0 as placeholder) ----
+                    // ---- 5. Ensure all required accessories exist (store default price in accessory) ----
                     var accessoryIdByCode = new Dictionary<string, int>();
+                    var accessoryDefaultPriceByCode = new Dictionary<string, decimal>();
                     foreach (var code in requiredCodes)
                     {
-                        if (!CodeToTaskInfo. TryGetValue(code, out var accessoryName))
+                        if (!CodeToTaskInfo.TryGetValue(code, out var taskInfo))
+                        {
+                            _loggingService.LogWarning($"Unknown code '{code}' – skipping accessory creation");
                             continue;
+                        }
 
                         var accessory = (await unitOfWork.Accessories
-                            .FindAsync(a => a.Name == accessoryName.Name))
+                            .FindAsync(a => a.Name == taskInfo.Name))
                             .FirstOrDefault();
                         if (accessory == null)
                         {
                             accessory = new Accessory
                             {
-                                Name = accessoryName.Name,
-                                Price = 0,           // price will come from the import
+                                Name = taskInfo.Name,
+                                Price = taskInfo.DefaultPrice,   // store default price in accessory
                                 Time = 30,
                                 IsActive = true
                             };
                             await unitOfWork.Accessories.AddAsync(accessory);
                             await unitOfWork.CompleteAsync();
+                            _loggingService.LogInfo($"Created accessory '{taskInfo.Name}' with default price {taskInfo.DefaultPrice}");
                         }
                         accessoryIdByCode[code] = accessory.Id;
+                        accessoryDefaultPriceByCode[code] = taskInfo.DefaultPrice; // keep for fallback
                     }
 
                     // ---- 6. Create new vehicles (batch) – set ClientId ----
@@ -710,8 +716,7 @@ namespace SKAuto.UI.ViewModels
 
                     // ---- 7. Process each row: create work orders and capture code & price ----
                     var workOrdersToAdd = new List<WorkOrder>();
-                    // Store for each work order: index, accessory ID, and price from code
-                    var perWorkOrderTaskInfo = new List<(int WorkOrderIndex, int? AccessoryId, decimal? PriceFromCode)>();
+                    var perWorkOrderTaskInfo = new List<(int WorkOrderIndex, int AccessoryId, decimal Price)>();
                     int total = selected.Count;
                     int processed = 0;
                     int skipped = 0;
@@ -721,16 +726,24 @@ namespace SKAuto.UI.ViewModels
                         processed++;
                         var dto = item.Data;
                         string code = ExtractCodeFromClient(dto.ClientName, out string _);
+
+                        // Determine price from code
                         decimal? priceFromCode = null;
                         if (!string.IsNullOrEmpty(code))
                         {
                             if (decimal.TryParse(code, out decimal parsedPrice))
                             {
-                                priceFromCode = parsedPrice;          // numeric code → use its value as price
+                                priceFromCode = parsedPrice;
+                                _loggingService.LogInfo($"Code '{code}' parsed as numeric price {parsedPrice}");
                             }
                             else if (CodeToTaskInfo.TryGetValue(code, out var taskInfo))
                             {
-                                priceFromCode = taskInfo.DefaultPrice; // non‑numeric code → use the default price from mapping
+                                priceFromCode = taskInfo.DefaultPrice;
+                                _loggingService.LogInfo($"Code '{code}' mapped to task '{taskInfo.Name}' with default price {taskInfo.DefaultPrice}");
+                            }
+                            else
+                            {
+                                _loggingService.LogWarning($"Code '{code}' not found in mapping – no price will be assigned");
                             }
                         }
 
@@ -749,6 +762,7 @@ namespace SKAuto.UI.ViewModels
                                 skipped++;
                                 continue;
                             }
+
                             var tempworkStatus = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done;
                             var workOrder = new WorkOrder
                             {
@@ -761,12 +775,14 @@ namespace SKAuto.UI.ViewModels
                             };
                             workOrdersToAdd.Add(workOrder);
 
-                            // Determine accessory ID for this code (if any)
-                            int? accessoryId = null;
-                            if (code != null && accessoryIdByCode.TryGetValue(code, out int aid))
-                                accessoryId = aid;
-
-                            perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, accessoryId, priceFromCode));
+                            // If we have a code and an accessory exists for it, prepare a task
+                            if (code != null && accessoryIdByCode.TryGetValue(code, out int accessoryId))
+                            {
+                                // Use priceFromCode if available; otherwise fallback to accessory's default price (already stored)
+                                decimal taskPrice = priceFromCode ?? accessoryDefaultPriceByCode[code];
+                                perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, accessoryId, taskPrice));
+                                _loggingService.LogInfo($"Preparing task for {dto.Chassis}: code '{code}', price {taskPrice}");
+                            }
                         }
                         else
                         {
@@ -788,27 +804,16 @@ namespace SKAuto.UI.ViewModels
                         await unitOfWork.CompleteAsync(); // IDs assigned
                     }
 
-                    // ---- 9. Add tasks for work orders that have an accessory ----
+                    // ---- 9. Add tasks for prepared work orders ----
                     var tasksToAdd = new List<WorkTask>();
-                    foreach (var (index, accessoryId, priceFromCode) in perWorkOrderTaskInfo)
+                    foreach (var (index, accessoryId, taskPrice) in perWorkOrderTaskInfo)
                     {
-                        if (accessoryId == null)
-                            continue;
-
                         var workOrder = workOrdersToAdd[index];
-                        // Use price from code if available; otherwise fallback to accessory's price (should be 0)
-                        decimal? taskPrice = priceFromCode;
-                        if (taskPrice == null)
-                        {
-                            var accessory = await unitOfWork.Accessories.GetByIdAsync(accessoryId.Value);
-                            taskPrice = accessory?.Price;
-                        }
-
                         tasksToAdd.Add(new WorkTask
                         {
                             WorkOrderId = workOrder.Id,
-                            AccessoryId = accessoryId.Value,
-                            TaskType = TaskType.Preparation,          // you can later differentiate based on code if needed
+                            AccessoryId = accessoryId,
+                            TaskType = TaskType.Preparation,
                             Quantity = 1,
                             TaskStatus = WorkStatus.Done,
                             Price = taskPrice
@@ -822,7 +827,7 @@ namespace SKAuto.UI.ViewModels
                         foreach (var wo in workOrdersToAdd)
                         {
                             var woTasks = tasksToAdd.Where(t => t.WorkOrderId == wo.Id).ToList();
-                            wo.TotalAmount = woTasks.Sum(t => (t.Price ?? 0) * t.Quantity);
+                            wo.TotalAmount = woTasks.Sum(t => t.Price * t.Quantity);
                         }
                         await unitOfWork.CompleteAsync();
                     }
