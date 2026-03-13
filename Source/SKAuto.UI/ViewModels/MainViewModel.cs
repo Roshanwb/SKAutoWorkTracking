@@ -211,7 +211,7 @@ namespace SKAuto.UI.ViewModels
 
             var window = new Window
             {
-                Title = "Manage Accessories",
+                Title = "Manage Tasks",
                 Content = view,
                 Width = 900,
                 Height = 700,

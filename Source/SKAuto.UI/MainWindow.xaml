@@ -101,7 +101,7 @@
             <MenuItem Header="_Manage">
                 <MenuItem Header="_Clients" Command="{Binding OpenClientManagementCommand}"/>
                 <MenuItem Header="_Vehicles" Command="{Binding OpenVehicleManagementCommand}"/>
-                <MenuItem Header="_Accessories" Command="{Binding ShowAccessoryManagementCommand}"/>
+                <MenuItem Header="_Tasks" Command="{Binding ShowAccessoryManagementCommand}"/>
                 <Separator/>
                 <MenuItem Header="_Users" Command="{Binding ShowUserManagementCommand}"/>
             </MenuItem>
