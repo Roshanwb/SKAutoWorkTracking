@@ -1,0 +1,144 @@
+﻿<Window x:Class="SKAuto.UI.Views.BackupView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SKAuto.UI.ViewModels"
+        mc:Ignorable="d"
+        Title="Backup &amp; Restore" Height="600" Width="550"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Backup Section -->
+        <GroupBox Header="Backup Database" Grid.Row="0" Margin="0,0,0,10" Padding="10">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBox Text="{Binding BackupFolder}" Width="300" Margin="0,0,10,0"/>
+                    <Button Content="Browse" Command="{Binding SelectBackupFolderCommand}" Padding="10,5" Margin="0,0,10,0" Background="Wheat"/>
+                    <Button Content="Create Backup" Command="{Binding BackupCommand}" 
+                        Style="{StaticResource ActionButton}" Background="#4CAF50" Width="100" Margin="0,0,10,0"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Export Section -->
+        <GroupBox Header="Export Data to CSV/ZIP" Grid.Row="1" Margin="0,0,0,10" Padding="10">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBox Text="{Binding ExportFolder}" Width="300" Margin="0,0,10,0"/>
+                    <Button Content="Browse" Command="{Binding SelectExportFolderCommand}" Padding="10,5" Margin="0,0,10,0" Background="Wheat"/>
+                
+                <Button Content="Export Data" Command="{Binding ExportCommand}" 
+                        Style="{StaticResource ActionButton}" Background="#3498db" HorizontalAlignment="Left" Width="100" Margin="0,0,10,0"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Import Section -->
+        <GroupBox Header="Import from ZIP" Grid.Row="2" Margin="0,0,0,10" Padding="10">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBox Text="{Binding ImportFilePath}" Width="300" Margin="0,0,10,0" IsReadOnly="True"/>
+                    <Button Content="Browse" Command="{Binding SelectImportFileCommand}" Padding="10,5" Margin="0,0,10,0" Background="Wheat"/>
+                    <Button Content="Import" Command="{Binding ImportCommand}" 
+        Style="{StaticResource ActionButton}" Background="#f39c12" HorizontalAlignment="Left" Width="100" Margin="0,0,10,0"/>
+                </StackPanel>
+
+                <CheckBox Content="Dry Run (preview only)" IsChecked="{Binding IsDryRun}" Margin="0,0,0,10"/>
+
+                <Expander Header="Conflict Resolution Options" IsExpanded="False" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Row="0" Grid.Column="0" Content="Clients:"/>
+                            <ComboBox Grid.Row="0" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding ClientConflict}" Margin="5"/>
+
+                            <Label Grid.Row="1" Grid.Column="0" Content="Vehicles:"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding VehicleConflict}" Margin="5"/>
+
+                            <Label Grid.Row="2" Grid.Column="0" Content="Accessories:"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding AccessoryConflict}" Margin="5"/>
+
+                            <Label Grid.Row="3" Grid.Column="0" Content="Work Orders:"/>
+                            <ComboBox Grid.Row="3" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding WorkOrderConflict}" Margin="5"/>
+
+                            <Label Grid.Row="4" Grid.Column="0" Content="Work Tasks:"/>
+                            <ComboBox Grid.Row="4" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding WorkTaskConflict}" Margin="5"/>
+
+                            <Label Grid.Row="5" Grid.Column="0" Content="Travels:"/>
+                            <ComboBox Grid.Row="5" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding TravelConflict}" Margin="5"/>
+
+                            <Label Grid.Row="6" Grid.Column="0" Content="Protected Rates:"/>
+                            <ComboBox Grid.Row="6" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding ProtectedRateConflict}" Margin="5"/>
+
+                            <Label Grid.Row="7" Grid.Column="0" Content="Users:"/>
+                            <ComboBox Grid.Row="7" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding UserConflict}" Margin="5"/>
+
+                            <Label Grid.Row="8" Grid.Column="0" Content="Source Docs:"/>
+                            <ComboBox Grid.Row="8" Grid.Column="1" 
+                                      ItemsSource="{Binding ConflictResolutions}"
+                                      SelectedItem="{Binding SourceDocumentConflict}" Margin="5"/>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
+                
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Result / Log -->
+        <GroupBox Header="Result" Grid.Row="3" Margin="0,0,0,10" Padding="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </GroupBox>
+
+        <!-- Close Button -->
+        <Button Content="Close" Command="{Binding CloseCommand}" 
+                Style="{StaticResource ActionButton}" Background="#6c757d" 
+                HorizontalAlignment="Right" Width="80" Grid.Row="4"/>
+    </Grid>
+</Window>

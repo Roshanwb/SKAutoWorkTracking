@@ -108,6 +108,9 @@
             <MenuItem Header="_Reports">
                 <MenuItem Header="_Generate Daily Report" Command="{Binding GenerateReportsCommand}"/>
             </MenuItem>
+            <MenuItem Header="_Admin">
+                <MenuItem Header="_Backup/Restore" Command="{Binding OpenBackupCommand}"/>
+            </MenuItem>
         </Menu>
 
         <Grid>

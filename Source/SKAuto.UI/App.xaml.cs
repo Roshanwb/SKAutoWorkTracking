@@ -11,6 +11,7 @@ using SKAuto.Export.Pdf;
 using SKAuto.Import.Parsers;
 using SKAuto.Import.Validators;
 using SKAuto.UI.ViewModels;
+using System.IO;
 using System.Windows;
 
 namespace SKAuto.UI
@@ -28,6 +29,10 @@ namespace SKAuto.UI
                     // Database
                     services.AddSingleton<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
+                    services.AddScoped<IBackupService, BackupService>();
+                    var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SKAuto", "SKAuto.db");
+                    services.AddSingleton(dbPath);
+                    services.AddScoped<IBackupService, BackupService>();
 
 
                     // ViewModels

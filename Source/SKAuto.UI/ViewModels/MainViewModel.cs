@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.UI.Views;
 using System;
@@ -66,6 +68,7 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand<int> MarkDoneCommand { get; }
         public IAsyncRelayCommand DeleteWorkOrderCommand { get; }
         public ICommand ShowAccessoryManagementCommand { get; }
+        public IRelayCommand OpenBackupCommand { get; }
 
         public MainViewModel(IUnitOfWork unitOfWork)
         {
@@ -89,10 +92,18 @@ namespace SKAuto.UI.ViewModels
             NextDayCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(1));
             PreviousWeekCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-7));
             NextWeekCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(7));
+            OpenBackupCommand = new RelayCommand(OpenBackup);
 
             LoadTodayWorkCommand.Execute(null);
         }
-
+        private void OpenBackup()
+        {
+            var backupService = App.GetService<IBackupService>();
+            var loggingService = App.GetService<ILoggingService>();
+            var vm = new BackupViewModel(backupService, loggingService);
+            var win = new BackupView { DataContext = vm };
+            win.ShowDialog();
+        }
         private async Task LoadTodayWorkAsync()
         {
             await LoadWorkForDateAsync(SelectedDate);
@@ -364,5 +375,7 @@ namespace SKAuto.UI.ViewModels
                 await LoadWorkForDateAsync(SelectedDate);
             }
         }
+
+
     }
 }
