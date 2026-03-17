@@ -60,6 +60,7 @@ namespace SKAuto.UI
                     //services.AddScoped<DataService>();
                     //services.AddScoped<ImportService>();
                     //services.AddScoped<ReportService>();
+                    services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
                     // Repositories – already handled via UnitOfWork
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -78,6 +79,12 @@ namespace SKAuto.UI
                     services.AddSingleton<MainWindow>();
 
                     //log services
+                    services.AddSingleton<ILoggingService, LoggingService>();
+
+                    //Google drive services
+                    services.AddScoped<IBackupService, BackupService>();
+                    services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+                    services.AddSingleton<IConfigurationService, JsonConfigurationService>();
                     services.AddSingleton<ILoggingService, LoggingService>();
 
                     //Login

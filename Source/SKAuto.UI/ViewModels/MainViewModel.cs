@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.DTOs;
@@ -49,6 +49,8 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private WeeklySummaryDto _weeklySummary = new();
+        [ObservableProperty]
+        private string _syncStatus;
 
         public IRelayCommand PreviousDayCommand { get; }
         public IRelayCommand NextDayCommand { get; }
@@ -69,6 +71,10 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand DeleteWorkOrderCommand { get; }
         public ICommand ShowAccessoryManagementCommand { get; }
         public IRelayCommand OpenBackupCommand { get; }
+
+
+        public IRelayCommand OpenDriveSettingsCommand { get; }
+        public IRelayCommand SyncNowCommand { get; }
 
         public MainViewModel(IUnitOfWork unitOfWork)
         {
@@ -93,9 +99,53 @@ namespace SKAuto.UI.ViewModels
             PreviousWeekCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-7));
             NextWeekCommand = new RelayCommand(() => SelectedDate = SelectedDate.AddDays(7));
             OpenBackupCommand = new RelayCommand(OpenBackup);
+            OpenDriveSettingsCommand = new RelayCommand(OpenDriveSettings);
+            SyncNowCommand = new RelayCommand(async () => await SyncNowAsync());
 
             LoadTodayWorkCommand.Execute(null);
         }
+
+
+        private void OpenDriveSettings()
+        {
+            var driveService = App.GetService<IGoogleDriveService>();
+            var config = App.GetService<IConfigurationService>();
+            var backupService = App.GetService<IBackupService>();
+            var logger = App.GetService<ILoggingService>();
+
+            var vm = new GoogleDriveSettingsViewModel(driveService, config, backupService, logger);
+            var win = new GoogleDriveSettingsView { DataContext = vm };
+            win.ShowDialog();
+            UpdateSyncStatus();
+        }
+
+        private async Task SyncNowAsync()
+        {
+            // Call backup service to create backup and upload via drive service
+            // For now, just update status
+            SyncStatus = "Syncing...";
+            await Task.Delay(2000); // simulate
+            SyncStatus = "Last sync: just now";
+        }
+
+        private async void UpdateSyncStatus()
+        {
+            var config = App.GetService<IConfigurationService>();
+            var settings = await config.GetAsync<GoogleDriveSettings>("GoogleDrive");
+            if (settings?.LastSync != null)
+            {
+                var days = (DateTime.Now - settings.LastSync.Value).Days;
+                if (days >= 7)
+                    SyncStatus = $"⚠️ Sync needed (last: {settings.LastSync.Value:dd/MM}) – click to sync";
+                else
+                    SyncStatus = $"✓ Last sync: {settings.LastSync.Value:dd/MM}";
+            }
+            else
+            {
+                SyncStatus = "⚙️ Configure Google Drive";
+            }
+        }
+
         private void OpenBackup()
         {
             var backupService = App.GetService<IBackupService>();
