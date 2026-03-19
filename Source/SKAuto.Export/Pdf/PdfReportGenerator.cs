@@ -1,15 +1,20 @@
+using iText.IO.Font.Constants;
+using iText.IO.Image;
 using iText.Kernel.Colors;
+using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
-using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
-using SKAuto.Core.Enums;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,243 +22,334 @@ namespace SKAuto.Export.Pdf
 {
     public class PdfReportGenerator
     {
-        public async Task<byte[]> GenerateInvoiceAsync(WorkOrder workOrder)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly string _logoPath;
+        private PdfFont _boldFont;
+        private PdfFont _normalFont;
+
+        public PdfReportGenerator(IUnitOfWork unitOfWork)
         {
-            using var memoryStream = new System.IO.MemoryStream();
-            using var writer = new PdfWriter(memoryStream);
-            using var pdf = new PdfDocument(writer);
-            using var document = new Document(pdf, PageSize.A4);
-
-            // Header
-            document.Add(new Paragraph("SK AUTO")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(20)
-                .SetBold());
-
-            document.Add(new Paragraph("Automotive Services & Accessories")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(12));
-
-            document.Add(new Paragraph("PSA Certified Partner")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(10)
-                .SetFontColor(ColorConstants.GRAY));
-
-            document.Add(new Paragraph(" ")
-                .SetMarginBottom(20));
-
-            // Invoice header
-            var table = new Table(2).UseAllAvailableWidth();
-            table.AddCell(new Cell().Add(new Paragraph("INVOICE").SetBold()).SetBorder(Border.NO_BORDER));
-            table.AddCell(new Cell().Add(new Paragraph($"#{workOrder.Id}").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-            document.Add(table);
-
-            // Client info (from Vehicle.Client)
-            var client = workOrder.Vehicle?.Client;
-            document.Add(new Paragraph("Bill To:").SetBold().SetMarginTop(20));
-            document.Add(new Paragraph(client?.Name ?? ""));
-            if (!string.IsNullOrEmpty(client?.Address))
-                document.Add(new Paragraph(client.Address));
-            if (!string.IsNullOrEmpty(client?.Phone))
-                document.Add(new Paragraph($"Tel: {client.Phone}"));
-
-            // Order details
-            document.Add(new Paragraph(" ").SetMarginTop(20));
-
-            var detailsTable = new Table(4).UseAllAvailableWidth().SetMarginTop(10);
-            detailsTable.AddHeaderCell("Order Date").SetBold();
-            detailsTable.AddHeaderCell("Vehicle").SetBold();
-            detailsTable.AddHeaderCell("Chassis").SetBold();
-            detailsTable.AddHeaderCell("Status").SetBold();
-
-            detailsTable.AddCell(workOrder.OrderDate.ToString("dd/MM/yyyy"));
-            detailsTable.AddCell(workOrder.Vehicle?.Model ?? "");
-            detailsTable.AddCell(workOrder.Vehicle?.ChassisNumber ?? "");
-            detailsTable.AddCell(workOrder.Status.ToString());
-
-            document.Add(detailsTable);
-
-            // Items table
-            document.Add(new Paragraph(" ").SetMarginTop(20));
-            document.Add(new Paragraph("Items").SetBold());
-
-            var itemsTable = new Table(5).UseAllAvailableWidth().SetMarginTop(10);
-            itemsTable.AddHeaderCell("Description").SetBold();
-            itemsTable.AddHeaderCell("Qty").SetBold();
-            itemsTable.AddHeaderCell("Unit Price").SetBold();
-            itemsTable.AddHeaderCell("Fitting").SetBold();
-            itemsTable.AddHeaderCell("Amount").SetBold();
-
-            foreach (var task in workOrder.WorkTasks)
-            {
-                itemsTable.AddCell(task.Accessory?.Name ?? "");
-                itemsTable.AddCell(task.Quantity.ToString());
-
-                // Split price based on TaskType
-                if (task.TaskType == TaskType.Sell)
-                {
-                    itemsTable.AddCell($"€{task.Price ?? 0:0.00}");
-                    itemsTable.AddCell($"€0.00");
-                }
-                else if (task.TaskType == TaskType.Fit || task.TaskType ==  TaskType.Preparation || task.TaskType == TaskType.Travel)
-                {
-                    itemsTable.AddCell($"€0.00");
-                    itemsTable.AddCell($"€{task.Price ?? 0:0.00}");
-                }
-                else
-                {
-                    itemsTable.AddCell($"€0.00");
-                    itemsTable.AddCell($"€0.00");
-                }
-
-                itemsTable.AddCell($"€{task.CalculateTotal():0.00}");
-            }
-
-            document.Add(itemsTable);
-
-            // Travel if any
-            if (workOrder.Travels.Any())
-            {
-                document.Add(new Paragraph(" ").SetMarginTop(20));
-                document.Add(new Paragraph("Travel").SetBold());
-
-                var travelTable = new Table(3).UseAllAvailableWidth().SetMarginTop(10);
-                travelTable.AddHeaderCell("Date").SetBold();
-                travelTable.AddHeaderCell("Destination").SetBold();
-                travelTable.AddHeaderCell("Cost").SetBold();
-
-                foreach (var travel in workOrder.Travels)
-                {
-                    travelTable.AddCell(travel.TravelDate.ToString("dd/MM/yyyy"));
-                    travelTable.AddCell(travel.Destination);
-                    travelTable.AddCell($"€{travel.TravelCost ?? 0:0.00}");
-                }
-
-                document.Add(travelTable);
-            }
-
-            // Totals
-            document.Add(new Paragraph(" ").SetMarginTop(30));
-
-            var totalTable = new Table(2).UseAllAvailableWidth().SetHorizontalAlignment(HorizontalAlignment.RIGHT);
-            totalTable.SetWidth(200);
-
-            totalTable.AddCell(new Cell().Add(new Paragraph("Subtotal:").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-            totalTable.AddCell(new Cell().Add(new Paragraph($"€{workOrder.TotalAmount ?? 0:0.00}").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-
-            totalTable.AddCell(new Cell().Add(new Paragraph("VAT (20%):").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-            totalTable.AddCell(new Cell().Add(new Paragraph($"€{(workOrder.TotalAmount ?? 0) * 0.2m:0.00}").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-
-            totalTable.AddCell(new Cell().Add(new Paragraph("Total:").SetBold().SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-            totalTable.AddCell(new Cell().Add(new Paragraph($"€{(workOrder.TotalAmount ?? 0) * 1.2m:0.00}").SetBold().SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
-
-            document.Add(totalTable);
-
-            // Footer
-            document.Add(new Paragraph(" ")
-                .SetMarginTop(50));
-
-            document.Add(new Paragraph("Thank you for your business!")
-                .SetTextAlignment(TextAlignment.CENTER));
-
-            document.Add(new Paragraph("SK Auto - TVA: FRXXXXXXXXX")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(10)
-                .SetFontColor(ColorConstants.GRAY));
-
-            document.Close();
-            return memoryStream.ToArray();
+            _unitOfWork = unitOfWork;
+            _logoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
         }
 
-        public async Task<byte[]> GenerateDailyReportAsync(DailyWorkSummaryDto summary)
+        private void InitializeFonts()
         {
-            using var memoryStream = new System.IO.MemoryStream();
-            using var writer = new PdfWriter(memoryStream);
+            _boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+            _normalFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+        }
+
+        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
+        {
+            var orders = (await _unitOfWork.WorkOrders
+                .FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To)).ToList();
+
+            var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
+            var vehicles = (await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id))).ToDictionary(v => v.Id);
+            var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
+            var clients = (await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id))).ToDictionary(c => c.Id);
+
+            var orderIds = orders.Select(o => o.Id).ToList();
+            var allTasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
+            var taskLookup = allTasks.ToLookup(t => t.WorkOrderId);
+
+            // Apply task type filter
+            if (filter.TaskType.HasValue)
+            {
+                var ordersWithTask = allTasks
+                    .Where(t => t.TaskType == filter.TaskType.Value)
+                    .Select(t => t.WorkOrderId)
+                    .Distinct()
+                    .ToHashSet();
+                orders = orders.Where(o => ordersWithTask.Contains(o.Id)).ToList();
+            }
+
+            // Apply work status filter
+            if (filter.WorkStatus.HasValue)
+            {
+                orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
+            }
+
+            using var ms = new MemoryStream();
+            using var writer = new PdfWriter(ms);
+            using var pdf = new PdfDocument(writer);
+            using var document = new Document(pdf, PageSize.A4.Rotate());
+
+            InitializeFonts();
+            AddHeader(document, "Work Orders Report");
+
+            document.Add(new Paragraph($"Period: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}").SetFont(_normalFont));
+            document.Add(new Paragraph($"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}").SetFont(_normalFont));
+            document.Add(new Paragraph($"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}").SetFont(_normalFont));
+            document.Add(new Paragraph(" "));
+
+            var vehicleDict = vehicles;
+            var clientDict = clients;
+
+            if (filter.GroupByWeek)
+            {
+                var weekGroups = orders
+                    .GroupBy(w => GetIsoWeek(w.OrderDate))
+                    .OrderBy(g => g.Key);
+
+                foreach (var group in weekGroups)
+                {
+                    int week = group.Key;
+                    DateTime weekStart = GetStartOfWeek(group.First().OrderDate);
+                    DateTime weekEnd = weekStart.AddDays(6);
+
+                    Paragraph weekHeader = new Paragraph()
+                        .Add($"Week {week} ({weekStart:dd/MM} – {weekEnd:dd/MM})")
+                        .SetFont(_boldFont)
+                        .SetFontSize(14)
+                        .SetMarginTop(10);
+                    document.Add(weekHeader);
+
+                    if (!filter.SummaryOnly)
+                    {
+                        WriteWorkOrderDetails(document, group.ToList(), vehicleDict, clientDict, taskLookup);
+                    }
+
+                    decimal weekTotal = group.Sum(o => o.TotalAmount ?? 0);
+                    Paragraph weekTotalPara = new Paragraph()
+                        .Add($"Week Total: €{weekTotal:0.00}")
+                        .SetFont(_boldFont)
+                        .SetTextAlignment(TextAlignment.RIGHT)
+                        .SetMarginBottom(10);
+                    document.Add(weekTotalPara);
+                }
+            }
+            else
+            {
+                if (!filter.SummaryOnly)
+                {
+                    WriteWorkOrderDetails(document, orders, vehicleDict, clientDict, taskLookup);
+                }
+            }
+
+            decimal grandTotal = orders.Sum(o => o.TotalAmount ?? 0);
+            Paragraph grandTotalPara = new Paragraph()
+                .Add($"GRAND TOTAL: €{grandTotal:0.00}")
+                .SetFont(_boldFont)
+                .SetFontSize(14)
+                .SetTextAlignment(TextAlignment.RIGHT)
+                .SetMarginTop(20);
+            document.Add(grandTotalPara);
+
+            document.Close();
+            return ms.ToArray();
+        }
+
+        private void WriteWorkOrderDetails(Document document, List<WorkOrder> orders,
+            Dictionary<int, Vehicle> vehicleDict, Dictionary<int, Client> clientDict,
+            ILookup<int, WorkTask> taskLookup)
+        {
+            Table table = new Table(8).UseAllAvailableWidth(); // 8 columns: ID, Date, Client, Vehicle, Status, Task Count, Task Names, Total
+            table.SetMarginTop(5);
+            table.SetMarginBottom(5);
+
+            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Tasks", "Task Names", "Total" };
+            foreach (string h in headers)
+            {
+                Cell headerCell = new Cell().Add(new Paragraph(h).SetFont(_boldFont));
+                headerCell.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+            }
+
+            bool alternate = false;
+            foreach (var o in orders)
+            {
+                vehicleDict.TryGetValue(o.VehicleId, out var vehicle);
+                string clientName = vehicle != null && clientDict.TryGetValue(vehicle.ClientId, out var client) ? client.Name : "";
+                var tasks = taskLookup[o.Id].ToList();
+                int taskCount = tasks.Count;
+                string taskNames = string.Join(", ", tasks.Select(t => t.Accessory?.Name ?? "?"));
+
+                Cell idCell = new Cell().Add(new Paragraph(o.Id.ToString()).SetFont(_normalFont));
+                Cell dateCell = new Cell().Add(new Paragraph(o.OrderDate.ToString("dd/MM/yyyy")).SetFont(_normalFont));
+                Cell clientCell = new Cell().Add(new Paragraph(clientName).SetFont(_normalFont));
+                Cell vehicleCell = new Cell().Add(new Paragraph(vehicle?.Model ?? "").SetFont(_normalFont));
+                Cell statusCell = new Cell().Add(new Paragraph(o.Status.ToString()).SetFont(_normalFont));
+                Cell tasksCountCell = new Cell().Add(new Paragraph(taskCount.ToString()).SetFont(_normalFont));
+                Cell tasksNameCell = new Cell().Add(new Paragraph(taskNames).SetFont(_normalFont));
+                Cell totalCell = new Cell().Add(new Paragraph($"€{o.TotalAmount ?? 0:0.00}").SetFont(_normalFont));
+
+                if (alternate)
+                {
+                    Color bg = new DeviceRgb(0xF2, 0xF2, 0xF2);
+                    idCell.SetBackgroundColor(bg);
+                    dateCell.SetBackgroundColor(bg);
+                    clientCell.SetBackgroundColor(bg);
+                    vehicleCell.SetBackgroundColor(bg);
+                    statusCell.SetBackgroundColor(bg);
+                    tasksCountCell.SetBackgroundColor(bg);
+                    tasksNameCell.SetBackgroundColor(bg);
+                    totalCell.SetBackgroundColor(bg);
+                }
+
+                table.AddCell(idCell);
+                table.AddCell(dateCell);
+                table.AddCell(clientCell);
+                table.AddCell(vehicleCell);
+                table.AddCell(statusCell);
+                table.AddCell(tasksCountCell);
+                table.AddCell(tasksNameCell);
+                table.AddCell(totalCell);
+
+                alternate = !alternate;
+            }
+
+            document.Add(table);
+        }
+
+        public async Task<byte[]> GenerateClientsReportAsync()
+        {
+            // (unchanged)
+            var clients = await _unitOfWork.Clients.GetAllAsync();
+            using var ms = new MemoryStream();
+            using var writer = new PdfWriter(ms);
             using var pdf = new PdfDocument(writer);
             using var document = new Document(pdf, PageSize.A4);
 
-            // Header
-            document.Add(new Paragraph("DAILY WORK REPORT")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(18)
-                .SetBold());
+            InitializeFonts();
+            AddHeader(document, "Clients Report");
 
-            document.Add(new Paragraph($"Date: {summary.Date:dd/MM/yyyy}")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontSize(12));
-
-            // Summary
-            document.Add(new Paragraph(" ").SetMarginTop(20));
-            document.Add(new Paragraph("Summary").SetBold().SetFontSize(14));
-
-            var summaryTable = new Table(2).UseAllAvailableWidth().SetMarginTop(10);
-
-            summaryTable.AddCell("Total Work Orders");
-            summaryTable.AddCell(summary.TotalWorkOrders.ToString());
-
-            summaryTable.AddCell("Completed Orders");
-            summaryTable.AddCell(summary.CompletedOrders.ToString());
-
-            summaryTable.AddCell("In Progress");
-            summaryTable.AddCell(summary.InProgressOrders.ToString());
-
-            summaryTable.AddCell("Total Revenue");
-            summaryTable.AddCell($"€{summary.TotalRevenue:0.00}");
-
-            summaryTable.AddCell("PSA Revenue");
-            summaryTable.AddCell($"€{summary.TotalPSARevenue:0.00}");
-
-            summaryTable.AddCell("Direct Revenue");
-            summaryTable.AddCell($"€{summary.TotalDirectRevenue:0.00}");
-
-            document.Add(summaryTable);
-
-            // Client breakdown (if summary has it)
-            if (summary.ClientSummaries?.Any() == true)
+            Table table = new Table(6).UseAllAvailableWidth();
+            string[] headers = { "ID", "Name", "Type", "Phone", "Email", "Active" };
+            foreach (string h in headers)
             {
-                document.Add(new Paragraph(" ").SetMarginTop(30));
-                document.Add(new Paragraph("Clients").SetBold().SetFontSize(14));
-
-                var clientTable = new Table(3).UseAllAvailableWidth().SetMarginTop(10);
-                clientTable.AddHeaderCell("Client").SetBold();
-                clientTable.AddHeaderCell("Orders").SetBold();
-                clientTable.AddHeaderCell("Amount").SetBold();
-
-                foreach (var client in summary.ClientSummaries)
-                {
-                    clientTable.AddCell(client.ClientName);
-                    clientTable.AddCell(client.OrderCount.ToString());
-                    clientTable.AddCell($"€{client.TotalAmount:0.00}");
-                }
-
-                document.Add(clientTable);
+                Cell headerCell = new Cell().Add(new Paragraph(h).SetFont(_boldFont));
+                headerCell.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
             }
 
-            // Vehicle work
-            if (summary.VehicleWork?.Any() == true)
+            bool alternate = false;
+            foreach (var c in clients)
             {
-                document.Add(new Paragraph(" ").SetMarginTop(30));
-                document.Add(new Paragraph("Vehicles").SetBold().SetFontSize(14));
+                Cell idCell = new Cell().Add(new Paragraph(c.Id.ToString()).SetFont(_normalFont));
+                Cell nameCell = new Cell().Add(new Paragraph(c.Name).SetFont(_normalFont));
+                Cell typeCell = new Cell().Add(new Paragraph(c.Type.ToString()).SetFont(_normalFont));
+                Cell phoneCell = new Cell().Add(new Paragraph(c.Phone ?? "").SetFont(_normalFont));
+                Cell emailCell = new Cell().Add(new Paragraph(c.Email ?? "").SetFont(_normalFont));
+                Cell activeCell = new Cell().Add(new Paragraph(c.IsActive ? "Yes" : "No").SetFont(_normalFont));
 
-                var vehicleTable = new Table(4).UseAllAvailableWidth().SetMarginTop(10);
-                vehicleTable.AddHeaderCell("Chassis").SetBold();
-                vehicleTable.AddHeaderCell("Model").SetBold();
-                vehicleTable.AddHeaderCell("Accessories").SetBold();
-                vehicleTable.AddHeaderCell("Cost").SetBold();
-
-                foreach (var vehicle in summary.VehicleWork)
+                if (alternate)
                 {
-                    vehicleTable.AddCell(vehicle.ChassisNumber);
-                    vehicleTable.AddCell(vehicle.Model);
-                    vehicleTable.AddCell(string.Join(", ", vehicle.AccessoriesFitted));
-                    vehicleTable.AddCell($"€{vehicle.TotalCost:0.00}");
+                    Color bg = new DeviceRgb(0xF2, 0xF2, 0xF2);
+                    idCell.SetBackgroundColor(bg);
+                    nameCell.SetBackgroundColor(bg);
+                    typeCell.SetBackgroundColor(bg);
+                    phoneCell.SetBackgroundColor(bg);
+                    emailCell.SetBackgroundColor(bg);
+                    activeCell.SetBackgroundColor(bg);
                 }
 
-                document.Add(vehicleTable);
+                table.AddCell(idCell);
+                table.AddCell(nameCell);
+                table.AddCell(typeCell);
+                table.AddCell(phoneCell);
+                table.AddCell(emailCell);
+                table.AddCell(activeCell);
+
+                alternate = !alternate;
             }
 
+            document.Add(table);
             document.Close();
-            return memoryStream.ToArray();
+            return ms.ToArray();
+        }
+
+        public async Task<byte[]> GenerateVehiclesReportAsync()
+        {
+            // (unchanged)
+            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+            using var ms = new MemoryStream();
+            using var writer = new PdfWriter(ms);
+            using var pdf = new PdfDocument(writer);
+            using var document = new Document(pdf, PageSize.A4);
+
+            InitializeFonts();
+            AddHeader(document, "Vehicles Report");
+
+            Table table = new Table(6).UseAllAvailableWidth();
+            string[] headers = { "ID", "Chassis", "Make", "Model", "Year", "Client" };
+            foreach (string h in headers)
+            {
+                Cell headerCell = new Cell().Add(new Paragraph(h).SetFont(_boldFont));
+                headerCell.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                table.AddCell(headerCell);
+            }
+
+            bool alternate = false;
+            foreach (var v in vehicles)
+            {
+                Cell idCell = new Cell().Add(new Paragraph(v.Id.ToString()).SetFont(_normalFont));
+                Cell chassisCell = new Cell().Add(new Paragraph(v.ChassisNumber).SetFont(_normalFont));
+                Cell makeCell = new Cell().Add(new Paragraph(v.Make ?? "").SetFont(_normalFont));
+                Cell modelCell = new Cell().Add(new Paragraph(v.Model ?? "").SetFont(_normalFont));
+                Cell yearCell = new Cell().Add(new Paragraph(v.Year?.ToString() ?? "").SetFont(_normalFont));
+                Cell clientCell = new Cell().Add(new Paragraph(v.Client?.Name ?? "").SetFont(_normalFont));
+
+                if (alternate)
+                {
+                    Color bg = new DeviceRgb(0xF2, 0xF2, 0xF2);
+                    idCell.SetBackgroundColor(bg);
+                    chassisCell.SetBackgroundColor(bg);
+                    makeCell.SetBackgroundColor(bg);
+                    modelCell.SetBackgroundColor(bg);
+                    yearCell.SetBackgroundColor(bg);
+                    clientCell.SetBackgroundColor(bg);
+                }
+
+                table.AddCell(idCell);
+                table.AddCell(chassisCell);
+                table.AddCell(makeCell);
+                table.AddCell(modelCell);
+                table.AddCell(yearCell);
+                table.AddCell(clientCell);
+
+                alternate = !alternate;
+            }
+
+            document.Add(table);
+            document.Close();
+            return ms.ToArray();
+        }
+
+        private void AddHeader(Document document, string title)
+        {
+            if (File.Exists(_logoPath))
+            {
+                ImageData imageData = ImageDataFactory.Create(_logoPath);
+                Image logo = new Image(imageData).ScaleToFit(100, 50);
+                document.Add(logo);
+            }
+
+            Paragraph p1 = new Paragraph("SK Auto")
+                .SetFont(_boldFont)
+                .SetFontSize(20)
+                .SetMarginTop(10);
+            document.Add(p1);
+
+            Paragraph p2 = new Paragraph(title)
+                .SetFont(_boldFont)
+                .SetFontSize(16)
+                .SetMarginBottom(20);
+            document.Add(p2);
+
+            document.Add(new LineSeparator(new SolidLine()));
+            document.Add(new Paragraph(" ").SetFont(_normalFont));
+        }
+
+        private int GetIsoWeek(DateTime date)
+        {
+            return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
+
+        private DateTime GetStartOfWeek(DateTime date)
+        {
+            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+            return date.AddDays(-diff).Date;
         }
     }
 }

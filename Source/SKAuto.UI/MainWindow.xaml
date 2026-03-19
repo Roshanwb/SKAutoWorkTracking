@@ -106,7 +106,7 @@
                 <MenuItem Header="_Users" Command="{Binding ShowUserManagementCommand}"/>
             </MenuItem>
             <MenuItem Header="_Reports">
-                <MenuItem Header="_Generate Daily Report" Command="{Binding GenerateReportsCommand}"/>
+                <MenuItem Header="_Generate Daily Report" Command="{Binding OpenReportsCommand}"/>
             </MenuItem>
             <MenuItem Header="_Admin">
                 <MenuItem Header="_Backup/Restore" Command="{Binding OpenBackupCommand}"/>
@@ -287,7 +287,7 @@
                     <Button Content="Generate Reports" 
                             Style="{StaticResource ActionButton}"
                             Background="#27ae60"
-                            Command="{Binding GenerateReportsCommand}"/>
+                            Command="{Binding OpenReportsCommand}"/>
 
                     <TextBlock Text="Update Status" FontWeight="SemiBold" Margin="0,8,0,5"/>
                     <Button Content="Mark In Progress" 

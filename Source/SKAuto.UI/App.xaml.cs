@@ -87,6 +87,9 @@ namespace SKAuto.UI
                     services.AddSingleton<IConfigurationService, JsonConfigurationService>();
                     services.AddSingleton<ILoggingService, LoggingService>();
 
+                    //report services
+                    services.AddScoped<PdfReportGenerator>();
+
                     //Login
 
                 })

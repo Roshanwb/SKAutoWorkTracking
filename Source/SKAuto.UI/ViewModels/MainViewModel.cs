@@ -6,6 +6,7 @@ using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
+using SKAuto.Export.Pdf;
 using SKAuto.UI.Views;
 using System;
 using System.Collections.ObjectModel;
@@ -71,6 +72,7 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand DeleteWorkOrderCommand { get; }
         public ICommand ShowAccessoryManagementCommand { get; }
         public IRelayCommand OpenBackupCommand { get; }
+        public IRelayCommand OpenReportsCommand { get; }
 
 
         public IRelayCommand OpenDriveSettingsCommand { get; }
@@ -83,7 +85,7 @@ namespace SKAuto.UI.ViewModels
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
             ImportDataCommand = new RelayCommand(OpenImport);
-            GenerateReportsCommand = new AsyncRelayCommand(GenerateReportsAsync);
+            //GenerateReportsCommand = new AsyncRelayCommand(GenerateReportsAsync);
             UpdateStatusCommand = new AsyncRelayCommand<string>(UpdateStatusAsync);
             RescheduleCommand = new AsyncRelayCommand(RescheduleAsync);
             EditClientCommand = new AsyncRelayCommand(EditClient, () => SelectedWorkOrder != null);
@@ -101,11 +103,22 @@ namespace SKAuto.UI.ViewModels
             OpenBackupCommand = new RelayCommand(OpenBackup);
             OpenDriveSettingsCommand = new RelayCommand(OpenDriveSettings);
             SyncNowCommand = new RelayCommand(async () => await SyncNowAsync());
+            OpenReportsCommand = new RelayCommand(OpenReports);
+            //GenerateReportsCommand = new RelayCommand(OpenReports);
 
             LoadTodayWorkCommand.Execute(null);
         }
 
-
+        private void OpenReports()
+        {
+            var vm = new ReportsViewModel(
+                _unitOfWork,
+                App.GetService<IExportService>(),
+                App.GetService<PdfReportGenerator>(),
+                App.GetService<ILoggingService>());
+            var win = new ReportsView { DataContext = vm };
+            win.ShowDialog();
+        }
         private void OpenDriveSettings()
         {
             var driveService = App.GetService<IGoogleDriveService>();

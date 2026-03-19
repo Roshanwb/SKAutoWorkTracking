@@ -9,6 +9,7 @@
 <ItemGroup>
   <PackageReference Include="ClosedXML" Version="0.102.1" />
   <PackageReference Include="itext7" Version="8.0.1" />
+  <PackageReference Include="itext7.bouncy-castle-adapter" Version="9.5.0" />
   <ProjectReference Include="..\SKAuto.Core\SKAuto.Core.csproj" />
 </ItemGroup>
 </Project>
