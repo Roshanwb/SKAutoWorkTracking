@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
+using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Export.Pdf;
@@ -49,6 +50,9 @@ namespace SKAuto.UI.ViewModels
         private WorkStatus? _selectedWorkStatus;
 
         [ObservableProperty]
+        private int? _selectedAccessoryId;
+
+        [ObservableProperty]
         private bool _groupByWeek;
 
         [ObservableProperty]
@@ -57,9 +61,12 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private string _statusMessage;
 
+        // Options for dropdowns
         public List<SelectableOption<TaskType?>> TaskTypeOptions { get; }
         public List<SelectableOption<WorkStatus?>> WorkStatusOptions { get; }
+        public List<SelectableOption<int?>> AccessoryOptions { get; private set; }
 
+        // Selected option objects
         private SelectableOption<TaskType?> _selectedTaskTypeOption;
         public SelectableOption<TaskType?> SelectedTaskTypeOption
         {
@@ -82,6 +89,19 @@ namespace SKAuto.UI.ViewModels
                 if (SetProperty(ref _selectedWorkStatusOption, value))
                 {
                     SelectedWorkStatus = value?.Value;
+                }
+            }
+        }
+
+        private SelectableOption<int?> _selectedAccessoryOption;
+        public SelectableOption<int?> SelectedAccessoryOption
+        {
+            get => _selectedAccessoryOption;
+            set
+            {
+                if (SetProperty(ref _selectedAccessoryOption, value))
+                {
+                    SelectedAccessoryId = value?.Value;
                 }
             }
         }
@@ -113,9 +133,55 @@ namespace SKAuto.UI.ViewModels
                 WorkStatusOptions.Add(new SelectableOption<WorkStatus?> { Value = value, Display = value.ToString() });
             }
 
+            // Initialize accessory options with "All" immediately (prevents null binding)
+            AccessoryOptions = new List<SelectableOption<int?>>
+            {
+                new SelectableOption<int?> { Value = null, Display = "All" }
+            };
+            // Set default selected to "All"
+            SelectedAccessoryOption = AccessoryOptions.First();
+
+            // Load actual accessories in background
+            _ = LoadAccessoriesAsync();
+
             GenerateExcelCommand = new AsyncRelayCommand(GenerateExcelAsync);
             GeneratePdfCommand = new AsyncRelayCommand(GeneratePdfAsync);
             CloseCommand = new RelayCommand(CloseWindow);
+        }
+
+        private async Task LoadAccessoriesAsync()
+        {
+            try
+            {
+                var accessories = await _unitOfWork.Accessories.GetAllAsync();
+                var newList = new List<SelectableOption<int?>>
+                {
+                    new SelectableOption<int?> { Value = null, Display = "All" }
+                };
+                foreach (var a in accessories.OrderBy(a => a.Name))
+                {
+                    newList.Add(new SelectableOption<int?> { Value = a.Id, Display = a.Name });
+                }
+                AccessoryOptions = newList;
+                OnPropertyChanged(nameof(AccessoryOptions));
+
+                // Ensure selected item is still "All" (or preserve previous selection if it existed)
+                if (SelectedAccessoryId == null)
+                    SelectedAccessoryOption = AccessoryOptions.First();
+                else
+                {
+                    var match = AccessoryOptions.FirstOrDefault(o => o.Value == SelectedAccessoryId);
+                    if (match != null)
+                        SelectedAccessoryOption = match;
+                    else
+                        SelectedAccessoryOption = AccessoryOptions.First();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to load accessories for report filter", ex);
+                StatusMessage = "Error loading accessories.";
+            }
         }
 
         private async Task GenerateExcelAsync()
@@ -139,6 +205,7 @@ namespace SKAuto.UI.ViewModels
                             To = ToDate,
                             TaskType = SelectedTaskType,
                             WorkStatus = SelectedWorkStatus,
+                            AccessoryId = SelectedAccessoryId,
                             GroupByWeek = GroupByWeek,
                             SummaryOnly = SummaryOnly
                         }),
@@ -181,6 +248,7 @@ namespace SKAuto.UI.ViewModels
                             To = ToDate,
                             TaskType = SelectedTaskType,
                             WorkStatus = SelectedWorkStatus,
+                            AccessoryId = SelectedAccessoryId,
                             GroupByWeek = GroupByWeek,
                             SummaryOnly = SummaryOnly
                         }),

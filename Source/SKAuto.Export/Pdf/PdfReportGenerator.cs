@@ -6,6 +6,7 @@ using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
+using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using SKAuto.Core.DTOs;
@@ -17,6 +18,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Path = System.IO.Path;
 
 namespace SKAuto.Export.Pdf
 {
@@ -26,17 +28,27 @@ namespace SKAuto.Export.Pdf
         private readonly string _logoPath;
         private PdfFont _boldFont;
         private PdfFont _normalFont;
+        private PdfFont _smallFont;
+
+        // Professional color palette (from UI)
+        private static readonly Color HeaderBackground = new DeviceRgb(44, 62, 80);      // #2c3e50
+        private static readonly Color HeaderForeground = ColorConstants.WHITE;
+        private static readonly Color AlternateRowBackground = new DeviceRgb(245, 245, 245); // #f5f5f5
+        private static readonly Color BorderColor = new DeviceRgb(221, 221, 221);        // #ddd
+        private static readonly Color TotalBackground = new DeviceRgb(230, 255, 230);  // new DeviceRgb(39, 174, 96, 50); #27ae60 with 50% alpha (semi-transparent)
+        private static readonly Color AccentGreen = new DeviceRgb(39, 174, 96);          // #27ae60
 
         public PdfReportGenerator(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _logoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
+            _logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
         }
 
         private void InitializeFonts()
         {
             _boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
             _normalFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+            _smallFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
         }
 
         public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
@@ -53,7 +65,12 @@ namespace SKAuto.Export.Pdf
             var allTasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
             var taskLookup = allTasks.ToLookup(t => t.WorkOrderId);
 
-            // Apply task type filter
+            // Load accessories
+            var accessoryIds = allTasks.Select(t => t.AccessoryId).Distinct().ToList();
+            var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
+                .ToDictionary(a => a.Id, a => a.Name);
+
+            // Apply filters
             if (filter.TaskType.HasValue)
             {
                 var ordersWithTask = allTasks
@@ -64,24 +81,32 @@ namespace SKAuto.Export.Pdf
                 orders = orders.Where(o => ordersWithTask.Contains(o.Id)).ToList();
             }
 
-            // Apply work status filter
             if (filter.WorkStatus.HasValue)
             {
                 orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
+            }
+
+            if (filter.AccessoryId.HasValue)
+            {
+                var ordersWithAccessory = allTasks
+                    .Where(t => t.AccessoryId == filter.AccessoryId.Value)
+                    .Select(t => t.WorkOrderId)
+                    .Distinct()
+                    .ToHashSet();
+                orders = orders.Where(o => ordersWithAccessory.Contains(o.Id)).ToList();
             }
 
             using var ms = new MemoryStream();
             using var writer = new PdfWriter(ms);
             using var pdf = new PdfDocument(writer);
             using var document = new Document(pdf, PageSize.A4.Rotate());
+            document.SetMargins(36, 36, 36, 36); // 0.5 inch margins
 
             InitializeFonts();
             AddHeader(document, "Work Orders Report");
 
-            document.Add(new Paragraph($"Period: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}").SetFont(_normalFont));
-            document.Add(new Paragraph($"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}").SetFont(_normalFont));
-            document.Add(new Paragraph($"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}").SetFont(_normalFont));
-            document.Add(new Paragraph(" "));
+            // Filter summary in a styled box
+            AddFilterSummary(document, filter, accessories);
 
             var vehicleDict = vehicles;
             var clientDict = clients;
@@ -98,24 +123,31 @@ namespace SKAuto.Export.Pdf
                     DateTime weekStart = GetStartOfWeek(group.First().OrderDate);
                     DateTime weekEnd = weekStart.AddDays(6);
 
+                    // Week header with underline
                     Paragraph weekHeader = new Paragraph()
-                        .Add($"Week {week} ({weekStart:dd/MM} – {weekEnd:dd/MM})")
+                        .Add($"Week {week} ({weekStart:dd/MM/yyyy} – {weekEnd:dd/MM/yyyy})")
                         .SetFont(_boldFont)
                         .SetFontSize(14)
-                        .SetMarginTop(10);
+                        .SetFontColor(HeaderBackground)
+                        .SetMarginTop(15)
+                        .SetMarginBottom(5);
                     document.Add(weekHeader);
 
                     if (!filter.SummaryOnly)
                     {
-                        WriteWorkOrderDetails(document, group.ToList(), vehicleDict, clientDict, taskLookup);
+                        WriteWorkOrderTable(document, group.ToList(), vehicleDict, clientDict, taskLookup, accessories);
                     }
 
                     decimal weekTotal = group.Sum(o => o.TotalAmount ?? 0);
                     Paragraph weekTotalPara = new Paragraph()
-                        .Add($"Week Total: €{weekTotal:0.00}")
+                        .Add($"Week Total: {weekTotal:C}")
                         .SetFont(_boldFont)
+                        .SetFontSize(11)
                         .SetTextAlignment(TextAlignment.RIGHT)
-                        .SetMarginBottom(10);
+                        .SetMarginTop(5)
+                        .SetMarginBottom(15)
+                        .SetBackgroundColor(TotalBackground)
+                        .SetPadding(5);
                     document.Add(weekTotalPara);
                 }
             }
@@ -123,36 +155,70 @@ namespace SKAuto.Export.Pdf
             {
                 if (!filter.SummaryOnly)
                 {
-                    WriteWorkOrderDetails(document, orders, vehicleDict, clientDict, taskLookup);
+                    WriteWorkOrderTable(document, orders, vehicleDict, clientDict, taskLookup, accessories);
                 }
             }
 
-            decimal grandTotal = orders.Sum(o => o.TotalAmount ?? 0);
-            Paragraph grandTotalPara = new Paragraph()
-                .Add($"GRAND TOTAL: €{grandTotal:0.00}")
-                .SetFont(_boldFont)
-                .SetFontSize(14)
-                .SetTextAlignment(TextAlignment.RIGHT)
-                .SetMarginTop(20);
-            document.Add(grandTotalPara);
+            // Grand total
+            if (!filter.SummaryOnly && orders.Any())
+            {
+                decimal grandTotal = orders.Sum(o => o.TotalAmount ?? 0);
+                Paragraph grandTotalPara = new Paragraph()
+                    .Add($"GRAND TOTAL: {grandTotal:C}")
+                    .SetFont(_boldFont)
+                    .SetFontSize(14)
+                    .SetTextAlignment(TextAlignment.RIGHT)
+                    .SetMarginTop(20)
+                    .SetBackgroundColor(TotalBackground)
+                    .SetPadding(8);
+                document.Add(grandTotalPara);
+            }
 
             document.Close();
             return ms.ToArray();
         }
 
-        private void WriteWorkOrderDetails(Document document, List<WorkOrder> orders,
-            Dictionary<int, Vehicle> vehicleDict, Dictionary<int, Client> clientDict,
-            ILookup<int, WorkTask> taskLookup)
+        private void AddFilterSummary(Document document, ReportFilter filter, Dictionary<int, string> accessories)
         {
-            Table table = new Table(8).UseAllAvailableWidth(); // 8 columns: ID, Date, Client, Vehicle, Status, Task Count, Task Names, Total
-            table.SetMarginTop(5);
-            table.SetMarginBottom(5);
+            // Create a styled div-like container with light gray background
+            Paragraph summary = new Paragraph()
+                .SetBackgroundColor(AlternateRowBackground)
+                .SetPadding(8)
+                .SetBorder(new SolidBorder(BorderColor, 1))
+                .SetMarginBottom(15);
 
+            summary.Add($"Period: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}\n");
+            summary.Add($"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}\n");
+            summary.Add($"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}\n");
+            if (filter.AccessoryId.HasValue && accessories.TryGetValue(filter.AccessoryId.Value, out var accName))
+                summary.Add($"Accessory: {accName}\n");
+            else
+                summary.Add($"Accessory: All\n");
+            summary.Add($"Group by Week: {(filter.GroupByWeek ? "Yes" : "No")}");
+            if (filter.SummaryOnly)
+                summary.Add($"\nSummary Only: Yes");
+
+            document.Add(summary);
+        }
+
+        private void WriteWorkOrderTable(Document document, List<WorkOrder> orders,
+            Dictionary<int, Vehicle> vehicleDict, Dictionary<int, Client> clientDict,
+            ILookup<int, WorkTask> taskLookup, Dictionary<int, string> accessories)
+        {
+            Table table = new Table(8).UseAllAvailableWidth();
+            table.SetMarginTop(10);
+            table.SetMarginBottom(10);
+
+            // Header row with professional styling
             string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Tasks", "Task Names", "Total" };
             foreach (string h in headers)
             {
-                Cell headerCell = new Cell().Add(new Paragraph(h).SetFont(_boldFont));
-                headerCell.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                Cell headerCell = new Cell()
+                    .Add(new Paragraph(h).SetFont(_boldFont).SetFontSize(10).SetFontColor(HeaderForeground))
+                    .SetBackgroundColor(HeaderBackground)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetBorder(new SolidBorder(BorderColor, 1))
+                    .SetPadding(6);
                 table.AddCell(headerCell);
             }
 
@@ -163,28 +229,22 @@ namespace SKAuto.Export.Pdf
                 string clientName = vehicle != null && clientDict.TryGetValue(vehicle.ClientId, out var client) ? client.Name : "";
                 var tasks = taskLookup[o.Id].ToList();
                 int taskCount = tasks.Count;
-                string taskNames = string.Join(", ", tasks.Select(t => t.Accessory?.Name ?? "?"));
+                string taskNames = string.Join(", ", tasks.Select(t => accessories.GetValueOrDefault(t.AccessoryId, "?")));
 
-                Cell idCell = new Cell().Add(new Paragraph(o.Id.ToString()).SetFont(_normalFont));
-                Cell dateCell = new Cell().Add(new Paragraph(o.OrderDate.ToString("dd/MM/yyyy")).SetFont(_normalFont));
-                Cell clientCell = new Cell().Add(new Paragraph(clientName).SetFont(_normalFont));
-                Cell vehicleCell = new Cell().Add(new Paragraph(vehicle?.Model ?? "").SetFont(_normalFont));
-                Cell statusCell = new Cell().Add(new Paragraph(o.Status.ToString()).SetFont(_normalFont));
-                Cell tasksCountCell = new Cell().Add(new Paragraph(taskCount.ToString()).SetFont(_normalFont));
-                Cell tasksNameCell = new Cell().Add(new Paragraph(taskNames).SetFont(_normalFont));
-                Cell totalCell = new Cell().Add(new Paragraph($"€{o.TotalAmount ?? 0:0.00}").SetFont(_normalFont));
+                // Create cells with borders and consistent padding
+                Cell idCell = CreateCell(o.Id.ToString());
+                Cell dateCell = CreateCell(o.OrderDate.ToString("dd/MM/yyyy"));
+                Cell clientCell = CreateCell(clientName);
+                Cell vehicleCell = CreateCell(vehicle?.Model ?? "");
+                Cell statusCell = CreateCell(o.Status.ToString());
+                Cell tasksCountCell = CreateCell(taskCount.ToString());
+                Cell tasksNameCell = CreateCell(taskNames);
+                Cell totalCell = CreateCell($"{o.TotalAmount ?? 0:C}", TextAlignment.RIGHT);
 
+                // Alternate row background
                 if (alternate)
                 {
-                    Color bg = new DeviceRgb(0xF2, 0xF2, 0xF2);
-                    idCell.SetBackgroundColor(bg);
-                    dateCell.SetBackgroundColor(bg);
-                    clientCell.SetBackgroundColor(bg);
-                    vehicleCell.SetBackgroundColor(bg);
-                    statusCell.SetBackgroundColor(bg);
-                    tasksCountCell.SetBackgroundColor(bg);
-                    tasksNameCell.SetBackgroundColor(bg);
-                    totalCell.SetBackgroundColor(bg);
+                    ApplyAlternateBackground(idCell, dateCell, clientCell, vehicleCell, statusCell, tasksCountCell, tasksNameCell, totalCell);
                 }
 
                 table.AddCell(idCell);
@@ -202,47 +262,60 @@ namespace SKAuto.Export.Pdf
             document.Add(table);
         }
 
+        private Cell CreateCell(string text, TextAlignment alignment = TextAlignment.LEFT)
+        {
+            return new Cell()
+                .Add(new Paragraph(text).SetFont(_normalFont).SetFontSize(9))
+                .SetTextAlignment(alignment)
+                .SetBorder(new SolidBorder(BorderColor, 1))
+                .SetPadding(4);
+        }
+
+        private void ApplyAlternateBackground(params Cell[] cells)
+        {
+            foreach (var cell in cells)
+                cell.SetBackgroundColor(AlternateRowBackground);
+        }
+
         public async Task<byte[]> GenerateClientsReportAsync()
         {
-            // (unchanged)
             var clients = await _unitOfWork.Clients.GetAllAsync();
             using var ms = new MemoryStream();
             using var writer = new PdfWriter(ms);
             using var pdf = new PdfDocument(writer);
             using var document = new Document(pdf, PageSize.A4);
+            document.SetMargins(36, 36, 36, 36);
 
             InitializeFonts();
             AddHeader(document, "Clients Report");
 
             Table table = new Table(6).UseAllAvailableWidth();
+            table.SetMarginTop(10);
+
             string[] headers = { "ID", "Name", "Type", "Phone", "Email", "Active" };
             foreach (string h in headers)
             {
-                Cell headerCell = new Cell().Add(new Paragraph(h).SetFont(_boldFont));
-                headerCell.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                Cell headerCell = new Cell()
+                    .Add(new Paragraph(h).SetFont(_boldFont).SetFontSize(10).SetFontColor(HeaderForeground))
+                    .SetBackgroundColor(HeaderBackground)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetBorder(new SolidBorder(BorderColor, 1))
+                    .SetPadding(6);
                 table.AddCell(headerCell);
             }
 
             bool alternate = false;
-            foreach (var c in clients)
+            foreach (var c in clients.OrderBy(c => c.Name))
             {
-                Cell idCell = new Cell().Add(new Paragraph(c.Id.ToString()).SetFont(_normalFont));
-                Cell nameCell = new Cell().Add(new Paragraph(c.Name).SetFont(_normalFont));
-                Cell typeCell = new Cell().Add(new Paragraph(c.Type.ToString()).SetFont(_normalFont));
-                Cell phoneCell = new Cell().Add(new Paragraph(c.Phone ?? "").SetFont(_normalFont));
-                Cell emailCell = new Cell().Add(new Paragraph(c.Email ?? "").SetFont(_normalFont));
-                Cell activeCell = new Cell().Add(new Paragraph(c.IsActive ? "Yes" : "No").SetFont(_normalFont));
+                Cell idCell = CreateCell(c.Id.ToString());
+                Cell nameCell = CreateCell(c.Name);
+                Cell typeCell = CreateCell(c.Type.ToString());
+                Cell phoneCell = CreateCell(c.Phone ?? "");
+                Cell emailCell = CreateCell(c.Email ?? "");
+                Cell activeCell = CreateCell(c.IsActive ? "Yes" : "No", TextAlignment.CENTER);
 
                 if (alternate)
-                {
-                    Color bg = new DeviceRgb(0xF2, 0xF2, 0xF2);
-                    idCell.SetBackgroundColor(bg);
-                    nameCell.SetBackgroundColor(bg);
-                    typeCell.SetBackgroundColor(bg);
-                    phoneCell.SetBackgroundColor(bg);
-                    emailCell.SetBackgroundColor(bg);
-                    activeCell.SetBackgroundColor(bg);
-                }
+                    ApplyAlternateBackground(idCell, nameCell, typeCell, phoneCell, emailCell, activeCell);
 
                 table.AddCell(idCell);
                 table.AddCell(nameCell);
@@ -261,45 +334,43 @@ namespace SKAuto.Export.Pdf
 
         public async Task<byte[]> GenerateVehiclesReportAsync()
         {
-            // (unchanged)
             var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
             using var ms = new MemoryStream();
             using var writer = new PdfWriter(ms);
             using var pdf = new PdfDocument(writer);
             using var document = new Document(pdf, PageSize.A4);
+            document.SetMargins(36, 36, 36, 36);
 
             InitializeFonts();
             AddHeader(document, "Vehicles Report");
 
             Table table = new Table(6).UseAllAvailableWidth();
+            table.SetMarginTop(10);
+
             string[] headers = { "ID", "Chassis", "Make", "Model", "Year", "Client" };
             foreach (string h in headers)
             {
-                Cell headerCell = new Cell().Add(new Paragraph(h).SetFont(_boldFont));
-                headerCell.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+                Cell headerCell = new Cell()
+                    .Add(new Paragraph(h).SetFont(_boldFont).SetFontSize(10).SetFontColor(HeaderForeground))
+                    .SetBackgroundColor(HeaderBackground)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetBorder(new SolidBorder(BorderColor, 1))
+                    .SetPadding(6);
                 table.AddCell(headerCell);
             }
 
             bool alternate = false;
-            foreach (var v in vehicles)
+            foreach (var v in vehicles.OrderBy(v => v.ChassisNumber))
             {
-                Cell idCell = new Cell().Add(new Paragraph(v.Id.ToString()).SetFont(_normalFont));
-                Cell chassisCell = new Cell().Add(new Paragraph(v.ChassisNumber).SetFont(_normalFont));
-                Cell makeCell = new Cell().Add(new Paragraph(v.Make ?? "").SetFont(_normalFont));
-                Cell modelCell = new Cell().Add(new Paragraph(v.Model ?? "").SetFont(_normalFont));
-                Cell yearCell = new Cell().Add(new Paragraph(v.Year?.ToString() ?? "").SetFont(_normalFont));
-                Cell clientCell = new Cell().Add(new Paragraph(v.Client?.Name ?? "").SetFont(_normalFont));
+                Cell idCell = CreateCell(v.Id.ToString());
+                Cell chassisCell = CreateCell(v.ChassisNumber);
+                Cell makeCell = CreateCell(v.Make ?? "");
+                Cell modelCell = CreateCell(v.Model ?? "");
+                Cell yearCell = CreateCell(v.Year?.ToString() ?? "");
+                Cell clientCell = CreateCell(v.Client?.Name ?? "");
 
                 if (alternate)
-                {
-                    Color bg = new DeviceRgb(0xF2, 0xF2, 0xF2);
-                    idCell.SetBackgroundColor(bg);
-                    chassisCell.SetBackgroundColor(bg);
-                    makeCell.SetBackgroundColor(bg);
-                    modelCell.SetBackgroundColor(bg);
-                    yearCell.SetBackgroundColor(bg);
-                    clientCell.SetBackgroundColor(bg);
-                }
+                    ApplyAlternateBackground(idCell, chassisCell, makeCell, modelCell, yearCell, clientCell);
 
                 table.AddCell(idCell);
                 table.AddCell(chassisCell);
@@ -320,24 +391,35 @@ namespace SKAuto.Export.Pdf
         {
             if (File.Exists(_logoPath))
             {
-                ImageData imageData = ImageDataFactory.Create(_logoPath);
-                Image logo = new Image(imageData).ScaleToFit(100, 50);
-                document.Add(logo);
+                try
+                {
+                    ImageData imageData = ImageDataFactory.Create(_logoPath);
+                    Image logo = new Image(imageData).ScaleToFit(100, 50);
+                    document.Add(logo);
+                }
+                catch
+                {
+                    // Ignore if logo fails to load
+                }
             }
 
-            Paragraph p1 = new Paragraph("SK Auto")
+            Paragraph company = new Paragraph("SK Auto")
                 .SetFont(_boldFont)
                 .SetFontSize(20)
+                .SetFontColor(HeaderBackground)
                 .SetMarginTop(10);
-            document.Add(p1);
+            document.Add(company);
 
-            Paragraph p2 = new Paragraph(title)
+            Paragraph titlePara = new Paragraph(title)
                 .SetFont(_boldFont)
                 .SetFontSize(16)
-                .SetMarginBottom(20);
-            document.Add(p2);
+                .SetFontColor(HeaderBackground)
+                .SetMarginBottom(10);
+            document.Add(titlePara);
 
-            document.Add(new LineSeparator(new SolidLine()));
+            SolidLine line = new SolidLine(1f);
+            line.SetColor(BorderColor);
+            document.Add(new LineSeparator(line));
             document.Add(new Paragraph(" ").SetFont(_normalFont));
         }
 

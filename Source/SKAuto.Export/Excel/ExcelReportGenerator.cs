@@ -242,10 +242,19 @@ namespace SKAuto.Export.Excel
             var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
             var clients = (await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id)))
                 .ToDictionary(c => c.Id);
+
             var orderIds = orders.Select(o => o.Id).ToList();
             var tasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId)))
                 .GroupBy(t => t.WorkOrderId)
                 .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Load accessory names for all tasks
+            var accessoryIds = tasks.Values
+                .SelectMany(list => list.Select(t => t.AccessoryId))
+                .Distinct()
+                .ToList();
+            var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
+                .ToDictionary(a => a.Id, a => a.Name);
 
             // Apply task type filter
             if (filter.TaskType.HasValue)
@@ -255,6 +264,15 @@ namespace SKAuto.Export.Excel
                     .Select(kvp => kvp.Key)
                     .ToHashSet();
                 orders = orders.Where(o => orderIdsWithTask.Contains(o.Id)).ToList();
+            }
+            // Apply accessory filter
+            if (filter.AccessoryId.HasValue)
+            {
+                var orderIdsWithAccessory = tasks
+                    .Where(kvp => kvp.Value.Any(t => t.AccessoryId == filter.AccessoryId.Value))
+                    .Select(kvp => kvp.Key)
+                    .ToHashSet();
+                orders = orders.Where(o => orderIdsWithAccessory.Contains(o.Id)).ToList();
             }
 
             // Apply work status filter
@@ -278,14 +296,8 @@ namespace SKAuto.Export.Excel
             ws.Cell(filterRow, 1).Value = "Applied Filters:";
             ws.Cell(filterRow, 1).Style.Font.Bold = true;
             filterRow++;
-            if (filter.TaskType.HasValue)
-                ws.Cell(filterRow++, 1).Value = $"Task Type: {filter.TaskType.Value}";
-            else
-                ws.Cell(filterRow++, 1).Value = "Task Type: All";
-            if (filter.WorkStatus.HasValue)
-                ws.Cell(filterRow++, 1).Value = $"Status: {filter.WorkStatus.Value}";
-            else
-                ws.Cell(filterRow++, 1).Value = "Status: All";
+            ws.Cell(filterRow++, 1).Value = $"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}";
+            ws.Cell(filterRow++, 1).Value = $"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}";
             ws.Cell(filterRow++, 1).Value = $"Group by Week: {(filter.GroupByWeek ? "Yes" : "No")}";
             ws.Cell(filterRow++, 1).Value = $"Summary Only: {(filter.SummaryOnly ? "Yes" : "No")}";
 
@@ -330,7 +342,7 @@ namespace SKAuto.Export.Excel
                         ws.Cell(dataStartRow, 1).Style.Font.FontSize = 12;
                         dataStartRow++;
 
-                        WriteWorkOrderTable(ws, ref dataStartRow, group.ToList(), vehicles, clients, tasks);
+                        WriteWorkOrderTable(ws, ref dataStartRow, group.ToList(), vehicles, clients, tasks, accessories);
 
                         decimal weekTotal = group.Sum(o => o.TotalAmount ?? 0);
                         ws.Cell(dataStartRow, 7).Value = $"Week Total: €{weekTotal:0.00}";
@@ -341,7 +353,7 @@ namespace SKAuto.Export.Excel
                 }
                 else
                 {
-                    WriteWorkOrderTable(ws, ref dataStartRow, orders, vehicles, clients, tasks);
+                    WriteWorkOrderTable(ws, ref dataStartRow, orders, vehicles, clients, tasks, accessories);
                 }
             }
 
@@ -357,9 +369,10 @@ namespace SKAuto.Export.Excel
             return ms.ToArray();
         }
 
+
         private void WriteWorkOrderTable(IXLWorksheet ws, ref int row, List<WorkOrder> orders,
-            Dictionary<int, Vehicle> vehicles, Dictionary<int, Client> clients,
-            Dictionary<int, List<WorkTask>> tasks)
+                   Dictionary<int, Vehicle> vehicles, Dictionary<int, Client> clients,
+                   Dictionary<int, List<WorkTask>> tasks, Dictionary<int, string> accessories)
         {
             string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Tasks", "Total" };
             for (int i = 0; i < headers.Length; i++)
@@ -376,7 +389,7 @@ namespace SKAuto.Export.Excel
                 vehicles.TryGetValue(o.VehicleId, out var vehicle);
                 string clientName = vehicle != null && clients.TryGetValue(vehicle.ClientId, out var client) ? client.Name : "";
                 string taskNames = tasks.ContainsKey(o.Id)
-                    ? string.Join(", ", tasks[o.Id].Select(t => t.Accessory?.Name ?? "?"))
+                    ? string.Join(", ", tasks[o.Id].Select(t => accessories.GetValueOrDefault(t.AccessoryId, "?")))
                     : "";
 
                 ws.Cell(row, 1).Value = o.Id;
@@ -399,6 +412,7 @@ namespace SKAuto.Export.Excel
             }
             row++;
         }
+
 
         public async Task<byte[]> GenerateClientsReportAsync()
         {

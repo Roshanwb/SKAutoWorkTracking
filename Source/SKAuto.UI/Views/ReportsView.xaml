@@ -6,12 +6,14 @@
         xmlns:local="clr-namespace:SKAuto.UI.ViewModels"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
         mc:Ignorable="d"
-        Title="Reports" Height="500" Width="700"
+        Title="Reports" Height="550" Width="750"
         WindowStartupLocation="CenterOwner"
         Background="#f5f5f5">
 
     <Window.Resources>
         <converters:NullableEnumToStringConverter x:Key="NullableEnumToStringConverter"/>
+        <converters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
+        <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
         <Style x:Key="SectionHeader" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -26,15 +28,28 @@
             <Setter Property="Padding" Value="12"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
         </Style>
+        <Style x:Key="StatusButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- 0: Header -->
             <RowDefinition Height="Auto"/>
+            <!-- 1: Report Type -->
             <RowDefinition Height="Auto"/>
+            <!-- 2: Date Range -->
             <RowDefinition Height="*"/>
+            <!-- 3: Filters (takes remaining space) -->
             <RowDefinition Height="Auto"/>
+            <!-- 4: Status Message -->
+            <RowDefinition Height="Auto"/>
+            <!-- 5: Action Buttons -->
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -71,13 +86,15 @@
         </Border>
 
         <!-- Filters Card (only for Work Orders) -->
-        <Border Grid.Row="3" Style="{StaticResource CardBorder}"
-                Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"
-                VerticalAlignment="Top">
+        <Border Grid.Row="5" Style="{StaticResource CardBorder}"
+                Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}">
             <StackPanel>
                 <TextBlock Text="Filters" Style="{StaticResource SectionHeader}"/>
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -89,6 +106,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- Row 0: Task Type & Status -->
                     <Label Grid.Row="0" Grid.Column="0" Content="Task Type:" Margin="0,5,5,5" VerticalAlignment="Center"/>
                     <ComboBox Grid.Row="0" Grid.Column="1"
                               ItemsSource="{Binding TaskTypeOptions}"
@@ -103,23 +121,41 @@
                               DisplayMemberPath="Display"
                               Margin="0,5,0,5" MinWidth="120"/>
 
-                    <CheckBox Grid.Row="1" Grid.ColumnSpan="4" Content="Group by Week" IsChecked="{Binding GroupByWeek}" Margin="0,5,0,5"/>
-                    <CheckBox Grid.Row="2" Grid.ColumnSpan="4" Content="Summary Only (hide details)" IsChecked="{Binding SummaryOnly}" Margin="0,0,0,5"/>
+                    <!-- Row 1: Accessory (Task) -->
+                    <Label Grid.Row="1" Grid.Column="0" Content="Task:" Margin="0,5,5,5" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="1" Grid.Column="1"
+                              ItemsSource="{Binding AccessoryOptions}"
+                              SelectedItem="{Binding SelectedAccessoryOption}"
+                              DisplayMemberPath="Display"
+                              Margin="0,5,10,5" MinWidth="120" Grid.ColumnSpan="3"/>
+
+                    <!-- Row 2: Group by Week -->
+                    <CheckBox Grid.Row="2" Grid.ColumnSpan="4" Content="Group by Week" IsChecked="{Binding GroupByWeek}" Margin="5,5,0,5"/>
+
+                    <!-- Row 3: Summary Only -->
+                    <CheckBox Grid.Row="3" Grid.ColumnSpan="4" Content="Summary Only (hide details)" IsChecked="{Binding SummaryOnly}" Margin="5,0,0,5"/>
+                    <!-- Status Message Row -->
+                    <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" 
+                   Foreground="#27ae60" 
+                   Margin="0,10,0,5" 
+                   MinHeight="40"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   Grid.ColumnSpan="4" />
                 </Grid>
             </StackPanel>
         </Border>
 
-        <!-- Status Message -->
-        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Foreground="#27ae60" Margin="0,10,0,5"/>
+
 
         <!-- Action Buttons -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <Button Content="Generate Excel" Command="{Binding GenerateExcelCommand}"
-                    Style="{StaticResource ActionButton}" Background="#27ae60" Width="120" Margin="5"/>
+                    Style="{StaticResource StatusButton}" Background="#27ae60" Width="120" Margin="5"/>
             <Button Content="Generate PDF" Command="{Binding GeneratePdfCommand}"
-                    Style="{StaticResource ActionButton}" Background="#e67e22" Width="120" Margin="5"/>
+                    Style="{StaticResource StatusButton}" Background="#e67e22" Width="120" Margin="5"/>
             <Button Content="Close" Command="{Binding CloseCommand}"
-                    Style="{StaticResource ActionButton}" Background="#6c757d" Width="80" Margin="5"/>
+                    Style="{StaticResource StatusButton}" Background="#6c757d" Width="80" Margin="5"/>
         </StackPanel>
     </Grid>
 </Window>

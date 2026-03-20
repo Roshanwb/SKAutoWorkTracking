@@ -12,4 +12,9 @@
   <PackageReference Include="itext7.bouncy-castle-adapter" Version="9.5.0" />
   <ProjectReference Include="..\SKAuto.Core\SKAuto.Core.csproj" />
 </ItemGroup>
+<ItemGroup>
+  <None Update="logo.png">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
 </Project>
