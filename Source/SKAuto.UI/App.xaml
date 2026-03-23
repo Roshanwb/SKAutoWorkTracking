@@ -12,10 +12,11 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
             <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <converters:StringToBrushConverter x:Key="StringToBrush"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

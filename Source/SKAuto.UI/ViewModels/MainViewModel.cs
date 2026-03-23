@@ -20,6 +20,7 @@ namespace SKAuto.UI.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfigurationService _configService; 
 
         [ObservableProperty]
         private ObservableCollection<WorkOrderDto> _todayWorkOrders = new();
@@ -78,9 +79,10 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand OpenDriveSettingsCommand { get; }
         public IRelayCommand SyncNowCommand { get; }
 
-        public MainViewModel(IUnitOfWork unitOfWork)
+        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService)
         {
             _unitOfWork = unitOfWork;
+            _configService = configService;
 
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
@@ -109,6 +111,14 @@ namespace SKAuto.UI.ViewModels
             LoadTodayWorkCommand.Execute(null);
         }
 
+        [RelayCommand]
+        private void OpenSettings()
+        {
+            var settingsWindow = new SettingsView();
+            settingsWindow.DataContext = new SettingsViewModel(_configService);
+            settingsWindow.Owner = Application.Current.MainWindow;
+            settingsWindow.ShowDialog();
+        }
         private void OpenReports()
         {
             var vm = new ReportsViewModel(

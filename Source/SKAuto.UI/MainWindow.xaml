@@ -96,6 +96,8 @@
         <Menu DockPanel.Dock="Top" Background="#ecf0f1">
             <MenuItem Header="_File">
                 <MenuItem Header="_Import" Command="{Binding ImportDataCommand}"/>
+                <Separator/>
+                <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}"/>
                 <MenuItem Header="_Exit"/>
             </MenuItem>
             <MenuItem Header="_Manage">
@@ -316,7 +318,7 @@
                         <StatusBarItem>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding SyncStatus}" Margin="5,0"/>
-                                <Button Content="Settings" Command="{Binding OpenDriveSettingsCommand}" Margin="10,0" Padding="5,0" Background="Transparent" BorderThickness="0" Foreground="Blue" Cursor="Hand"/>
+                                <Button Content="Google Drive Settings" Command="{Binding OpenDriveSettingsCommand}" Margin="10,0" Padding="5,0" Background="Transparent" BorderThickness="0" Foreground="Blue" Cursor="Hand"/>
                             </StackPanel>
                         </StatusBarItem>
                     </StatusBar>
