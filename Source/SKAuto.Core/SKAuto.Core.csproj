@@ -5,6 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+	<PropertyGroup>
+		<ApplicationIcon>logo.ico</ApplicationIcon>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Include="logo.ico">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
 <!-- SKAuto.Core.csproj -->
 <ItemGroup>
   <PackageReference Include="CsvHelper" Version="33.1.0" />
