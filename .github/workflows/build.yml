@@ -19,16 +19,16 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore SKAutoWorkTracking.sln   # ✅ Fixed
+      run: dotnet restore SKAutoWorkTracking.sln
 
     - name: Build
-      run: dotnet build SKAutoWorkTracking.sln --configuration Release --no-restore   # ✅ Fixed
+      run: dotnet build SKAutoWorkTracking.sln --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test SKAutoWorkTracking.sln --configuration Release --no-build --verbosity normal   # ✅ Fixed
+      run: dotnet test SKAutoWorkTracking.sln --configuration Release --no-build --verbosity normal
 
-    - name: Publish (optional)
-      run: dotnet publish SKAutoWorkTracking.sln --configuration Release --output ./publish   # ✅ Fixed
+    - name: Publish (UI only)
+      run: dotnet publish Source/SKAuto.UI/SKAuto.UI.csproj --configuration Release --output ./publish
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
