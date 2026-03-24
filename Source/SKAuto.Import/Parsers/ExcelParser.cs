@@ -5,9 +5,6 @@ using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SKAuto.Import.Parsers
 {
@@ -79,7 +76,7 @@ namespace SKAuto.Import.Parsers
                 if (task != null)
                     workOrder.WorkTasks.Add(task);
 
-                taskColumn += 4; // Move to next task group
+                taskColumn += 4; // Move to next task group (assumes 4 columns per task)
             }
 
             return workOrder;
@@ -95,12 +92,12 @@ namespace SKAuto.Import.Parsers
             {
                 TaskType = ParseTaskType(worksheet.Cell(row, startColumn + 1).GetString()),
                 Quantity = ParseInt(worksheet.Cell(row, startColumn + 2).GetString()) ?? 1,
-                UnitPrice = ParseDecimal(worksheet.Cell(row, startColumn + 3).GetString()),
+                Price = ParseDecimal(worksheet.Cell(row, startColumn + 3).GetString()),   // single price
                 EstimatedMinutes = ParseInt(worksheet.Cell(row, startColumn + 4).GetString())
             };
         }
 
-        // Helper methods for parsing
+        // Helper methods
         private DateTime? ParseDate(string value)
         {
             if (DateTime.TryParse(value, out DateTime date))
@@ -137,6 +134,9 @@ namespace SKAuto.Import.Parsers
             {
                 "sell" => TaskType.Sell,
                 "remove" => TaskType.Remove,
+                "preparation" => TaskType.Preparation,
+                "travel" => TaskType.Travel,
+                "other" => TaskType.Other,
                 _ => TaskType.Fit
             };
         }

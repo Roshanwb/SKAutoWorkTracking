@@ -9,6 +9,8 @@ namespace SKAuto.UI
         {
             InitializeComponent();
             DataContext = viewModel;
+            Application.Current.MainWindow.WindowState = WindowState.Maximized;
+
         }
     }
 }

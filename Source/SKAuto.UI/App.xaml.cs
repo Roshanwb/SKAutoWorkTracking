@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SKAuto.Core.DTOs;          // For AppConfig
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Services;
 using SKAuto.Data;
 using SKAuto.Data.Database;
 using SKAuto.Export.Excel;
@@ -9,6 +11,10 @@ using SKAuto.Export.Pdf;
 using SKAuto.Import.Parsers;
 using SKAuto.Import.Validators;
 using SKAuto.UI.ViewModels;
+using System;
+using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace SKAuto.UI
@@ -16,7 +22,10 @@ namespace SKAuto.UI
     public partial class App : Application
     {
         private readonly IHost _host;
+
         public static User CurrentUser { get; set; }
+        public static AppConfig CurrentConfig { get; private set; }
+
         public App()
         {
             _host = Host.CreateDefaultBuilder()
@@ -25,11 +34,8 @@ namespace SKAuto.UI
                     // Database
                     services.AddSingleton<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
-
-
-                    // ViewModels
-                    services.AddSingleton<MainViewModel>();
-                    services.AddTransient<WorkOrderViewModel>();
+                    var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SKAuto", "SKAuto.db");
+                    services.AddSingleton(dbPath);
 
                     // Unit of Work
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -45,32 +51,23 @@ namespace SKAuto.UI
                     // ViewModels
                     services.AddSingleton<MainViewModel>();
                     services.AddTransient<WorkOrderViewModel>();
-                    //services.AddTransient<ImportViewModel>();
-                    //services.AddTransient<ReportsViewModel>();
 
                     // Services
-                    //services.AddScoped<DataService>();
-                    //services.AddScoped<ImportService>();
-                    //services.AddScoped<ReportService>();
-
-                    // Repositories – already handled via UnitOfWork
-                    services.AddScoped<IUnitOfWork, UnitOfWork>();
-                    services.AddScoped<DatabaseContext>();
-                    services.AddScoped<DatabaseInitializer>();
+                    services.AddScoped<IBackupService, BackupService>();
+                    services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
                     // Validators
                     services.AddScoped<IChassisValidator, ChassisValidator>();
                     services.AddScoped<IEODValidationService, EODValidationService>();
 
-                    services.AddScoped<IUnitOfWork, UnitOfWork>();
-                    services.AddScoped<DatabaseContext>();
-                    services.AddScoped<DatabaseInitializer>();
+                    // Logging
+                    services.AddSingleton<ILoggingService, LoggingService>();
+
+                    // Configuration
+                    services.AddSingleton<IConfigurationService, JsonConfigurationService>();
 
                     // Main Window
                     services.AddSingleton<MainWindow>();
-
-                    //Login
-
                 })
                 .Build();
         }
@@ -83,6 +80,31 @@ namespace SKAuto.UI
             var initializer = _host.Services.GetRequiredService<DatabaseInitializer>();
             await initializer.InitializeAsync();
 
+            // Load configuration
+            var configService = _host.Services.GetRequiredService<IConfigurationService>();
+            var appConfig = await configService.GetAsync<AppConfig>("AppConfig");
+            if (appConfig == null)
+            {
+                // First run – create and save default config
+                appConfig = new AppConfig();
+                await configService.SetAsync("AppConfig", appConfig);
+            }
+            CurrentConfig = appConfig;
+
+            // Set application culture based on saved language
+            try
+            {
+                var culture = new CultureInfo(appConfig.Language);
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentUICulture = culture;
+            }
+            catch
+            {
+                // Fallback to French if invalid
+                CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
+                CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
+            }
+
             // Show main window
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
@@ -94,7 +116,6 @@ namespace SKAuto.UI
         {
             await _host.StopAsync();
             _host.Dispose();
-
             base.OnExit(e);
         }
 

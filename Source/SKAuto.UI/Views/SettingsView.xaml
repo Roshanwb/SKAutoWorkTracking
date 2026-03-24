@@ -1,0 +1,145 @@
+﻿<Window x:Class="SKAuto.UI.Views.SettingsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" Height="750" Width="600"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
+    <Window.Resources>
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Foreground" Value="#2c3e50"/>
+        </Style>
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#ddd"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Application Settings" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+        <!-- Language -->
+        <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+            <StackPanel>
+                <TextBlock Text="Language" Style="{StaticResource SectionHeader}"/>
+                <ComboBox SelectedItem="{Binding Language}" Margin="5">
+                    <ComboBoxItem Content="English (en-US)" Tag="en-US"/>
+                    <ComboBoxItem Content="Français (fr-FR)" Tag="fr-FR"/>
+                </ComboBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Report Colors -->
+        <Border Grid.Row="2" Style="{StaticResource CardBorder}">
+            <StackPanel>
+                <TextBlock Text="Report Colors" Style="{StaticResource SectionHeader}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Header Background:" Margin="5"/>
+                    <Button Grid.Row="0" Grid.Column="1" Margin="5" Padding="5" 
+                            Content="{Binding HeaderBackground}" 
+                            Command="{Binding PickColorCommand}" CommandParameter="HeaderBackground"
+                            Background="{Binding HeaderBackground, Converter={StaticResource StringToBrush}}"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Content="Header Text:" Margin="5"/>
+                    <Button Grid.Row="1" Grid.Column="1" Margin="5" Padding="5" 
+                            Content="{Binding HeaderForeground}" 
+                            Command="{Binding PickColorCommand}" CommandParameter="HeaderForeground"
+                            Background="{Binding HeaderForeground, Converter={StaticResource StringToBrush}}"/>
+
+                    <Label Grid.Row="2" Grid.Column="0" Content="Alternate Row:" Margin="5"/>
+                    <Button Grid.Row="2" Grid.Column="1" Margin="5" Padding="5" 
+                            Content="{Binding AlternateRowBackground}" 
+                            Command="{Binding PickColorCommand}" CommandParameter="AlternateRowBackground"
+                            Background="{Binding AlternateRowBackground, Converter={StaticResource StringToBrush}}"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Content="Border:" Margin="5"/>
+                    <Button Grid.Row="3" Grid.Column="1" Margin="5" Padding="5" 
+                            Content="{Binding BorderColor}" 
+                            Command="{Binding PickColorCommand}" CommandParameter="BorderColor"
+                            Background="{Binding BorderColor, Converter={StaticResource StringToBrush}}"/>
+
+                    <Label Grid.Row="4" Grid.Column="0" Content="Total Background:" Margin="5"/>
+                    <Button Grid.Row="4" Grid.Column="1" Margin="5" Padding="5" 
+                            Content="{Binding TotalBackground}" 
+                            Command="{Binding PickColorCommand}" CommandParameter="TotalBackground"
+                            Background="{Binding TotalBackground, Converter={StaticResource StringToBrush}}"/>
+
+                    <Label Grid.Row="5" Grid.Column="0" Content="Accent:" Margin="5"/>
+                    <Button Grid.Row="5" Grid.Column="1" Margin="5" Padding="5" 
+                            Content="{Binding AccentColor}" 
+                            Command="{Binding PickColorCommand}" CommandParameter="AccentColor"
+                            Background="{Binding AccentColor, Converter={StaticResource StringToBrush}}"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Report Fonts -->
+        <Border Grid.Row="3" Style="{StaticResource CardBorder}">
+            <StackPanel>
+                <TextBlock Text="Report Fonts" Style="{StaticResource SectionHeader}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" Margin="5"/>
+                    <ComboBox Grid.Row="0" Grid.Column="1" Margin="5" 
+                              ItemsSource="{Binding FontFamilies}" 
+                              SelectedItem="{Binding FontFamily}"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Content="Header Size:" Margin="5"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Margin="5" Text="{Binding HeaderFontSize}"/>
+
+                    <Label Grid.Row="2" Grid.Column="0" Content="Normal Size:" Margin="5"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Text="{Binding NormalFontSize}"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Content="Title Size:" Margin="5"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" Margin="5" Text="{Binding TitleFontSize}"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Save" Command="{Binding SaveCommand}" Width="80" Margin="5" 
+                    Background="#27AE60" Foreground="White" Padding="8,5"/>
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="80" Margin="5" 
+                    Background="#6C757D" Foreground="White" Padding="8,5"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -28,5 +28,15 @@ namespace SKAuto.Data.Repository
         {
             return await _dbSet.AnyAsync(v => v.ChassisNumber == chassisNumber);
         }
+        public async Task<List<Vehicle>> GetByChassisNumbersAsync(IEnumerable<string> chassisNumbers)
+        {
+            return await _dbSet.Where(v => chassisNumbers.Contains(v.ChassisNumber)).ToListAsync();
+        }
+        public async Task<Vehicle?> GetByChassisWithClientAsync(string chassis)
+        {
+            return await _dbSet
+                .Include(v => v.Client)
+                .FirstOrDefaultAsync(v => v.ChassisNumber == chassis);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using System.Windows;
 
@@ -9,6 +10,7 @@ namespace SKAuto.UI.ViewModels
     public partial class ClientEditViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
+        public Array ClientTypes => Enum.GetValues(typeof(ClientType)); 
 
         [ObservableProperty]
         private Client _client;

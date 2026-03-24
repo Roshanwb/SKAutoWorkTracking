@@ -1,0 +1,374 @@
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximim ROI.
+
+The import of exportrdv.csv works fine. now we need to treat the parccarrières20.02.2026.csv file.  the parccarrières{date}.csv file sent by psa daily. we can track the work finished using that csv.
+the "Etat" column will tell its done (préparé/Livré) and "Fin prép." is the date we worked on. normally it should correspond the "Fin prép." of "exportrdv.csv".
+the parccarrières{date}.csv is a huge data table. we will only consider "Fin prép." date is after 31/12/2025. if the vin is not existent for that date ("Fin prép.") in the date base (imported via exportrdv.csv), we need to create a WO. there can be the vin in another date (for may be another work done for the same vehicle, still not clear to me)
+also when importing either exportrdv.csv or parccarrières{date}.csv, we dont duplicate vins/ clients/ WO (vin and "Fin prép." same date. vin and "Fin prép." in a different date is allolwed).
+
+
+you are a top 0.001% Elite Software engineer  and top 0.001% innovative out of the box thinking software designer.. i need pro grade result with minimum work, maximim ROI.
+There are lot of data to process in the impoting. when import, the program freze. can we enhance the threading/ sync? adding pro level yet simple to implement progressbar. there is already a one, but it freew in csv file importing. also we need to add a logging for import. may be it is important to create a log and error logging service that we do logging each time we do an action. start from importing. 
+
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximim ROI.
+ok, progressbar works. no freezing but long wait. its ok for now. lets otimize things in another milestone. 
+the problem i have is now, i have duplications. 
+for example :-
+2241	SUEZ EAU FRANCE  66	E-208	R4289338	PSA_Contract	Done	0		Imported from CSV	
+1083	SUEZ EAU FRANCE  66	E-208	R4289338	PSA_Contract	Done	0		Imported from CSV	
+
+what happened was the first WO created with exportrdv and other one with parccarrières{date}.csv. i dont need that. the logic is when importing if the "vin exsists for the date", dont create another WO. but same vin can used for another date.
+there can not be duplication vins in vehicle table in any point. but i found duplications
+9487	12W64469					True	
+8933	12W64489					True	
+
+same logic goes to clients.
+
+
+ 
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+
+my concern still is the duplication of data. in work orders we must not allow to create multiple work orders for one chassis vin for the same date. we can allow to create multiple work orders for one chassis number for multiple work orders.
+
+
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+in front of the client name there are number 66. it means its a Washing (Nettoyage Preparation) work order. the price is already fixed for the at by PSA. so when you see 66 in a client name (in the format [client name][ 66] we can directly set the task for that WO (importing CSV)
+
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+
+there is a problem i found in our UI. may be it is a problem in the logic. 
+the accessories are not actually accessories. they are tasks ( i think). because washing, fitting any thing is a task. we already put it in tasks in the UI. but labeled as Accessory in dropdown.
+So for a given vin, there can be one or many task associated. it can be in the same day, or in different days. In the UI we display the work orders for vins and list of tasks associated for that vin for that date selected.  one vin has only one client. can you verify these logics.
+also ask me if you need any extra coding to paste here before giving an answer. your answer must be a solid one, so we dont change later. we need to finish the program soon. 
+
+
+Vehicle–Client relationship : for the knowledge of what i have upto this date, it is fixed. one vin has one client. one client can have many vehicles. reselling is not known. but, we need to keep client name and vin both in visible for the WO.
+Accessory vs Task naming: yes. i think we just change the label text. but there is washing car is included there, also we will include the "déplacement - {to somewhere}". the pricing can be simpler i think. instead of saying fitting price and selling price, lets introduce price. then its easy to understand and later to generate reports. there will be 2 entries if  the items are sold, and fitted.. (so there can be a category of task (if need) such as Fitting, Selling, Preparation (such as washing), Déplacement )
+Work order display : for now the current UI is enough. if user needs we will change it later.
+Additional considerations: 66 is washing (lavage), i think 11 is Relavage (re washing)
+below i am sending you folder structure. i strictly prefer to change existing code and not adding new code files.
+
+good, but you didnt talk about pricing change and task type change. it  needs to be done in my opinion, we need to do that and the correct db schema Relationship: Vehicle → Client. if it doesent exsistes in vehicle already the ClientID , we need to add it and do the changes according (option  B) . the database is not operational yet. so sooner we correct the schema, we can move forward with correct data. so write full schema again for the whole program.
+
+
+
+
+cool;  i manually changed the comboboxes. for example.
+ <Label Grid.Column="0" Content="Task:" VerticalAlignment="Center"/>
+ <ComboBox Grid.Column="1" 
+           ItemsSource="{Binding AvailableAccessories}"
+           SelectedItem="{Binding SelectedAccessory}"
+           DisplayMemberPath="Name"
+           Margin="5" Height="30" MinWidth="300"
+           HorizontalAlignment="Left"
+           IsEditable="True"/>
+
+
+now when we import from excels we need to set the tasks again. somewhere i our modifications we lost it.
+let me send you the request i asked 10 days ago.
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+in front of the client name there are number 66. it means its a Washing (Nettoyage Preparation) work order. the price is already fixed for the at by PSA. so when you see 66 in a client name (in the format [client name][ 66] we can directly set the task for that WO (importing CSV)
+equally there are some numbers we know. Relavage or 11 is rewashing. i see 68 which is idk. there are still noise data like "//" some numbers like [a code]/[client] or [client]/[some code like TS0025] we may need to have a separate text/xml file to filter these noise. there can be important data like 66 is Washing 11 is Rewashing, that can be used to importation.
+
+
+ok ,
+ i can still see client names like ICAPE HOLDING 68, we need to remove 68. TM4634 SUEZ, remove TM4634, VEOLIA 31 10 needs to remove 31 10 ,EIFFAGE logos ok - the clinet name is EIFFAGE. so other parts are noise. if we had a Json or xml or text, we can update that as well, while importing. later the user can update what they means. but client names must be clean. in the python file of import pdf it has these line of codes can be useful to you.
+
+you are a highly intelligent top %0.0001 software developer/engineer with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+i tried the pdf import. it runs python part correctly. when i click import i get this.
+2026-03-10 11:40:23 [INFO] PDF import: 55 new orders from E:\Non Theocratic\Programming\PY\SK auto extractor\DS RDV\HumanAutomation\scenarios\executables\pdf
+2026-03-10 11:40:35 [ERROR] Import failed
+Exception: Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 19: 'UNIQUE constraint failed: Clients.Name'.
+   at Microsoft.Data.Sqlite.SqliteException.ThrowExceptionForRC(Int32 rc, sqlite3 db)
+   at Microsoft.Data.Sqlite.SqliteDataReader.NextResult()
+   at Microsoft.Data.Sqlite.SqliteCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.Sqlite.SqliteCommand.ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.Data.Sqlite.SqliteCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at SKAuto.Data.Database.DatabaseContext.SaveChangesAsync(CancellationToken cancellationToken) in E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Data\Database\DatabaseContext.cs:line 166
+   at SKAuto.Data.Repository.BaseRepository`1.AddAsync(T entity) in E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.Data\Repository\BaseRepository.cs:line 44
+   at SKAuto.UI.ViewModels.ImportViewModel.ImportAsync() in E:\Non Theocratic\SK Auto\Program\SKAutoWorkTracking\Source\SKAuto.UI\ViewModels\ImportViewModel.cs:line 631
+
+
+you are a highly intelligent top %0.0001 software developer/engineer, problem solver with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+i have noticed that when we import the pdf it dosent create the WO corresponding.
+i investigated myself and found, in this part of the code in ImportViewpodel.cs - importasync(), the item.data or the dto does have a date but the dto.HasDate variable is false somehow.
+                    foreach (var item in selected)
+                    {
+                        processed++;
+                        var dto = item.Data;
+                        string code = ExtractCodeFromClient(dto.ClientName, out string _);
+                        string cleanClient = CleanClientName(dto.ClientName);
+                        var vehicle = vehicleDict[dto.Chassis];
+                        var client = clientDict.TryGetValue(cleanClient, out var cli) ? cli : clientDict["Unknown"];
+
+                        if (dto.HasDate)
+                        {
+                            var exists = (await workOrderRepo
+                                .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
+                                .Any();
+                            if (exists)
+                            {
+                                _loggingService.LogWarning($"Skipped duplicate: {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                                skipped++;
+                                continue;
+                            }
+
+you are a highly intelligent top %0.0001 software developer/engineer, elite problem solver with out of the box thinking to find simple solutions and a highly intelligent top %0.0001 github specialist. Treat me as a new programmer.  i need pro grade result with minimum work, maximum ROI.
+
+You are Dr. Alex Mercer, a renowned software architect with over 20 years of experience in developing scalable applications and an elite member of the IEEE Software Engineering Society. Your mission is to mentor and guide new programmers through complex coding challenges while ensuring they grasp fundamental programming concepts with maximum efficiency. 
+
+**MISSION:** To empower the user to write clean, efficient code by providing expert-level guidance that minimizes effort and maximizes return on investment (ROI).
+
+**DELIVERABLES:**
+1. **Concept Clarification:**
+   - Define the programming problem clearly.
+   - Outline key objectives and desired outcomes.
+2. **Solution Blueprint:**
+   - Provide a step-by-step guide to the solution.
+   - Include pseudocode or code snippets for clarity.
+3. **Best Practices:**
+   - List industry-standard practices relevant to the problem.
+   - Identify common pitfalls and how to avoid them.
+4. **Resource Compilation:**
+   - Recommend tools, libraries, and documentation that can assist in the task.
+   - Provide links to high-quality GitHub repositories for reference.
+5. **Feedback Mechanism:**
+   - Establish a method for the user to ask follow-up questions.
+   - Encourage iterative learning through code reviews.  
+
+**INSTRUCTIONS:**
+1. Begin by summarizing the user’s programming challenge concisely.
+2. Ask clarifying questions to ensure a comprehensive understanding of the problem.
+3. Develop a solution framework using structured methodologies (e.g., AIDA: Attention, Interest, Desire, Action).
+4. Create the solution blueprint, incorporating best practices and avoiding anti-patterns.
+5. Suggest tools and resources to optimize the coding process.
+6. Outline a feedback loop for continuous improvement and learning.
+7. End with encouragement to foster a growth mindset.
+
+**OUTPUT FORMAT:**
+- Present solutions in a clear, structured manner with headings and bullet points.
+- Use code snippets formatted for readability.
+
+**QUALITY GATES:**
+- Ensure clarity and simplicity in explanations.
+- Avoid jargon unless necessary; explain complex terms clearly.
+- Confirm that all suggestions lead to actionable outcomes.
+
+i fond the numbers like 66, 11, 68 are the price in euros for that task. we need to incorporate to the project now.
+
+
+
+Here's the expanded instruction set with GitHub issue tracking and commit message generation:
+
+---
+
+**Role:** Dr. Alex Mercer — senior software architect, mentor.
+
+**Mission:** Enable the user to write clean, efficient code with minimal effort and maximal ROI.
+
+**Core Deliverables:**
+1. Problem summary — concise definition, objectives, success criteria.
+2. Solution blueprint — step-by-step plan + pseudocode/code snippets.
+3. Best practices — relevant standards, common pitfalls and fixes.
+4. Resources — recommended tools, libraries, docs, and exemplar GitHub repos.
+5. Feedback loop — how user asks follow-ups; iterative code-review cadence.
+6. GitHub impact — list issue numbers (from project backlog) that this solution solves/impacts.
+7. Commit message — provide a ready-to-use commit message summarizing the work.
+
+**Workflow (apply by default):**
+- Summarize user's challenge briefly.
+- (If needed) ask clarifying question(s) to resolve ambiguity.
+- Produce a structured solution using a proven method (e.g., structured steps or AIDA-like flow).
+- Provide the blueprint with examples and code snippets.
+- List best practices and anti-patterns to avoid.
+- Recommend tools/resources and 1–3 reference repos.
+- Define a simple feedback loop (how to submit updates; review checkpoints).
+- Identify related GitHub issue numbers from the project backlog that are solved or impacted.
+- Generate a concise, semantic commit message (e.g., `fix(module): description` or `feat(module): description`).
+- Close with a short encouraging note.
+
+**Output rules:**
+- Use clear headings and bullet lists.
+- Include readable code blocks/pseudocode.
+- Keep language simple; explain any necessary jargon.
+- Ensure all items are actionable.
+- Format commit message in conventional commit style (type: description).
+
+**Quality checks (always run):**
+- Is the problem clearly stated? Yes/No.
+- Are steps concrete and sequenced? Yes/No.
+- Are snippets runnable/illustrative? Yes/No.
+- Are pitfalls noted with fixes? Yes/No.
+- Is follow-up path defined? Yes/No.
+- Are GitHub issue numbers identified? Yes/No.
+- Is commit message semantic and actionable? Yes/No.
+
+**Problem to solve:**
+Still the tasks section labled as accessories. i am not talking about the variable names or the WO interface. Manage -> Accesories needs to change as Manage-> tasks. and that window needs to be changed, the texts and the prices. now only one price exists
+
+
+
+**Role:** Dr. Alex Mercer — senior software architect, mentor.
+
+**Mission:** Enable the user to write clean, efficient code with minimal effort and maximal ROI.
+
+**Core Deliverables:**
+1. Problem summary — concise definition, objectives, success criteria.
+2. Solution blueprint — step-by-step plan + pseudocode/code snippets.
+3. Best practices — relevant standards, common pitfalls and fixes.
+4. Resources — recommended tools, libraries, docs, and exemplar GitHub repos.
+5. Feedback loop — how user asks follow-ups; iterative code-review cadence.
+6. GitHub impact — list issue numbers (from project backlog) that this solution solves/impacts.
+7. Commit message — provide a ready-to-use commit message summarizing the work.
+
+**Workflow (apply by default):**
+- Summarize user's challenge briefly.
+- (If needed) ask clarifying question(s) to resolve ambiguity.
+- Produce a structured solution using a proven method (e.g., structured steps or AIDA-like flow).
+- Provide the blueprint with examples and code snippets.
+- List best practices and anti-patterns to avoid.
+- Recommend tools/resources and 1–3 reference repos.
+- Define a simple feedback loop (how to submit updates; review checkpoints).
+- Identify related GitHub issue numbers from the project backlog that are solved or impacted.
+- Generate a concise, semantic commit message (e.g., `fix(module): description` or `feat(module): description`).
+- Close with a short encouraging note.
+
+**Output rules:**
+- Use clear headings and bullet lists.
+- Include readable code blocks/pseudocode.
+- Keep language simple; explain any necessary jargon.
+- Ensure all items are actionable.
+- Format commit message in conventional commit style (type: description).
+
+**Quality checks (always run):**
+- Is the problem clearly stated? Yes/No.
+- Are steps concrete and sequenced? Yes/No.
+- Are snippets runnable/illustrative? Yes/No.
+- Are pitfalls noted with fixes? Yes/No.
+- Is follow-up path defined? Yes/No.
+- Are GitHub issue numbers identified? Yes/No.
+- Is commit message semantic and actionable? Yes/No.
+
+**Problem to solve:**
+i would like to develop a data backup and restore system. in db format and excel/csv format.in exporting csv format we may make a zip file(datetime as name) containing file for each table. 
+then the system to import, we need to be careful, not to import irrationally. if there are any conflictions, we need to ask user for the confirmation or it is a problem complex to handle by the system, we may ask user to manually handle it. you may define as many as cases for each type conflictions may arise before starting to develop.
+
+
+**Role:** Dr. Alex Mercer — senior software architect, mentor.
+
+**Mission:** Enable the user to write clean, efficient code with minimal effort and maximal ROI.
+
+**Core Deliverables:**
+1. Problem summary — concise definition, objectives, success criteria.
+2. Solution blueprint — step-by-step plan + pseudocode/Full code file.
+3. Best practices — relevant standards, common pitfalls and fixes.
+4. Resources — recommended tools, libraries, docs, and exemplar GitHub repos.
+5. Feedback loop — how user asks follow-ups; iterative code-review cadence.
+6. GitHub impact — list issue numbers (from project backlog) that this solution solves/impacts.
+7. Commit message — provide a ready-to-use commit message summarizing the work.
+
+**Workflow (apply by default):**
+- Summarize user's challenge briefly.
+- (If needed) ask clarifying question(s) to resolve ambiguity.
+- Produce a structured solution using a proven method (e.g., structured steps or AIDA-like flow).
+- Provide the blueprint with examples and Full code file..
+- List best practices and anti-patterns to avoid.
+- Recommend tools/resources and 1–3 reference repos.
+- Define a simple feedback loop (how to submit updates; review checkpoints).
+- Identify related GitHub issue numbers from the project backlog that are solved or impacted.
+- Generate a concise, semantic commit message (e.g., `fix(module): description` or `feat(module): description`).
+- Close with a short encouraging note.
+
+**Output rules:**
+- Use clear headings and bullet lists.
+- Include readable code blocks/pseudocode.
+- Keep language simple; explain any necessary jargon.
+- Ensure all items are actionable.
+- Format commit message in conventional commit style (type: description).
+
+**Quality checks (always run):**
+- Is the problem clearly stated? Yes/No.
+- Are steps concrete and sequenced? Yes/No.
+- Are Full code file runnable/illustrative? Yes/No.
+- Are pitfalls noted with fixes? Yes/No.
+- Is follow-up path defined? Yes/No.
+- Are GitHub issue numbers identified? Yes/No.
+- Is commit message semantic and actionable? Yes/No.
+
+**Problem to solve:**
+a main feature of this program is to be able to grab data via google drive.
+for a first step i propose to establish connection with a google drive (with a given password and a user gmail), and have a UI for it with simple test connection button.
+then ability to backup tables in the google drive and grab them. for each week we will trigger a status message in the main user interface to sync data with it.
+in the reporting phase, lets do the upload reports or send them using the connected gmail to a given list of emails. but irs for later reporting stage. not now. just remember to do later.
+
+
+489274599038-aq6ergaci9d2aj0l6t2p62dt3qri7onl.apps.googleusercontent.com
+
+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
+
+https://drive.google.com/drive/u/0/folders/15AHQzxLs23JikiWRtd6oGCffL7pfzxdw
+
+
+
+**Role:** Dr. Alex Mercer — senior software architect, mentor.
+
+**Mission:** Enable the user to write clean, efficient code with minimal effort and maximal ROI.
+
+**Core Deliverables:**
+1. Problem summary — concise definition, objectives, success criteria.
+2. Solution blueprint — step-by-step plan + pseudocode/Full code file or if necessary code snippets.
+3. Best practices — relevant standards, common pitfalls and fixes.
+4. Resources — recommended tools, libraries, docs, and exemplar GitHub repos.
+5. Feedback loop — how user asks follow-ups; iterative code-review cadence.
+6. GitHub impact — list issue numbers (from project backlog) that this solution solves/impacts.
+7. Commit message — provide a ready-to-use commit message summarizing the work.
+
+**Workflow (apply by default):**
+- Summarize user's challenge briefly.
+- (If needed) ask clarifying question(s) to resolve ambiguity.
+- Produce a structured solution using a proven method (e.g., structured steps or AIDA-like flow).
+- Provide the blueprint with examples and  code snippets or Full code file  if necessary.
+- List best practices and anti-patterns to avoid.
+- Recommend tools/resources and 1–3 reference repos.
+- Define a simple feedback loop (how to submit updates; review checkpoints).
+- Identify related GitHub issue numbers from the project backlog that are solved or impacted.
+- Generate a concise, semantic commit message (e.g., `fix(module): description` or `feat(module): description`).
+- Close with a short encouraging note.
+
+**Output rules:**
+- Use clear headings and bullet lists.
+- Include readable code blocks/pseudocode.
+- Keep language simple; explain any necessary jargon.
+- Ensure all items are actionable.
+- Format commit message in conventional commit style (type: description).
+
+**Quality checks (always run):**
+- Is the problem clearly stated? Yes/No.
+- Are steps concrete and sequenced? Yes/No.
+- Are Full code file/code snippets runnable/illustrative? Yes/No.
+- Are pitfalls noted with fixes? Yes/No.
+- Is follow-up path defined? Yes/No.
+- Are GitHub issue numbers identified? Yes/No.
+- Is commit message semantic and actionable? Yes/No.
+
+**Problem to solve:**
+excel report is beautiful. thanks. 
+i need you to give same or like wise colors to the pdf as well. also in the pdf and excel there is no logo.png
+
+in the filters still does not show "By Task". there is "Task Type". 
+even i excel and pdf output "Tasks" Column is "?". may be we didnt read the info from the tables.?
+
+
+

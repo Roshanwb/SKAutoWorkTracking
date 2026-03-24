@@ -11,9 +11,8 @@ namespace SKAuto.Core.Entities
         public string? PartNumber { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public int? StandardFittingTime { get; set; } // Minutes
-        public decimal? PSAHourlyRate { get; set; }
-        public decimal? SellingPrice { get; set; }
+        public int? Time { get; set; } // Minutes
+        public decimal? Price { get; set; }
         public bool RequiresPassword { get; set; }
         public bool IsActive { get; set; } = true;
 

@@ -6,7 +6,7 @@ namespace SKAuto.Core.DTOs
     public class WorkOrderDto
     {
         public int Id { get; set; }
-        public int ClientId { get; set; }  
+        public int ClientId { get; set; }
         public string ClientName { get; set; } = string.Empty;
         public string VehicleChassis { get; set; } = string.Empty;
         public string VehicleModel { get; set; } = string.Empty;
@@ -23,8 +23,8 @@ namespace SKAuto.Core.DTOs
             return new WorkOrderDto
             {
                 Id = workOrder.Id,
-                ClientId = workOrder.ClientId,  
-                ClientName = workOrder.Client?.Name ?? string.Empty,
+                ClientId = workOrder.Vehicle?.ClientId ?? 0,
+                ClientName = workOrder.Vehicle?.Client?.Name ?? string.Empty,
                 VehicleChassis = workOrder.Vehicle?.ChassisNumber ?? string.Empty,
                 VehicleModel = workOrder.Vehicle?.Model ?? string.Empty,
                 OrderType = workOrder.OrderType,

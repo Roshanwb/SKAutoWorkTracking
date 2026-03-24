@@ -86,5 +86,9 @@ namespace SKAuto.Data.Repository
         {
             throw new NotImplementedException();
         }
+        public virtual async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+        }
     }
 }
