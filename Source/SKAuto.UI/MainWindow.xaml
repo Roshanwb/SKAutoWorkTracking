@@ -106,6 +106,8 @@
                 <MenuItem Header="_Tasks" Command="{Binding ShowAccessoryManagementCommand}"/>
                 <Separator/>
                 <MenuItem Header="_Users" Command="{Binding ShowUserManagementCommand}"/>
+                <Separator/>
+                <MenuItem Header="Bulk Price Update" Command="{Binding OpenPriceUpdateCommand}"/>
             </MenuItem>
             <MenuItem Header="_Reports">
                 <MenuItem Header="_Generate Daily Report" Command="{Binding OpenReportsCommand}"/>

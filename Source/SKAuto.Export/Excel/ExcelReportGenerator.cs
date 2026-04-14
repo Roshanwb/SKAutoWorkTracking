@@ -395,7 +395,7 @@ namespace SKAuto.Export.Excel
                 ws.Cell(row, 1).Value = o.Id;
                 ws.Cell(row, 2).Value = o.OrderDate.ToString("dd/MM/yyyy");
                 ws.Cell(row, 3).Value = clientName;
-                ws.Cell(row, 4).Value = vehicle?.Model ?? "";
+                ws.Cell(row, 4).Value = vehicle?.ChassisNumber ?? "";
                 ws.Cell(row, 5).Value = o.Status.ToString();
                 ws.Cell(row, 6).Value = taskNames;
                 ws.Cell(row, 7).Value = o.TotalAmount ?? 0;

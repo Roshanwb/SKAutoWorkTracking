@@ -32,7 +32,7 @@ namespace SKAuto.UI
                 .ConfigureServices((context, services) =>
                 {
                     // Database
-                    services.AddSingleton<DatabaseContext>();
+                    services.AddTransient<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
                     var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SKAuto", "SKAuto.db");
                     services.AddSingleton(dbPath);

@@ -24,10 +24,11 @@ namespace SKAuto.UI.ViewModels
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _loggingService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         // ---------- TASK CODE MAPPING ----------
         private static readonly Dictionary<string, TaskInfo> CodeToTaskInfo = new(StringComparer.OrdinalIgnoreCase)
-        { 
+        {
             { "66", new TaskInfo("Nettoyage Préparation 66€", 66) },
             { "11", new TaskInfo("Relavage 11€", 11) },
             { "Relavage", new TaskInfo("Relavage 11€", 11) },      // non‑numeric variation
@@ -83,6 +84,22 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private string _currentOperation = "";
 
+        // NEW FILTER PROPERTIES
+        [ObservableProperty]
+        private bool _importWorkOrders = true;
+
+        [ObservableProperty]
+        private bool _importVehicles = true;
+
+        [ObservableProperty]
+        private bool _importClients = true;
+
+        [ObservableProperty]
+        private DateTime? _filterFromDate = null;
+
+        [ObservableProperty]
+        private DateTime? _filterToDate = null;
+
         public IAsyncRelayCommand SelectFolderCommand { get; }
         public IAsyncRelayCommand SelectImportFileCommand { get; }
         public IAsyncRelayCommand SelectParcCarrieresCommand { get; }
@@ -90,7 +107,7 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand ImportCommand { get; }
         public IRelayCommand SelectAllCommand { get; }
 
-        public ImportViewModel(IUnitOfWork unitOfWork, ILoggingService loggingService, IServiceProvider serviceProvider)
+        public ImportViewModel(IUnitOfWork unitOfWork, ILoggingService loggingService, IServiceProvider serviceProvider, IServiceScopeFactory scopeFactory)
         {
             _unitOfWork = unitOfWork;
             _loggingService = loggingService;
@@ -102,6 +119,7 @@ namespace SKAuto.UI.ViewModels
             ClearAllCommand = new RelayCommand(ClearAll);
             ImportCommand = new AsyncRelayCommand(ImportAsync, () => PreviewOrders.Any(x => x.IsSelected) && !IsImporting);
             SelectAllCommand = new RelayCommand(ToggleSelectAll);
+            _scopeFactory = scopeFactory;
         }
 
         // ===== PDF FOLDER IMPORT =====
@@ -576,6 +594,20 @@ namespace SKAuto.UI.ViewModels
             var selected = PreviewOrders.Where(x => x.IsSelected).ToList();
             if (!selected.Any()) return;
 
+            // Apply date filter
+            var filteredSelected = selected.AsEnumerable();
+            if (FilterFromDate.HasValue)
+                filteredSelected = filteredSelected.Where(x => x.OrderDate >= FilterFromDate.Value);
+            if (FilterToDate.HasValue)
+                filteredSelected = filteredSelected.Where(x => x.OrderDate <= FilterToDate.Value);
+            var selectedRows = filteredSelected.ToList();
+
+            if (!selectedRows.Any())
+            {
+                MessageBox.Show("No selected rows match the date range.", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
@@ -588,7 +620,7 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                using (var scope = _serviceProvider.CreateScope())
+                using (var scope = _scopeFactory.CreateScope())
                 {
                     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                     var vehicleRepo = (VehicleRepository)unitOfWork.Vehicles;
@@ -596,12 +628,12 @@ namespace SKAuto.UI.ViewModels
                     var workOrderRepo = (WorkOrderRepository)unitOfWork.WorkOrders;
                     var workTaskRepo = (WorkTaskRepository)unitOfWork.WorkTasks;
 
-                    // ---- 1. Collect distinct cleaned client names, chassis numbers, and all required codes ----
+                    // ---- 1. Collect distinct cleaned client names, chassis numbers, and required codes ----
                     var clientNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     var vinList = new HashSet<string>();
                     var requiredCodes = new HashSet<string>();
 
-                    foreach (var item in selected)
+                    foreach (var item in selectedRows)
                     {
                         var dto = item.Data;
                         string code = ExtractCodeFromClient(dto.ClientName, out string _);
@@ -622,136 +654,141 @@ namespace SKAuto.UI.ViewModels
                     var existingVehicles = await vehicleRepo.GetByChassisNumbersAsync(vinList);
                     var vehicleDict = existingVehicles.ToDictionary(v => v.ChassisNumber, v => v);
 
-                    // ---- 3. Create new clients (batch) ----
+                    // ---- 3. Create new clients (if enabled) ----
                     var newClients = new List<Client>();
-                    foreach (var name in clientNames)
+                    if (ImportClients)
                     {
-                        if (!clientDict.ContainsKey(name))
+                        foreach (var name in clientNames)
                         {
-                            var newClient = new Client
+                            if (!clientDict.ContainsKey(name))
                             {
-                                Name = name,
-                                Type = ClientType.Direct,
-                                IsActive = true
-                            };
-                            newClients.Add(newClient);
-                            clientDict[name] = newClient;
+                                var newClient = new Client
+                                {
+                                    Name = name,
+                                    Type = ClientType.Direct,
+                                    IsActive = true
+                                };
+                                newClients.Add(newClient);
+                                clientDict[name] = newClient;
+                            }
+                        }
+                        if (newClients.Any())
+                        {
+                            await clientRepo.AddRangeAsync(newClients);
+                            await unitOfWork.CompleteAsync();
+                            foreach (var c in newClients)
+                                clientDict[c.Name] = c;
+                        }
+
+                        // Ensure "Unknown" client exists
+                        if (!clientDict.ContainsKey("Unknown"))
+                        {
+                            var unknown = new Client { Name = "Unknown", Type = ClientType.Direct, IsActive = true };
+                            await clientRepo.AddAsync(unknown);
+                            await unitOfWork.CompleteAsync();
+                            clientDict["Unknown"] = unknown;
                         }
                     }
-                    if (newClients.Any())
-                    {
-                        await clientRepo.AddRangeAsync(newClients);
-                        await unitOfWork.CompleteAsync(); // IDs assigned
-                        foreach (var c in newClients)
-                            clientDict[c.Name] = c;
-                    }
 
-                    // ---- 4. Ensure "Unknown" client exists ----
-                    if (!clientDict.ContainsKey("Unknown"))
-                    {
-                        var unknown = new Client { Name = "Unknown", Type = ClientType.Direct, IsActive = true };
-                        await clientRepo.AddAsync(unknown);
-                        await unitOfWork.CompleteAsync();
-                        clientDict["Unknown"] = unknown;
-                    }
-
-                    // ---- 5. Ensure all required accessories exist (store default price in accessory) ----
+                    // ---- 4. Ensure accessories exist (always needed if work orders are imported) ----
                     var accessoryIdByCode = new Dictionary<string, int>();
                     var accessoryDefaultPriceByCode = new Dictionary<string, decimal>();
-                    foreach (var code in requiredCodes)
+                    if (ImportWorkOrders && requiredCodes.Any())
                     {
-                        if (!CodeToTaskInfo.TryGetValue(code, out var taskInfo))
+                        foreach (var code in requiredCodes)
                         {
-                            _loggingService.LogWarning($"Unknown code '{code}' – skipping accessory creation");
-                            continue;
-                        }
-
-                        var accessory = (await unitOfWork.Accessories
-                            .FindAsync(a => a.Name == taskInfo.Name))
-                            .FirstOrDefault();
-                        if (accessory == null)
-                        {
-                            accessory = new Accessory
+                            if (!CodeToTaskInfo.TryGetValue(code, out var taskInfo))
                             {
-                                Name = taskInfo.Name,
-                                Price = taskInfo.DefaultPrice,   // store default price in accessory
-                                Time = 30,
-                                IsActive = true
-                            };
-                            await unitOfWork.Accessories.AddAsync(accessory);
-                            await unitOfWork.CompleteAsync();
-                            _loggingService.LogInfo($"Created accessory '{taskInfo.Name}' with default price {taskInfo.DefaultPrice}");
+                                _loggingService.LogWarning($"Unknown code '{code}' – skipping accessory creation");
+                                continue;
+                            }
+
+                            var accessory = (await unitOfWork.Accessories
+                                .FindAsync(a => a.Name == taskInfo.Name))
+                                .FirstOrDefault();
+                            if (accessory == null)
+                            {
+                                accessory = new Accessory
+                                {
+                                    Name = taskInfo.Name,
+                                    Price = taskInfo.DefaultPrice,
+                                    Time = 30,
+                                    IsActive = true
+                                };
+                                await unitOfWork.Accessories.AddAsync(accessory);
+                                await unitOfWork.CompleteAsync();
+                                _loggingService.LogInfo($"Created accessory '{taskInfo.Name}' with default price {taskInfo.DefaultPrice}");
+                            }
+                            accessoryIdByCode[code] = accessory.Id;
+                            accessoryDefaultPriceByCode[code] = taskInfo.DefaultPrice;
                         }
-                        accessoryIdByCode[code] = accessory.Id;
-                        accessoryDefaultPriceByCode[code] = taskInfo.DefaultPrice; // keep for fallback
                     }
 
-                    // ---- 6. Create new vehicles (batch) – set ClientId ----
+                    // ---- 5. Create new vehicles (if enabled) ----
                     var newVehicles = new List<Vehicle>();
-                    foreach (var vin in vinList)
+                    if (ImportVehicles)
                     {
-                        if (!vehicleDict.ContainsKey(vin))
+                        foreach (var vin in vinList)
                         {
-                            var firstDto = selected.First(x => x.Data.Chassis == vin).Data;
-                            string cleanClient = CleanClientName(firstDto.ClientName);
-                            if (!clientDict.TryGetValue(cleanClient, out var client))
-                                client = clientDict["Unknown"];
-
-                            var newVehicle = new Vehicle
+                            if (!vehicleDict.ContainsKey(vin))
                             {
-                                ChassisNumber = vin,
-                                Model = firstDto.Model,
-                                ClientId = client.Id,
-                                IsActive = true
-                            };
-                            newVehicles.Add(newVehicle);
-                            vehicleDict[vin] = newVehicle;
+                                var firstDto = selectedRows.First(x => x.Data.Chassis == vin).Data;
+                                string cleanClient = CleanClientName(firstDto.ClientName);
+                                if (!clientDict.TryGetValue(cleanClient, out var client))
+                                    client = clientDict.GetValueOrDefault("Unknown");
+
+                                var newVehicle = new Vehicle
+                                {
+                                    ChassisNumber = vin,
+                                    Model = firstDto.Model,
+                                    ClientId = client?.Id ?? 0,
+                                    IsActive = true
+                                };
+                                newVehicles.Add(newVehicle);
+                                vehicleDict[vin] = newVehicle;
+                            }
+                        }
+                        if (newVehicles.Any())
+                        {
+                            await vehicleRepo.AddRangeAsync(newVehicles);
+                            await unitOfWork.CompleteAsync();
                         }
                     }
-                    if (newVehicles.Any())
-                    {
-                        await vehicleRepo.AddRangeAsync(newVehicles);
-                        await unitOfWork.CompleteAsync(); // vehicles now have IDs
-                    }
 
-                    // ---- 7. Process each row: create work orders and capture code & price ----
+                    // ---- 6. Process each row: create work orders (if enabled) ----
                     var workOrdersToAdd = new List<WorkOrder>();
                     var perWorkOrderTaskInfo = new List<(int WorkOrderIndex, int AccessoryId, decimal Price)>();
-                    int total = selected.Count;
+                    int total = selectedRows.Count;
                     int processed = 0;
                     int skipped = 0;
 
-                    foreach (var item in selected)
+                    foreach (var item in selectedRows)
                     {
                         processed++;
                         var dto = item.Data;
                         string code = ExtractCodeFromClient(dto.ClientName, out string _);
-
-                        // Determine price from code
                         decimal? priceFromCode = null;
                         if (!string.IsNullOrEmpty(code))
                         {
                             if (decimal.TryParse(code, out decimal parsedPrice))
-                            {
                                 priceFromCode = parsedPrice;
-                                _loggingService.LogInfo($"Code '{code}' parsed as numeric price {parsedPrice}");
-                            }
                             else if (CodeToTaskInfo.TryGetValue(code, out var taskInfo))
-                            {
                                 priceFromCode = taskInfo.DefaultPrice;
-                                _loggingService.LogInfo($"Code '{code}' mapped to task '{taskInfo.Name}' with default price {taskInfo.DefaultPrice}");
-                            }
                             else
-                            {
-                                _loggingService.LogWarning($"Code '{code}' not found in mapping – no price will be assigned");
-                            }
+                                _loggingService.LogWarning($"Code '{code}' not found in mapping");
                         }
 
                         string cleanClient = CleanClientName(dto.ClientName);
-                        var vehicle = vehicleDict[dto.Chassis];
-                        var client = clientDict.TryGetValue(cleanClient, out var cli) ? cli : clientDict["Unknown"];
+                        var vehicle = vehicleDict.GetValueOrDefault(dto.Chassis);
+                        if (vehicle == null && ImportVehicles)
+                        {
+                            // Should not happen because we created missing vehicles above, but just in case
+                            _loggingService.LogWarning($"Vehicle {dto.Chassis} not found and vehicle import disabled – skipping work order");
+                            skipped++;
+                            continue;
+                        }
 
-                        if (dto.HasDate)
+                        if (dto.HasDate && ImportWorkOrders && vehicle != null)
                         {
                             var exists = (await workOrderRepo
                                 .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
@@ -763,48 +800,40 @@ namespace SKAuto.UI.ViewModels
                                 continue;
                             }
 
-                            var tempworkStatus = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done;
                             var workOrder = new WorkOrder
                             {
                                 VehicleId = vehicle.Id,
                                 OrderDate = dto.OrderDate,
-                                Status = tempworkStatus,
+                                Status = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done,
                                 CompletedDate = dto.OrderDate,
                                 OrderType = OrderType.PSA_Contract,
                                 Notes = $"Imported from {dto.Source}"
                             };
                             workOrdersToAdd.Add(workOrder);
 
-                            // If we have a code and an accessory exists for it, prepare a task
                             if (code != null && accessoryIdByCode.TryGetValue(code, out int accessoryId))
                             {
-                                // Use priceFromCode if available; otherwise fallback to accessory's default price (already stored)
                                 decimal taskPrice = priceFromCode ?? accessoryDefaultPriceByCode[code];
                                 perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, accessoryId, taskPrice));
                                 _loggingService.LogInfo($"Preparing task for {dto.Chassis}: code '{code}', price {taskPrice}");
                             }
                         }
-                        else
+                        else if (!ImportWorkOrders)
                         {
-                            _loggingService.LogInfo($"Vehicle-only record: {dto.Chassis} (client {cleanClient})");
+                            _loggingService.LogInfo($"Work order creation disabled – skipping {dto.Chassis}");
                         }
 
                         int percent = (int)((double)processed / total * 100);
-                        progress.Report(new ProgressReport
-                        {
-                            Percent = percent,
-                            Operation = $"Processing {processed}/{total}: {dto.Chassis}"
-                        });
+                        progress.Report(new ProgressReport { Percent = percent, Operation = $"Processing {processed}/{total}: {dto.Chassis}" });
                     }
 
-                    // ---- 8. Save all work orders (batch) ----
+                    // ---- 7. Save work orders and tasks ----
                     if (workOrdersToAdd.Any())
                     {
                         await workOrderRepo.AddRangeAsync(workOrdersToAdd);
-                        await unitOfWork.CompleteAsync(); // IDs assigned
+                        await unitOfWork.CompleteAsync();
                     }
 
-                    // ---- 9. Add tasks for prepared work orders ----
                     var tasksToAdd = new List<WorkTask>();
                     foreach (var (index, accessoryId, taskPrice) in perWorkOrderTaskInfo)
                     {
@@ -823,7 +852,6 @@ namespace SKAuto.UI.ViewModels
                     if (tasksToAdd.Any())
                     {
                         await workTaskRepo.AddRangeAsync(tasksToAdd);
-                        // Update work order totals
                         foreach (var wo in workOrdersToAdd)
                         {
                             var woTasks = tasksToAdd.Where(t => t.WorkOrderId == wo.Id).ToList();
@@ -833,7 +861,7 @@ namespace SKAuto.UI.ViewModels
                     }
 
                     int importedCount = workOrdersToAdd.Count;
-                    int vehicleOnlyCount = selected.Count - importedCount - skipped;
+                    int vehicleOnlyCount = selectedRows.Count - importedCount - skipped;
                     _loggingService.LogInfo($"Import completed: added {importedCount} work orders, {newClients.Count} new clients, {newVehicles.Count} new vehicles.");
                     MessageBox.Show($"Successfully imported {importedCount} work orders.\n" +
                                     $"Vehicle‑only records: {vehicleOnlyCount}\n" +
@@ -855,7 +883,6 @@ namespace SKAuto.UI.ViewModels
                 CurrentOperation = "";
             }
         }
-
         private void CloseWindow(bool success = false)
         {
             foreach (Window window in Application.Current.Windows)

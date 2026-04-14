@@ -74,7 +74,7 @@ namespace SKAuto.UI.ViewModels
         public ICommand ShowAccessoryManagementCommand { get; }
         public IRelayCommand OpenBackupCommand { get; }
         public IRelayCommand OpenReportsCommand { get; }
-
+        public IRelayCommand OpenPriceUpdateCommand { get; }
 
         public IRelayCommand OpenDriveSettingsCommand { get; }
         public IRelayCommand SyncNowCommand { get; }
@@ -106,6 +106,7 @@ namespace SKAuto.UI.ViewModels
             OpenDriveSettingsCommand = new RelayCommand(OpenDriveSettings);
             SyncNowCommand = new RelayCommand(async () => await SyncNowAsync());
             OpenReportsCommand = new RelayCommand(OpenReports);
+            OpenPriceUpdateCommand = new RelayCommand(OpenPriceUpdate);
             //GenerateReportsCommand = new RelayCommand(OpenReports);
 
             LoadTodayWorkCommand.Execute(null);
@@ -117,7 +118,7 @@ namespace SKAuto.UI.ViewModels
             var settingsWindow = new SettingsView();
             settingsWindow.DataContext = new SettingsViewModel(_configService);
             settingsWindow.Owner = Application.Current.MainWindow;
-            settingsWindow.ShowDialog();
+            settingsWindow.Show();
         }
         private void OpenReports()
         {
@@ -127,8 +128,23 @@ namespace SKAuto.UI.ViewModels
                 App.GetService<PdfReportGenerator>(),
                 App.GetService<ILoggingService>());
             var win = new ReportsView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
         }
+
+        private async void OpenPriceUpdate()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var vm = new PriceUpdateViewModel(_unitOfWork, logger);
+            var window = new PriceUpdateView { DataContext = vm, Owner = Application.Current.MainWindow };
+            var result = window.ShowDialog();
+            if (result == true)
+            {
+                // Refresh today's work orders to show updated prices
+                await LoadTodayWorkAsync();
+                StatusMessage = "Prices updated and grid refreshed.";
+            }
+        }
+
         private void OpenDriveSettings()
         {
             var driveService = App.GetService<IGoogleDriveService>();
@@ -138,7 +154,7 @@ namespace SKAuto.UI.ViewModels
 
             var vm = new GoogleDriveSettingsViewModel(driveService, config, backupService, logger);
             var win = new GoogleDriveSettingsView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
             UpdateSyncStatus();
         }
 
@@ -175,7 +191,7 @@ namespace SKAuto.UI.ViewModels
             var loggingService = App.GetService<ILoggingService>();
             var vm = new BackupViewModel(backupService, loggingService);
             var win = new BackupView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
         }
         private async Task LoadTodayWorkAsync()
         {
@@ -241,12 +257,19 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenImport()
         {
+            var scopeFactory = App.GetService<IServiceScopeFactory>();
+            var loggingService = App.GetService<ILoggingService>();
+            var serviceProvider = App.GetService<IServiceProvider>();
+
             var importVM = new ImportViewModel(
-                _unitOfWork,
-                App.GetService<ILoggingService>(),
-                App.GetService<IServiceProvider>());
+                null,               // IUnitOfWork – not used inside ImportViewModel; safe to pass null
+                loggingService,
+                serviceProvider,
+                scopeFactory
+            );
+
             var importView = new ImportView { DataContext = importVM };
-            importView.ShowDialog();
+            importView.Show();
             LoadTodayWorkCommand.Execute(null);
         }
 
@@ -302,7 +325,7 @@ namespace SKAuto.UI.ViewModels
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Application.Current.MainWindow
             };
-            window.ShowDialog();
+            window.Show();
         }
 
         private async Task RescheduleAsync()
@@ -425,7 +448,7 @@ namespace SKAuto.UI.ViewModels
         {
             var vm = new ClientManagementViewModel(_unitOfWork);
             var win = new ClientManagementView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
             // Refresh main grid in case client names changed
             LoadTodayWorkCommand.Execute(null);
         }
@@ -434,7 +457,7 @@ namespace SKAuto.UI.ViewModels
         {
             var vm = new VehicleManagementViewModel(_unitOfWork);
             var win = new VehicleManagementView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
             // Vehicles might affect work orders? Not directly, but could be needed.
             LoadTodayWorkCommand.Execute(null);
         }

@@ -138,7 +138,7 @@ namespace SKAuto.Export.Pdf
                     Paragraph weekHeader = new Paragraph()
                         .Add($"Week {week} ({weekStart:dd/MM/yyyy} – {weekEnd:dd/MM/yyyy})")
                         .SetFont(headerFont)
-                        .SetFontSize(14)
+                        .SetFontSize(12)
                         .SetFontColor(headerBg)
                         .SetMarginTop(15)
                         .SetMarginBottom(5);
@@ -247,7 +247,7 @@ namespace SKAuto.Export.Pdf
                 Cell idCell = CreateCell(o.Id.ToString(), normalFont, borderColor);
                 Cell dateCell = CreateCell(o.OrderDate.ToString("dd/MM/yyyy"), normalFont, borderColor);
                 Cell clientCell = CreateCell(clientName, normalFont, borderColor);
-                Cell vehicleCell = CreateCell(vehicle?.Model ?? "", normalFont, borderColor);
+                Cell vehicleCell = CreateCell(vehicle?.ChassisNumber ?? "", normalFont, borderColor);
                 Cell statusCell = CreateCell(o.Status.ToString(), normalFont, borderColor);
                 Cell tasksCountCell = CreateCell(taskCount.ToString(), normalFont, borderColor);
                 Cell tasksNameCell = CreateCell(taskNames, normalFont, borderColor);
@@ -442,22 +442,22 @@ namespace SKAuto.Export.Pdf
                 try
                 {
                     ImageData imageData = ImageDataFactory.Create(_logoPath);
-                    Image logo = new Image(imageData).ScaleToFit(100, 50);
+                    Image logo = new Image(imageData).ScaleToFit(120, 120);
                     document.Add(logo);
                 }
                 catch { }
             }
 
-            Paragraph company = new Paragraph("SK Auto")
-                .SetFont(boldFont)
-                .SetFontSize(20)
-                .SetFontColor(headerBg)
-                .SetMarginTop(10);
-            document.Add(company);
+            //Paragraph company = new Paragraph("SK Auto")
+            //    .SetFont(boldFont)
+            //    .SetFontSize(20)
+            //    .SetFontColor(headerBg)
+            //    .SetMarginTop(10);
+            //document.Add(company);
 
             Paragraph titlePara = new Paragraph(title)
                 .SetFont(boldFont)
-                .SetFontSize(16)
+                .SetFontSize(12)
                 .SetFontColor(headerBg)
                 .SetMarginBottom(10);
             document.Add(titlePara);

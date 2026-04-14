@@ -10,7 +10,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <Content Include="logo.ico">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
 <!-- SKAuto.Core.csproj -->
