@@ -19,7 +19,7 @@ namespace SKAuto.Core.Services
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var logDir = Path.Combine(appData, "SKAuto", "Logs");
             Directory.CreateDirectory(logDir);
-            _logFilePath = Path.Combine(logDir, $"import_{DateTime.Now:yyyyMMdd}.log");
+            _logFilePath = Path.Combine(logDir, $"{DateTime.Now:yyyyMMdd}.log");
         }
 
         public void LogInfo(string message) => WriteLog("INFO", message);

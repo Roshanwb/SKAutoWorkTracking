@@ -75,7 +75,8 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand OpenBackupCommand { get; }
         public IRelayCommand OpenReportsCommand { get; }
         public IRelayCommand OpenPriceUpdateCommand { get; }
-
+        public IRelayCommand OpenHelpCommand { get; }
+        public IRelayCommand OpenAboutCommand { get; }
         public IRelayCommand OpenDriveSettingsCommand { get; }
         public IRelayCommand SyncNowCommand { get; }
 
@@ -107,7 +108,8 @@ namespace SKAuto.UI.ViewModels
             SyncNowCommand = new RelayCommand(async () => await SyncNowAsync());
             OpenReportsCommand = new RelayCommand(OpenReports);
             OpenPriceUpdateCommand = new RelayCommand(OpenPriceUpdate);
-            //GenerateReportsCommand = new RelayCommand(OpenReports);
+            OpenHelpCommand = new RelayCommand(OpenHelp);
+            OpenAboutCommand = new RelayCommand(OpenAbout);
 
             LoadTodayWorkCommand.Execute(null);
         }
@@ -131,6 +133,18 @@ namespace SKAuto.UI.ViewModels
             win.Show();
         }
 
+        private void OpenHelp()
+        {
+            var helpWindow = new HelpView();
+            helpWindow.Owner = Application.Current.MainWindow;
+            helpWindow.ShowDialog();
+        }
+
+        private void OpenAbout()
+        {
+            MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights®",
+                            "About", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         private async void OpenPriceUpdate()
         {
             var logger = App.GetService<ILoggingService>();

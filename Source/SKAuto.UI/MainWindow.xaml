@@ -115,6 +115,11 @@
             <MenuItem Header="_Admin">
                 <MenuItem Header="_Backup/Restore" Command="{Binding OpenBackupCommand}"/>
             </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Help" Command="{Binding OpenHelpCommand}"/>
+                <Separator/>
+                <MenuItem Header="About" Command="{Binding OpenAboutCommand}"/>
+            </MenuItem>
         </Menu>
 
         <Grid>
