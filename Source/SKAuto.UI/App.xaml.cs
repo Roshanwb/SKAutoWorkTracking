@@ -23,7 +23,7 @@ namespace SKAuto.UI
     public partial class App : Application
     {
         private readonly IHost _host;
-        private Exception _initException;
+        private ILoggingService _logger;
 
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
@@ -33,42 +33,25 @@ namespace SKAuto.UI
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    // Database
                     services.AddTransient<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
                     var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SKAuto", "SKAuto.db");
                     services.AddSingleton(dbPath);
-
-                    // Unit of Work
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-                    // Import/Export
                     services.AddScoped<IImportParser, PSAParser>();
                     services.AddScoped<IImportParser, ExcelParser>();
                     services.AddScoped<IImportParser, PdfParser>();
                     services.AddScoped<IValidationService, ImportValidator>();
                     services.AddScoped<IExportService, ExcelReportGenerator>();
                     services.AddScoped<PdfReportGenerator>();
-
-                    // ViewModels
                     services.AddSingleton<MainViewModel>();
                     services.AddTransient<WorkOrderViewModel>();
-
-                    // Services
                     services.AddScoped<IBackupService, BackupService>();
                     services.AddScoped<IGoogleDriveService, GoogleDriveService>();
-
-                    // Validators
                     services.AddScoped<IChassisValidator, ChassisValidator>();
                     services.AddScoped<IEODValidationService, EODValidationService>();
-
-                    // Logging
                     services.AddSingleton<ILoggingService, LoggingService>();
-
-                    // Configuration
                     services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-
-                    // Main Window
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
@@ -76,88 +59,100 @@ namespace SKAuto.UI
 
         protected override async void OnStartup(StartupEventArgs e)
         {
-            // Start the host
-            await _host.StartAsync();
+            // CRITICAL: Set shutdown mode before any windows are created
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
 
-            // Create splash screen with loading actions
+            await _host.StartAsync();
+            _logger = _host.Services.GetRequiredService<ILoggingService>();
+            _logger.LogInfo("Application starting...");
+
             var splash = new Splash(
                 loadResources: () =>
                 {
-                    // This runs in a background thread – do not touch UI here
                     try
                     {
-                        // 1. Initialize database
                         var initializer = _host.Services.GetRequiredService<DatabaseInitializer>();
                         initializer.InitializeAsync().GetAwaiter().GetResult();
+                        _logger.LogInfo("Database initialized.");
 
-                        // 2. Load configuration
                         var configService = _host.Services.GetRequiredService<IConfigurationService>();
                         var appConfig = configService.GetAsync<AppConfig>("AppConfig").GetAwaiter().GetResult();
                         if (appConfig == null)
                         {
                             appConfig = new AppConfig();
                             configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
+                            _logger.LogInfo("Created default configuration.");
                         }
                         CurrentConfig = appConfig;
 
-                        // 3. Set application culture – with fallback for invalid strings
+                        // Fix culture if it contains description like "Français (fr-FR)"
+                        string fixedLanguage = appConfig.Language;
+                        if (!string.IsNullOrEmpty(fixedLanguage) && fixedLanguage.Contains("(") && fixedLanguage.Contains(")"))
+                        {
+                            int start = fixedLanguage.IndexOf('(') + 1;
+                            int end = fixedLanguage.IndexOf(')');
+                            if (start > 0 && end > start)
+                            {
+                                fixedLanguage = fixedLanguage.Substring(start, end - start);
+                                appConfig.Language = fixedLanguage;
+                                configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
+                                _logger.LogInfo($"Fixed culture from '{appConfig.Language}' to '{fixedLanguage}'");
+                            }
+                        }
+
                         try
                         {
-                            var culture = new CultureInfo(appConfig.Language);
+                            var culture = new CultureInfo(fixedLanguage);
                             CultureInfo.DefaultThreadCurrentCulture = culture;
                             CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            _logger.LogInfo($"Culture set to {fixedLanguage}");
                         }
                         catch (CultureNotFoundException)
                         {
-                            // Fallback to French (fr-FR) and fix config
+                            _logger.LogWarning($"Invalid culture '{fixedLanguage}', falling back to fr-FR");
                             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
                             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
                             appConfig.Language = "fr-FR";
                             configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
                         }
-                        catch
-                        {
-                            // Fallback to French on any other error
-                            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
-                            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
-                        }
                     }
                     catch (Exception ex)
                     {
-                        _initException = ex;
-                        throw; // rethrow to be caught by splash
+                        _logger.LogError("Initialization failed", ex);
+                        throw;
                     }
                 },
                 onComplete: () =>
                 {
-                    // This runs on UI thread after splash closes
-                    if (_initException != null)
-                    {
-                        MessageBox.Show($"Startup failed: {_initException.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        Current.Shutdown();
-                        return;
-                    }
-
                     try
                     {
                         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                        // Assign as the main window so ShutdownMode works correctly
+                        Current.MainWindow = mainWindow;
                         mainWindow.Show();
+                        mainWindow.Activate();
+                        mainWindow.Focus();
+                        _logger.LogInfo("Main window shown and activated.");
+                        Application.Current.MainWindow.WindowState = WindowState.Maximized;
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Failed to start main window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        Current.Shutdown();
+                        _logger.LogError("Failed to show main window", ex);
+                        MessageBox.Show($"Fatal error:\n{ex.Message}\n\nCheck log at %APPDATA%\\SKAuto\\Logs",
+                                        "Startup Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Environment.Exit(1);
                     }
-                }
+                },
+                logger: _logger
             );
 
             splash.Show();
-
             base.OnStartup(e);
         }
 
         protected override async void OnExit(ExitEventArgs e)
         {
+            _logger?.LogInfo("Application exiting.");
             await _host.StopAsync();
             _host.Dispose();
             base.OnExit(e);
