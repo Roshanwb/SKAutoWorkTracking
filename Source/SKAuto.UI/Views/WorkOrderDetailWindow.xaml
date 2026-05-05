@@ -1,5 +1,6 @@
 ﻿<Window x:Class="SKAuto.UI.Views.WorkOrderDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
         Title="Work Order Details" Height="700" Width="900"
@@ -7,6 +8,11 @@
 
     <Window.Resources>
         <converters:VehicleDisplayConverter x:Key="VehicleDisplayConverter"/>
+        <CollectionViewSource x:Key="SortedAccessoriesViewSource" Source="{Binding AvailableAccessories}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Name" Direction="Ascending"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -91,12 +97,14 @@
 
                 <Label Grid.Column="0" Content="Task:" VerticalAlignment="Center"/>
                 <ComboBox Grid.Column="1" 
-                          ItemsSource="{Binding AvailableAccessories}"
-                          SelectedItem="{Binding SelectedAccessory}"
-                          DisplayMemberPath="Name"
-                          Margin="5" Height="30" MinWidth="300"
-                          HorizontalAlignment="Left"
-                          IsEditable="True"/>
+                    ItemsSource="{Binding Source={StaticResource SortedAccessoriesViewSource}}"
+                    SelectedItem="{Binding SelectedAccessory}"
+                    DisplayMemberPath="Name"
+                    Margin="5" Height="30" MinWidth="300"
+                    HorizontalAlignment="Left"
+                    IsEditable="True"/>
+
+
 
                 <Label Grid.Column="2" Content="Qty:" VerticalAlignment="Center" Margin="5,0,0,0"/>
                 <TextBox Grid.Column="3" Text="{Binding Quantity}" Width="50" Margin="5" Height="30" VerticalContentAlignment="Center" BorderBrush="#dee2e6"/>

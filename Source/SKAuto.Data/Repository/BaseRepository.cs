@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using SKAuto.Core.Services;
 
 namespace SKAuto.Data.Repository
 {
@@ -16,11 +17,13 @@ namespace SKAuto.Data.Repository
     {
         protected readonly DatabaseContext _context;
         protected readonly DbSet<T> _dbSet;
+        protected readonly ILoggingService _logger;
 
         public BaseRepository(DatabaseContext context)
         {
             _context = context;
             _dbSet = context.Set<T>();
+            _logger = new LoggingService(); // Assuming LoggingService has a parameterless constructor
         }
 
         public virtual async Task<T?> GetByIdAsync(int id)

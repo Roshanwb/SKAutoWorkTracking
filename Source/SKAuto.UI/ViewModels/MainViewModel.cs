@@ -248,7 +248,8 @@ namespace SKAuto.UI.ViewModels
 
         private void CreateWorkOrder()
         {
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, 0);
+            var logger = App.GetService<ILoggingService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
@@ -392,7 +393,8 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedWorkOrder == null) return;
 
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, SelectedWorkOrder.Id);
+            var logger = App.GetService<ILoggingService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
@@ -478,7 +480,8 @@ namespace SKAuto.UI.ViewModels
 
         private async Task EditWorkOrderAsync(int workOrderId)
         {
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, workOrderId);
+            var logger = App.GetService<ILoggingService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {

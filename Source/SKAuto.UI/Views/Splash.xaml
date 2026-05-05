@@ -22,10 +22,10 @@
 
             <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
                 <!-- Logo (adjust path if needed) -->
-                <Image Source="/Views/logo.png" Width="450" Height="160" Margin="0,0,0,20" 
-                       RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform"/>
+                <Image Width="448" Height="160" Margin="0,0,0,20" 
+                       RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform" Source="/Views/logo.png"/>
 
-                <TextBlock Text="SKAuto Work Tracking System" FontSize="22" FontWeight="SemiBold" Foreground="#2C3E50" 
+                <TextBlock Text="Work Tracking System" FontSize="22" FontWeight="SemiBold" Foreground="#2C3E50" 
                            HorizontalAlignment="Center" Margin="0,0,0,5"/>
 
                 <TextBlock Text="PSA Certified Partner" FontSize="14" Foreground="#7F8C8D" 
