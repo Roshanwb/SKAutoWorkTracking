@@ -20,10 +20,10 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
+            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30">
                 <!-- Logo (adjust path if needed) -->
-                <Image Width="448" Height="160" Margin="0,0,0,20" 
-                       RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform" Source="/Views/logo.png"/>
+                <Image Width="400" Height="100" Margin="0,0,0,20" 
+                       RenderOptions.BitmapScalingMode="HighQuality" Source="/Views/logo.png"/>
 
                 <TextBlock Text="Work Tracking System" FontSize="22" FontWeight="SemiBold" Foreground="#2C3E50" 
                            HorizontalAlignment="Center" Margin="0,0,0,5"/>

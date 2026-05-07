@@ -45,9 +45,14 @@ namespace SKAuto.UI.ViewModels
             "ok", "acc", "kit", "logos", "conforme", "pneus", "att.", "att. rv", "att rv",
             "66", "11", "68", "31", "10", "tapis", "relavage","relavag", "gravage", "pose", "camera",
             "ecran", "sk", "bois", "serrure", "cradel", "grille", "barre", "toit", "balisage",
-            "alarme", "antivol", "crochet", "attelage", "boitier", "controle", "housse"
+            "alarme", "antivol", "crochet", "attelage", "boitier", "controle", "housse", "tea", "MQ", "ct", "X","JK","LAUTO","LAUTO*","TRANS","COMPET","COMPAGNE",
+            "*","dr","le","atelier","Relavage","11Relavage","Nettoyage","Préparation"
         };
-
+        // Company suffixes to remove (case‑insensitive)
+        private static readonly HashSet<string> CompanySuffixes = new(StringComparer.OrdinalIgnoreCase)
+{
+    "acb", "sarl", "sas", "eurl", "sa", "sasu", "sci", "snc", "scop", "selarl", "selas", "gmbh", "ltd", "inc"
+};
         // Regular expression to detect codes like "TM4634", "AB123", "TS0025" – letters followed by digits.
         private static readonly Regex CodePattern = new Regex(@"^[A-Z]{2,}\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         // Regular expression to detect purely numeric tokens (like "68", "31").
@@ -530,55 +535,75 @@ namespace SKAuto.UI.ViewModels
             return null;
         }
 
-        // ---------- CLIENT NAME CLEANING (full version) ----------
+
+        // ---------- CLIENT NAME CLEANING (enhanced) ----------
         private string CleanClientName(string rawName)
         {
             if (string.IsNullOrWhiteSpace(rawName))
-                return "";
+                return "Unknown";
 
-            // First, extract known task codes (they will be removed anyway)
+            // 1. Extract and remove known task codes
             ExtractCodeFromClient(rawName, out string afterCodeRemoved);
 
-            // Now apply noise removal on `afterCodeRemoved`
-            var tokens = afterCodeRemoved.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            // 2. Remove all punctuation and special characters (before splitting)
+            string noPunctuation = Regex.Replace(afterCodeRemoved, @"[^\p{L}\s\-']", " ");
+
+            // 3. Split by whitespace and other delimiters
+            var tokens = noPunctuation.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
             var filteredTokens = new List<string>();
 
             foreach (var token in tokens)
             {
                 string t = token.Trim();
+                if (string.IsNullOrWhiteSpace(t))
+                    continue;
 
-                // Skip if token is a known excluded word
+                // Skip known noise words
                 if (ExcludedWords.Contains(t))
                     continue;
 
-                // Skip if token is purely numeric
+                // Skip purely numeric tokens
                 if (NumericPattern.IsMatch(t))
                     continue;
 
-                // Skip if token looks like a code (letters followed by digits)
+                // Skip codes like "TM4634"
                 if (CodePattern.IsMatch(t))
                     continue;
 
-                // Skip if token is a French header word (from Python list)
+                // Skip French header words
                 if (HeaderWordsPattern.IsMatch(t))
                     continue;
 
-                // If token is too short (length 1) and not a letter (like "A", "X"), maybe keep? We'll keep single letters.
-                // But we'll keep all non‑matched tokens.
                 filteredTokens.Add(t);
             }
 
-            // Join remaining tokens with space
+            if (!filteredTokens.Any())
+                return "Unknown";
+
+            // 4. Join remaining tokens with space
             string cleaned = string.Join(" ", filteredTokens).Trim();
 
-            // If after all cleaning we get an empty string, fall back to original? Better to return "Unknown"?
-            // But we already have an "Unknown" client fallback later. So we can return empty, and later code will use "Unknown".
-            // However, we must ensure we don't lose all info; maybe keep the longest token if empty.
-            if (string.IsNullOrWhiteSpace(cleaned))
+            // 5. Remove duplicate spaces
+            cleaned = Regex.Replace(cleaned, @"\s+", " ");
+
+            // 6. Remove common company suffixes from the end (e.g., "Veolia ACB" -> "Veolia")
+            var words = cleaned.Split(' ');
+            if (words.Length > 1 && CompanySuffixes.Contains(words.Last()))
             {
-                // Fallback: take the longest token that is not noise? For now, return the original after code removal.
-                cleaned = afterCodeRemoved;
+                cleaned = string.Join(" ", words.Take(words.Length - 1));
             }
+
+            // 7. Fallback if empty
+            if (string.IsNullOrWhiteSpace(cleaned))
+                cleaned = "Unknown";
+
+            // 8. Capitalize first letter of each word (Title Case)
+            var culture = System.Globalization.CultureInfo.CurrentCulture;
+            cleaned = culture.TextInfo.ToTitleCase(cleaned.ToLower());
+
+            // 9. Log transformation for debugging
+            if (cleaned != rawName)
+                _loggingService.LogInfo($"Client name cleaned: '{rawName}' -> '{cleaned}'");
 
             return cleaned;
         }
@@ -665,7 +690,7 @@ namespace SKAuto.UI.ViewModels
                                 var newClient = new Client
                                 {
                                     Name = name,
-                                    Type = ClientType.Direct,
+                                    Type = ClientType.PSA,
                                     IsActive = true
                                 };
                                 newClients.Add(newClient);
@@ -683,7 +708,7 @@ namespace SKAuto.UI.ViewModels
                         // Ensure "Unknown" client exists
                         if (!clientDict.ContainsKey("Unknown"))
                         {
-                            var unknown = new Client { Name = "Unknown", Type = ClientType.Direct, IsActive = true };
+                            var unknown = new Client { Name = "Unknown", Type = ClientType.PSA, IsActive = true };
                             await clientRepo.AddAsync(unknown);
                             await unitOfWork.CompleteAsync();
                             clientDict["Unknown"] = unknown;
