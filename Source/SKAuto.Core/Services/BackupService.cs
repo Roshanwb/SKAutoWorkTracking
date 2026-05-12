@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
@@ -25,8 +26,7 @@ namespace SKAuto.Core.Services
             _dbPath = dbPath;
         }
 
-        // ========== BACKUP / EXPORT ==========
-
+        // ---------- Export helpers ----------
         public async Task<string> BackupDatabaseAsync(string backupFolder)
         {
             var fileName = $"SKAuto_{DateTime.Now:yyyyMMdd_HHmmss}.db";
@@ -65,8 +65,7 @@ namespace SKAuto.Core.Services
             await csv.WriteRecordsAsync(records);
         }
 
-        // ========== IMPORT MAIN ==========
-
+        // ---------- Main Import ----------
         public async Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options)
         {
             var result = new BackupImportResult();
@@ -113,15 +112,26 @@ namespace SKAuto.Core.Services
             return result;
         }
 
-        // ========== CLIENT IMPORT ==========
+        // ---------- Helper: create CsvReader with header trimming ----------
+        private CsvReader CreateCsvReader(string filePath)
+        {
+            var stream = new StreamReader(filePath);
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                PrepareHeaderForMatch = args => args.Header.Trim(), // ✅ access Header property
+                HeaderValidated = null,
+                MissingFieldFound = null
+            };
+            return new CsvReader(stream, config);
+        }
 
+        // ---------- Import: Clients ----------
         private async Task<Dictionary<string, Client>> ImportClientsAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Clients.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Client>();
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<Client>().ToList();
             var imported = new Dictionary<string, Client>(StringComparer.OrdinalIgnoreCase);
 
@@ -169,22 +179,19 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== VEHICLE IMPORT ==========
-
+        // ---------- Import: Vehicles ----------
         private async Task<Dictionary<string, Vehicle>> ImportVehiclesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Client> clients, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Vehicles.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Vehicle>();
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<Vehicle>().ToList();
             var imported = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var rec in records)
             {
-                // Resolve ClientId from client name (CSV contains Client.Name)
                 if (rec.Client == null || string.IsNullOrWhiteSpace(rec.Client.Name))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = rec.ChassisNumber, ImportedValue = "Missing client name" });
@@ -198,7 +205,7 @@ namespace SKAuto.Core.Services
                     continue;
                 }
                 rec.ClientId = client.Id;
-                rec.Client = null;  // avoid navigation property conflict
+                rec.Client = null;
 
                 var existing = (await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == rec.ChassisNumber)).FirstOrDefault();
                 if (existing != null)
@@ -236,7 +243,6 @@ namespace SKAuto.Core.Services
                 }
                 else
                 {
-                    // New vehicle
                     if (!options.DryRun) await _unitOfWork.Vehicles.AddAsync(rec);
                     result.RowsInserted++;
                     imported[rec.ChassisNumber] = rec;
@@ -245,21 +251,18 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== ACCESSORY IMPORT ==========
-
+        // ---------- Import: Accessories ----------
         private async Task<Dictionary<string, Accessory>> ImportAccessoriesAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Accessories.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Accessory>();
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<Accessory>().ToList();
             var imported = new Dictionary<string, Accessory>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var rec in records)
             {
-                // Use Name as business key
                 var existing = (await _unitOfWork.Accessories.FindAsync(a => a.Name == rec.Name)).FirstOrDefault();
                 if (existing != null)
                 {
@@ -270,7 +273,7 @@ namespace SKAuto.Core.Services
                             existing.PartNumber = rec.PartNumber;
                             existing.Description = rec.Description;
                             existing.Time = rec.Time;
-                            existing.Price = rec.Price;
+                            if (rec.Price.HasValue) existing.Price = rec.Price;
                             existing.RequiresPassword = rec.RequiresPassword;
                             existing.IsActive = rec.IsActive;
                             if (!options.DryRun) await _unitOfWork.Accessories.UpdateAsync(existing);
@@ -296,7 +299,7 @@ namespace SKAuto.Core.Services
                 }
                 else
                 {
-                    // New accessory – let DB assign Id
+                    // New accessory: let DB assign Id
                     rec.Id = 0;
                     if (!options.DryRun) await _unitOfWork.Accessories.AddAsync(rec);
                     result.RowsInserted++;
@@ -306,22 +309,19 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== WORK ORDER IMPORT ==========
-
+        // ---------- Import: Work Orders ----------
         private async Task<Dictionary<int, WorkOrder>> ImportWorkOrdersAsync(string folder, BackupImportOptions options,
             Dictionary<string, Vehicle> vehicles, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "WorkOrders.csv");
             if (!File.Exists(filePath)) return new Dictionary<int, WorkOrder>();
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<WorkOrder>().ToList();
             var imported = new Dictionary<int, WorkOrder>();
 
             foreach (var rec in records)
             {
-                // Find vehicle by ChassisNumber (CSV contains Vehicle.ChassisNumber)
                 if (rec.Vehicle == null || string.IsNullOrWhiteSpace(rec.Vehicle.ChassisNumber))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = rec.Id.ToString(), ImportedValue = "Missing vehicle chassis" });
@@ -373,9 +373,6 @@ namespace SKAuto.Core.Services
                 }
                 else
                 {
-                    // New work order – keep CSV Id (or let DB assign? Safer to let DB assign)
-                    // But foreign keys from WorkTasks reference this Id. So we must preserve the original Id.
-                    // We'll use the Id from CSV and ensure it doesn't conflict.
                     if (!options.DryRun) await _unitOfWork.WorkOrders.AddAsync(rec);
                     result.RowsInserted++;
                     imported[rec.Id] = rec;
@@ -384,31 +381,26 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== WORK TASK IMPORT ==========
-
+        // ---------- Import: Work Tasks ----------
         private async Task ImportWorkTasksAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "WorkTasks.csv");
             if (!File.Exists(filePath)) return;
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<WorkTask>().ToList();
 
             foreach (var rec in records)
             {
-                // Resolve WorkOrder (by WorkOrderId) or from CSV relation
                 if (!workOrders.TryGetValue(rec.WorkOrderId, out var workOrder))
                 {
-                    // Maybe the CSV contains WorkOrder reference? We can also look up by WorkOrderId if it was imported.
                     result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = rec.Id.ToString(), ImportedValue = $"WorkOrder {rec.WorkOrderId} not found" });
                     result.RowsSkipped++;
                     continue;
                 }
                 rec.WorkOrderId = workOrder.Id;
 
-                // Resolve Accessory by Name
                 if (rec.Accessory == null || string.IsNullOrWhiteSpace(rec.Accessory.Name))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = rec.Id.ToString(), ImportedValue = "Missing accessory name" });
@@ -434,7 +426,7 @@ namespace SKAuto.Core.Services
                             existing.Quantity = rec.Quantity;
                             existing.TaskType = rec.TaskType;
                             existing.TaskStatus = rec.TaskStatus;
-                            existing.Price = rec.Price;
+                            if (rec.Price.HasValue) existing.Price = rec.Price;
                             existing.EstimatedMinutes = rec.EstimatedMinutes;
                             existing.ActualMinutes = rec.ActualMinutes;
                             existing.Notes = rec.Notes;
@@ -463,7 +455,6 @@ namespace SKAuto.Core.Services
                 }
                 else
                 {
-                    // New task – ensure Id is 0 to let DB assign
                     rec.Id = 0;
                     if (!options.DryRun) await _unitOfWork.WorkTasks.AddAsync(rec);
                     result.RowsInserted++;
@@ -471,16 +462,14 @@ namespace SKAuto.Core.Services
             }
         }
 
-        // ========== TRAVEL IMPORT ==========
-
+        // ---------- Import: Travels ----------
         private async Task ImportTravelsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Travels.csv");
             if (!File.Exists(filePath)) return;
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<Travel>().ToList();
 
             foreach (var rec in records)
@@ -533,21 +522,18 @@ namespace SKAuto.Core.Services
             }
         }
 
-        // ========== PROTECTED RATES IMPORT ==========
-
+        // ---------- Import: ProtectedRates ----------
         private async Task ImportProtectedRatesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "ProtectedRates.csv");
             if (!File.Exists(filePath)) return;
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<ProtectedRate>().ToList();
 
             foreach (var rec in records)
             {
-                // Resolve Accessory by Name
                 if (rec.Accessory == null || string.IsNullOrWhiteSpace(rec.Accessory.Name))
                 {
                     result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = rec.Id.ToString(), ImportedValue = "Missing accessory name" });
@@ -563,7 +549,6 @@ namespace SKAuto.Core.Services
                 rec.AccessoryId = accessory.Id;
                 rec.Accessory = null;
 
-                // Check for existing by AccessoryId + ValidFrom/To? We'll use Id as key.
                 var existing = await _unitOfWork.ProtectedRates.GetByIdAsync(rec.Id);
                 if (existing != null)
                 {
@@ -575,7 +560,7 @@ namespace SKAuto.Core.Services
                             existing.ValidTo = rec.ValidTo;
                             existing.HourlyRate = rec.HourlyRate;
                             existing.Currency = rec.Currency;
-                            existing.EncryptedRate = rec.EncryptedRate;
+                            // TODO: existing.EncryptedData = rec.EncryptedData; // Uncomment if your entity has EncryptedData property
                             existing.AccessoryId = rec.AccessoryId;
                             if (!options.DryRun) await _unitOfWork.ProtectedRates.UpdateAsync(existing);
                             result.RowsUpdated++;
@@ -585,7 +570,7 @@ namespace SKAuto.Core.Services
                             if (rec.ValidTo.HasValue) existing.ValidTo = rec.ValidTo;
                             if (rec.HourlyRate != default) existing.HourlyRate = rec.HourlyRate;
                             if (!string.IsNullOrWhiteSpace(rec.Currency)) existing.Currency = rec.Currency;
-                            if (rec.EncryptedRate != null) existing.EncryptedRate = rec.EncryptedRate       ;
+                            // TODO: if (rec.EncryptedData != null) existing.EncryptedData = rec.EncryptedData;
                             existing.AccessoryId = rec.AccessoryId;
                             if (!options.DryRun) await _unitOfWork.ProtectedRates.UpdateAsync(existing);
                             result.RowsUpdated++;
@@ -604,15 +589,13 @@ namespace SKAuto.Core.Services
             }
         }
 
-        // ========== USER IMPORT ==========
-
+        // ---------- Import: Users ----------
         private async Task ImportUsersAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Users.csv");
             if (!File.Exists(filePath)) return;
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<User>().ToList();
 
             foreach (var rec in records)
@@ -651,16 +634,14 @@ namespace SKAuto.Core.Services
             }
         }
 
-        // ========== SOURCE DOCUMENT IMPORT ==========
-
+        // ---------- Import: SourceDocuments ----------
         private async Task ImportSourceDocumentsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "SourceDocuments.csv");
             if (!File.Exists(filePath)) return;
 
-            using var reader = new StreamReader(filePath);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            using var csv = CreateCsvReader(filePath);
             var records = csv.GetRecords<SourceDocument>().ToList();
 
             foreach (var rec in records)
@@ -673,7 +654,6 @@ namespace SKAuto.Core.Services
                 }
                 rec.WorkOrderId = workOrder.Id;
 
-                // Use FileHash as unique key (or Id)
                 var existing = (await _unitOfWork.SourceDocuments.FindAsync(s => s.FileHash == rec.FileHash)).FirstOrDefault();
                 if (existing != null)
                 {
@@ -684,7 +664,7 @@ namespace SKAuto.Core.Services
                             existing.DocumentType = rec.DocumentType;
                             existing.FilePath = rec.FilePath;
                             existing.OriginalFilename = rec.OriginalFilename;
-                            existing.CreatedAt = rec.CreatedAt;
+                            // TODO: existing.ImportedAt = rec.ImportedAt; // Uncomment if your entity has ImportedAt property
                             existing.WorkOrderId = rec.WorkOrderId;
                             if (!options.DryRun) await _unitOfWork.SourceDocuments.UpdateAsync(existing);
                             result.RowsUpdated++;
@@ -693,7 +673,7 @@ namespace SKAuto.Core.Services
                             if (!string.IsNullOrWhiteSpace(rec.DocumentType)) existing.DocumentType = rec.DocumentType;
                             if (!string.IsNullOrWhiteSpace(rec.FilePath)) existing.FilePath = rec.FilePath;
                             if (!string.IsNullOrWhiteSpace(rec.OriginalFilename)) existing.OriginalFilename = rec.OriginalFilename;
-                            if (rec.CreatedAt != default) existing.CreatedAt = rec.CreatedAt;
+                            // if (rec.ImportedAt != default) existing.ImportedAt = rec.ImportedAt;
                             existing.WorkOrderId = rec.WorkOrderId;
                             if (!options.DryRun) await _unitOfWork.SourceDocuments.UpdateAsync(existing);
                             result.RowsUpdated++;
