@@ -59,6 +59,7 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand CancelCommand { get; }
         public IAsyncRelayCommand DeleteCommand { get; }
         public IRelayCommand OpenVehicleEditCommand { get; }
+        public IRelayCommand OpenAddTaskCommand { get; }
 
         public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, int workOrderId = 0)
         {
@@ -75,10 +76,51 @@ namespace SKAuto.UI.ViewModels
             CancelCommand = new RelayCommand(() => CloseWindow());
             DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew);
             OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
+            OpenAddTaskCommand = new RelayCommand(OpenAddTask);
 
             // Fire-and-forget initialization – we'll log any errors
             _ = InitializeAsync(workOrderId);
         }
+
+
+        private void OpenAddTask()
+        {
+            try
+            {
+                var logger = App.GetService<ILoggingService>();
+                var vm = new AccessoryManagementViewModel(_unitOfWork, logger);
+                var view = new AccessoryManagementView { DataContext = vm };
+
+                // Create a window to host the view
+                var window = new Window
+                {
+                    Title = "Manage Tasks",
+                    Content = view,
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                };
+
+                if (window.ShowDialog() == true)
+                {
+                    _ = RefreshAccessoriesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError("Failed to open accessory management", ex);
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task RefreshAccessoriesAsync()
+        {
+            var accessories = await _unitOfWork.Accessories.GetAllAsync();
+            AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+        }
+
 
         private void OpenVehicleEdit()
         {
