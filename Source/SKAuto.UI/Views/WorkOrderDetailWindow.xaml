@@ -13,6 +13,24 @@
                 <scm:SortDescription PropertyName="Name" Direction="Ascending"/>
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        <Style x:Key="LinkButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter Content="{TemplateBinding Content}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#004C99"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -63,10 +81,14 @@
                 </StackPanel>
 
                 <Label Grid.Row="1" Grid.Column="2" Content="Selected Vehicle:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                <TextBlock Grid.Row="1" Grid.Column="3" 
-                           Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}" 
-                           VerticalAlignment="Center" Margin="5"/>
-
+                <Button Grid.Row="1" Grid.Column="3" 
+                    Command="{Binding OpenVehicleEditCommand}"
+                    Style="{StaticResource LinkButtonStyle}"
+                    VerticalAlignment="Center" Margin="5">
+                            <TextBlock Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}" 
+                           TextDecorations="Underline" Cursor="Hand"/>
+                </Button>       
+                
                 <Label Grid.Row="2" Grid.Column="0" Content="Order Type:" VerticalAlignment="Center"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" 
                           ItemsSource="{Binding OrderTypeValues}"

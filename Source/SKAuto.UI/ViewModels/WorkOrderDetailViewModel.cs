@@ -4,6 +4,7 @@ using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
+using SKAuto.UI.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -57,6 +58,7 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand SaveCommand { get; }
         public IRelayCommand CancelCommand { get; }
         public IAsyncRelayCommand DeleteCommand { get; }
+        public IRelayCommand OpenVehicleEditCommand { get; }
 
         public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, int workOrderId = 0)
         {
@@ -72,9 +74,29 @@ namespace SKAuto.UI.ViewModels
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             CancelCommand = new RelayCommand(() => CloseWindow());
             DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew);
+            OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
 
             // Fire-and-forget initialization – we'll log any errors
             _ = InitializeAsync(workOrderId);
+        }
+
+        private void OpenVehicleEdit()
+        {
+            if (SelectedVehicle == null) return;
+
+            var editWindow = new VehicleEditWindow();
+            var viewModel = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
+            editWindow.DataContext = viewModel;
+            editWindow.Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
+            if (editWindow.ShowDialog() == true)
+            {
+                // Refresh the selected vehicle with updated data
+                SelectedVehicle = viewModel.Vehicle;
+                // Also refresh the Vehicles collection in case the chassis or model changed
+                // (You may want to reload the Vehicles list, but for simplicity, we'll update the reference)
+                OnPropertyChanged(nameof(SelectedVehicle));
+                // Optionally refresh the main vehicle list in the parent window? Not needed here.
+            }
         }
 
         private async Task InitializeAsync(int workOrderId)
@@ -123,7 +145,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         OrderDate = DateTime.Today,
                         Status = WorkStatus.Planned,
-                        OrderType = OrderType.Direct_Fitting
+                        OrderType = OrderType.PSA_Contract
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                     _logger.LogInfo("Created new work order");
