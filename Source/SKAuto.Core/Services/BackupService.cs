@@ -269,8 +269,93 @@ namespace SKAuto.Core.Services
         // Other import methods (stubs – you must implement them similarly)
         private async Task<Dictionary<string, Accessory>> ImportAccessoriesAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
-            // TODO: Implement similar to Clients
-            return new Dictionary<string, Accessory>();
+            var filePath = Path.Combine(folder, "Accessories.csv");
+            if (!File.Exists(filePath)) return new Dictionary<string, Accessory>();
+
+            using var reader = new StreamReader(filePath);
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+            // Read all records from CSV
+            var records = csv.GetRecords<Accessory>().ToList();
+            var imported = new Dictionary<string, Accessory>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var csvRecord in records)
+            {
+                // Use the Name as the business key (assuming it's unique)
+                var existing = (await _unitOfWork.Accessories.FindAsync(a => a.Name == csvRecord.Name)).FirstOrDefault();
+
+                if (existing != null)
+                {
+                    // Conflict exists
+                    result.Conflicts.Add(new Conflict
+                    {
+                        Table = "Accessories",
+                        Key = csvRecord.Name,
+                        ExistingValue = existing.Name,
+                        ImportedValue = csvRecord.Name
+                    });
+
+                    switch (options.AccessoryConflict)
+                    {
+                        case ConflictResolution.Overwrite:
+                            // Overwrite all updatable fields from CSV
+                            existing.PartNumber = csvRecord.PartNumber;
+                            existing.Description = csvRecord.Description;
+                            existing.Time = csvRecord.Time;
+                            existing.Price = csvRecord.Price;
+                            existing.RequiresPassword = csvRecord.RequiresPassword;
+                            existing.IsActive = csvRecord.IsActive;
+                            // Do NOT overwrite Id, CreatedAt, UpdatedAt – keep database values
+                            if (!options.DryRun)
+                                await _unitOfWork.Accessories.UpdateAsync(existing);
+                            result.RowsUpdated++;
+                            imported[csvRecord.Name] = existing;
+                            break;
+
+                        case ConflictResolution.Merge:
+                            // Only overwrite fields that are non‑null/not default in CSV
+                            if (!string.IsNullOrWhiteSpace(csvRecord.PartNumber))
+                                existing.PartNumber = csvRecord.PartNumber;
+                            if (!string.IsNullOrWhiteSpace(csvRecord.Description))
+                                existing.Description = csvRecord.Description;
+                            if (csvRecord.Time.HasValue)
+                                existing.Time = csvRecord.Time;
+                            if (csvRecord.Price.HasValue)
+                                existing.Price = csvRecord.Price;
+                            existing.RequiresPassword = csvRecord.RequiresPassword;
+                            existing.IsActive = csvRecord.IsActive;
+                            if (!options.DryRun)
+                                await _unitOfWork.Accessories.UpdateAsync(existing);
+                            result.RowsUpdated++;
+                            imported[csvRecord.Name] = existing;
+                            break;
+
+                        case ConflictResolution.Skip:
+                            result.RowsSkipped++;
+                            imported[csvRecord.Name] = existing;
+                            break;
+
+                        case ConflictResolution.Prompt:
+                            // Not implemented – fallback to Skip
+                            result.RowsSkipped++;
+                            imported[csvRecord.Name] = existing;
+                            break;
+                    }
+                }
+                else
+                {
+                    // No conflict – add new accessory
+                    // IMPORTANT: Do NOT set Id from CSV; let DB generate new Id.
+                    // Clear the Id to avoid duplicate key errors.
+                    csvRecord.Id = 0;
+                    if (!options.DryRun)
+                        await _unitOfWork.Accessories.AddAsync(csvRecord);
+                    result.RowsInserted++;
+                    imported[csvRecord.Name] = csvRecord;
+                }
+            }
+
+            return imported;
         }
 
         private async Task<Dictionary<int, WorkOrder>> ImportWorkOrdersAsync(string folder, BackupImportOptions options,
