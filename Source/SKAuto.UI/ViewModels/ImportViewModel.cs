@@ -558,6 +558,10 @@ namespace SKAuto.UI.ViewModels
                 if (string.IsNullOrWhiteSpace(t))
                     continue;
 
+                // --- NEW: Skip short uppercase tokens (2-3 letters) ---
+                if (t.Length >= 2 && t.Length <= 3 && t.All(char.IsUpper))
+                    continue;
+
                 // Skip known noise words
                 if (ExcludedWords.Contains(t))
                     continue;
@@ -582,26 +586,23 @@ namespace SKAuto.UI.ViewModels
 
             // 4. Join remaining tokens with space
             string cleaned = string.Join(" ", filteredTokens).Trim();
-
-            // 5. Remove duplicate spaces
             cleaned = Regex.Replace(cleaned, @"\s+", " ");
 
-            // 6. Remove common company suffixes from the end (e.g., "Veolia ACB" -> "Veolia")
+            // 5. Remove common company suffixes from the end (e.g., "Veolia ACB" -> "Veolia")
             var words = cleaned.Split(' ');
             if (words.Length > 1 && CompanySuffixes.Contains(words.Last()))
             {
                 cleaned = string.Join(" ", words.Take(words.Length - 1));
             }
 
-            // 7. Fallback if empty
             if (string.IsNullOrWhiteSpace(cleaned))
                 cleaned = "Unknown";
 
-            // 8. Capitalize first letter of each word (Title Case)
+            // 6. Capitalize first letter of each word (Title Case)
             var culture = System.Globalization.CultureInfo.CurrentCulture;
             cleaned = culture.TextInfo.ToTitleCase(cleaned.ToLower());
 
-            // 9. Log transformation for debugging
+            // 7. Log transformation for debugging
             if (cleaned != rawName)
                 _loggingService.LogInfo($"Client name cleaned: '{rawName}' -> '{cleaned}'");
 
