@@ -2,6 +2,7 @@
 using CsvHelper.Configuration;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -26,16 +27,18 @@ namespace SKAuto.Core.Services
             _dbPath = dbPath;
         }
 
-        // ---------- Export helpers ----------
+        // ---------- Backup Database ----------
         public async Task<string> BackupDatabaseAsync(string backupFolder)
         {
             var fileName = $"SKAuto_{DateTime.Now:yyyyMMdd_HHmmss}.db";
             var destPath = Path.Combine(backupFolder, fileName);
             Directory.CreateDirectory(backupFolder);
             File.Copy(_dbPath, destPath, true);
+            await Task.CompletedTask;
             return destPath;
         }
 
+        // ---------- Export ----------
         public async Task<string> ExportDataAsync(string exportFolder)
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -43,8 +46,8 @@ namespace SKAuto.Core.Services
             Directory.CreateDirectory(tempDir);
 
             await ExportTableToCsvAsync(await _unitOfWork.Clients.GetAllAsync(), tempDir, "Clients.csv");
-            await ExportTableToCsvAsync(await _unitOfWork.Vehicles.GetAllAsync(), tempDir, "Vehicles.csv");
             await ExportTableToCsvAsync(await _unitOfWork.Accessories.GetAllAsync(), tempDir, "Accessories.csv");
+            await ExportTableToCsvAsync(await _unitOfWork.Vehicles.GetAllAsync(), tempDir, "Vehicles.csv");
             await ExportTableToCsvAsync(await _unitOfWork.WorkOrders.GetAllAsync(), tempDir, "WorkOrders.csv");
             await ExportTableToCsvAsync(await _unitOfWork.WorkTasks.GetAllAsync(), tempDir, "WorkTasks.csv");
             await ExportTableToCsvAsync(await _unitOfWork.Travels.GetAllAsync(), tempDir, "Travels.csv");
@@ -75,15 +78,31 @@ namespace SKAuto.Core.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Import in dependency order
+                // 1. Clients (natural key: Name)
                 var clients = await ImportClientsAsync(extractDir, options, result);
+
+                // 2. Accessories (natural key: Name) – no client relation
                 var accessories = await ImportAccessoriesAsync(extractDir, options, result);
+
+                // 3. Vehicles (requires ClientId)
                 var vehicles = await ImportVehiclesAsync(extractDir, options, clients, result);
+
+                // 4. WorkOrders (requires VehicleId)
                 var workOrders = await ImportWorkOrdersAsync(extractDir, options, vehicles, result);
+
+                // 5. WorkTasks (requires WorkOrderId, AccessoryId)
                 await ImportWorkTasksAsync(extractDir, options, workOrders, accessories, result);
+
+                // 6. Travels (requires WorkOrderId)
                 await ImportTravelsAsync(extractDir, options, workOrders, result);
+
+                // 7. ProtectedRates (requires AccessoryId)
                 await ImportProtectedRatesAsync(extractDir, options, accessories, result);
+
+                // 8. Users (natural key: Username)
                 await ImportUsersAsync(extractDir, options, result);
+
+                // 9. SourceDocuments (requires WorkOrderId)
                 await ImportSourceDocumentsAsync(extractDir, options, workOrders, result);
 
                 if (!options.DryRun)
@@ -94,7 +113,7 @@ namespace SKAuto.Core.Services
                 else
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    _logger.LogInfo($"Dry run completed: {result.RowsInserted} would be inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped. Conflicts: {result.Conflicts.Count}");
+                    _logger.LogInfo($"Dry run completed: {result.RowsInserted} inserts, {result.RowsUpdated} updates, {result.RowsSkipped} skips.");
                 }
                 result.Success = true;
             }
@@ -112,582 +131,573 @@ namespace SKAuto.Core.Services
             return result;
         }
 
-        // ---------- Helper: create CsvReader with header trimming ----------
-        private CsvReader CreateCsvReader(string filePath)
+        // ========== HELPER: Read CSV with manual column mapping ==========
+        private List<Dictionary<string, string>> ReadCsvRows(string filePath)
         {
-            var stream = new StreamReader(filePath);
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            var rows = new List<Dictionary<string, string>>();
+            using var reader = new StreamReader(filePath);
+            using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                PrepareHeaderForMatch = args => args.Header.Trim(), // ✅ access Header property
+                PrepareHeaderForMatch = args => args.Header.Trim(),
                 HeaderValidated = null,
                 MissingFieldFound = null
-            };
-            return new CsvReader(stream, config);
+            });
+            csv.Read();
+            csv.ReadHeader();
+            var headers = csv.HeaderRecord.ToList();
+            while (csv.Read())
+            {
+                var row = new Dictionary<string, string>();
+                foreach (var h in headers)
+                {
+                    var value = csv.GetField(h);
+                    row[h] = value;
+                }
+                rows.Add(row);
+            }
+            return rows;
         }
 
-        // ---------- Import: Clients ----------
+        // ========== 1. CLIENTS ==========
         private async Task<Dictionary<string, Client>> ImportClientsAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Clients.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Client>();
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<Client>().ToList();
+            var rows = ReadCsvRows(filePath);
             var imported = new Dictionary<string, Client>(StringComparer.OrdinalIgnoreCase);
+            var allExisting = await _unitOfWork.Clients.GetAllAsync();
+            var existingDict = allExisting.ToDictionary(c => c.Name?.Trim() ?? "", c => c, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                var existing = (await _unitOfWork.Clients.FindAsync(c => c.Name == rec.Name)).FirstOrDefault();
-                if (existing != null)
+                var name = row.GetValueOrDefault("Name")?.Trim();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                if (existingDict.TryGetValue(name, out var existing))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "Clients", Key = rec.Name, ExistingValue = existing.Name, ImportedValue = rec.Name });
-                    switch (options.ClientConflict)
+                    result.Conflicts.Add(new Conflict { Table = "Clients", Key = name, ExistingValue = existing.Name, ImportedValue = name });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.Address = rec.Address;
-                            existing.Phone = rec.Phone;
-                            existing.Email = rec.Email;
-                            existing.Type = rec.Type;
-                            existing.IsActive = rec.IsActive;
-                            if (!options.DryRun) await _unitOfWork.Clients.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[rec.Name] = existing;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (!string.IsNullOrWhiteSpace(rec.Address)) existing.Address = rec.Address;
-                            if (!string.IsNullOrWhiteSpace(rec.Phone)) existing.Phone = rec.Phone;
-                            if (!string.IsNullOrWhiteSpace(rec.Email)) existing.Email = rec.Email;
-                            existing.Type = rec.Type;
-                            existing.IsActive = rec.IsActive;
-                            if (!options.DryRun) await _unitOfWork.Clients.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[rec.Name] = existing;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            imported[rec.Name] = existing;
-                            break;
+                        existing.Address = row.GetValueOrDefault("Address");
+                        existing.Phone = row.GetValueOrDefault("Phone");
+                        existing.Email = row.GetValueOrDefault("Email");
+                        existing.Type = Enum.TryParse<ClientType>(row.GetValueOrDefault("Type"), out var t) ? t : ClientType.Direct;
+                        existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
+                        if (!options.DryRun) await _unitOfWork.Clients.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
+                    imported[name] = existing;
                 }
                 else
                 {
-                    if (!options.DryRun) await _unitOfWork.Clients.AddAsync(rec);
+                    var newClient = new Client
+                    {
+                        Name = name,
+                        Address = row.GetValueOrDefault("Address"),
+                        Phone = row.GetValueOrDefault("Phone"),
+                        Email = row.GetValueOrDefault("Email"),
+                        Type = Enum.TryParse<ClientType>(row.GetValueOrDefault("Type"), out var t) ? t : ClientType.Direct,
+                        IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1"
+                    };
+                    if (!options.DryRun) await _unitOfWork.Clients.AddAsync(newClient);
                     result.RowsInserted++;
-                    imported[rec.Name] = rec;
+                    imported[name] = newClient;
+                    existingDict[name] = newClient;
                 }
             }
             return imported;
         }
 
-        // ---------- Import: Vehicles ----------
+        // ========== 2. ACCESSORIES (no client relation) ==========
+        private async Task<Dictionary<string, Accessory>> ImportAccessoriesAsync(string folder, BackupImportOptions options, BackupImportResult result)
+        {
+            var filePath = Path.Combine(folder, "Accessories.csv");
+            if (!File.Exists(filePath)) return new Dictionary<string, Accessory>();
+
+            var rows = ReadCsvRows(filePath);
+            var imported = new Dictionary<string, Accessory>(StringComparer.OrdinalIgnoreCase);
+            var allExisting = await _unitOfWork.Accessories.GetAllAsync();
+            var existingDict = allExisting.ToDictionary(a => a.Name?.Trim() ?? "", a => a, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var row in rows)
+            {
+                var name = row.GetValueOrDefault("Name")?.Trim();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                if (existingDict.TryGetValue(name, out var existing))
+                {
+                    result.Conflicts.Add(new Conflict { Table = "Accessories", Key = name, ExistingValue = existing.Name, ImportedValue = name });
+                    if (options.Conflict == ConflictResolution.Overwrite)
+                    {
+                        existing.PartNumber = row.GetValueOrDefault("PartNumber");
+                        existing.Description = row.GetValueOrDefault("Description");
+                        existing.Time = int.TryParse(row.GetValueOrDefault("Time"), out var t) ? t : (int?)null;
+                        existing.Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0;
+                        existing.RequiresPassword = row.GetValueOrDefault("RequiresPassword") == "True" || row.GetValueOrDefault("RequiresPassword") == "true" || row.GetValueOrDefault("RequiresPassword") == "1";
+                        existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
+                        if (!options.DryRun) await _unitOfWork.Accessories.UpdateAsync(existing);
+                        result.RowsUpdated++;
+                    }
+                    else result.RowsSkipped++;
+                    imported[name] = existing;
+                }
+                else
+                {
+                    var newAcc = new Accessory
+                    {
+                        Name = name,
+                        PartNumber = row.GetValueOrDefault("PartNumber"),
+                        Description = row.GetValueOrDefault("Description"),
+                        Time = int.TryParse(row.GetValueOrDefault("Time"), out var t) ? t : (int?)null,
+                        Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0,
+                        RequiresPassword = row.GetValueOrDefault("RequiresPassword") == "True" || row.GetValueOrDefault("RequiresPassword") == "true" || row.GetValueOrDefault("RequiresPassword") == "1",
+                        IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1"
+                    };
+                    if (!options.DryRun) await _unitOfWork.Accessories.AddAsync(newAcc);
+                    result.RowsInserted++;
+                    imported[name] = newAcc;
+                    existingDict[name] = newAcc;
+                }
+            }
+            return imported;
+        }
+
+        // ========== 3. VEHICLES ==========
         private async Task<Dictionary<string, Vehicle>> ImportVehiclesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Client> clients, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Vehicles.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Vehicle>();
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<Vehicle>().ToList();
+            var rows = ReadCsvRows(filePath);
             var imported = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
+            var allExisting = await _unitOfWork.Vehicles.GetAllAsync();
+            var existingDict = allExisting.ToDictionary(v => v.ChassisNumber?.Trim() ?? "", v => v, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                if (rec.Client == null || string.IsNullOrWhiteSpace(rec.Client.Name))
-                {
-                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = rec.ChassisNumber, ImportedValue = "Missing client name" });
-                    result.RowsSkipped++;
-                    continue;
-                }
-                if (!clients.TryGetValue(rec.Client.Name, out var client))
-                {
-                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = rec.ChassisNumber, ImportedValue = $"Client '{rec.Client.Name}' not found" });
-                    result.RowsSkipped++;
-                    continue;
-                }
-                rec.ClientId = client.Id;
-                rec.Client = null;
+                var chassis = row.GetValueOrDefault("ChassisNumber")?.Trim();
+                if (string.IsNullOrEmpty(chassis)) continue;
 
-                var existing = (await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == rec.ChassisNumber)).FirstOrDefault();
-                if (existing != null)
+                var clientName = row.GetValueOrDefault("Client")?.Trim();
+                if (string.IsNullOrEmpty(clientName))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = rec.ChassisNumber, ExistingValue = existing.ChassisNumber, ImportedValue = rec.ChassisNumber });
-                    switch (options.VehicleConflict)
+                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = "Missing client name" });
+                    result.RowsSkipped++;
+                    continue;
+                }
+                if (!clients.TryGetValue(clientName, out var client))
+                {
+                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = $"Client '{clientName}' not found" });
+                    result.RowsSkipped++;
+                    continue;
+                }
+
+                if (existingDict.TryGetValue(chassis, out var existing))
+                {
+                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ExistingValue = existing.ChassisNumber, ImportedValue = chassis });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.Model = rec.Model;
-                            existing.Make = rec.Make;
-                            existing.Year = rec.Year;
-                            existing.Registration = rec.Registration;
-                            existing.IsActive = rec.IsActive;
-                            existing.ClientId = rec.ClientId;
-                            if (!options.DryRun) await _unitOfWork.Vehicles.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[rec.ChassisNumber] = existing;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (!string.IsNullOrWhiteSpace(rec.Model)) existing.Model = rec.Model;
-                            if (!string.IsNullOrWhiteSpace(rec.Make)) existing.Make = rec.Make;
-                            if (rec.Year.HasValue) existing.Year = rec.Year;
-                            if (!string.IsNullOrWhiteSpace(rec.Registration)) existing.Registration = rec.Registration;
-                            existing.IsActive = rec.IsActive;
-                            existing.ClientId = rec.ClientId;
-                            if (!options.DryRun) await _unitOfWork.Vehicles.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[rec.ChassisNumber] = existing;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            imported[rec.ChassisNumber] = existing;
-                            break;
+                        existing.Make = row.GetValueOrDefault("Make");
+                        existing.Model = row.GetValueOrDefault("Model");
+                        existing.Year = int.TryParse(row.GetValueOrDefault("Year"), out var y) ? y : (int?)null;
+                        existing.Registration = row.GetValueOrDefault("Registration");
+                        existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
+                        existing.ClientId = client.Id;
+                        if (!options.DryRun) await _unitOfWork.Vehicles.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
+                    imported[chassis] = existing;
                 }
                 else
                 {
-                    if (!options.DryRun) await _unitOfWork.Vehicles.AddAsync(rec);
+                    var newVehicle = new Vehicle
+                    {
+                        ChassisNumber = chassis,
+                        Make = row.GetValueOrDefault("Make"),
+                        Model = row.GetValueOrDefault("Model"),
+                        Year = int.TryParse(row.GetValueOrDefault("Year"), out var y) ? y : (int?)null,
+                        Registration = row.GetValueOrDefault("Registration"),
+                        IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1",
+                        ClientId = client.Id
+                    };
+                    if (!options.DryRun) await _unitOfWork.Vehicles.AddAsync(newVehicle);
                     result.RowsInserted++;
-                    imported[rec.ChassisNumber] = rec;
+                    imported[chassis] = newVehicle;
+                    existingDict[chassis] = newVehicle;
                 }
             }
             return imported;
         }
 
-        // ---------- Import: Accessories ----------
-        private async Task<Dictionary<string, Accessory>> ImportAccessoriesAsync(string folder, BackupImportOptions options, BackupImportResult result)
-        {
-            var filePath = Path.Combine(folder, "Accessories.csv");
-            if (!File.Exists(filePath)) return new Dictionary<string, Accessory>();
-
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<Accessory>().ToList();
-            var imported = new Dictionary<string, Accessory>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var rec in records)
-            {
-                var existing = (await _unitOfWork.Accessories.FindAsync(a => a.Name == rec.Name)).FirstOrDefault();
-                if (existing != null)
-                {
-                    result.Conflicts.Add(new Conflict { Table = "Accessories", Key = rec.Name, ExistingValue = existing.Name, ImportedValue = rec.Name });
-                    switch (options.AccessoryConflict)
-                    {
-                        case ConflictResolution.Overwrite:
-                            existing.PartNumber = rec.PartNumber;
-                            existing.Description = rec.Description;
-                            existing.Time = rec.Time;
-                            if (rec.Price.HasValue) existing.Price = rec.Price;
-                            existing.RequiresPassword = rec.RequiresPassword;
-                            existing.IsActive = rec.IsActive;
-                            if (!options.DryRun) await _unitOfWork.Accessories.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[rec.Name] = existing;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (!string.IsNullOrWhiteSpace(rec.PartNumber)) existing.PartNumber = rec.PartNumber;
-                            if (!string.IsNullOrWhiteSpace(rec.Description)) existing.Description = rec.Description;
-                            if (rec.Time.HasValue) existing.Time = rec.Time;
-                            if (rec.Price.HasValue) existing.Price = rec.Price;
-                            existing.RequiresPassword = rec.RequiresPassword;
-                            existing.IsActive = rec.IsActive;
-                            if (!options.DryRun) await _unitOfWork.Accessories.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[rec.Name] = existing;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            imported[rec.Name] = existing;
-                            break;
-                    }
-                }
-                else
-                {
-                    // New accessory: let DB assign Id
-                    rec.Id = 0;
-                    if (!options.DryRun) await _unitOfWork.Accessories.AddAsync(rec);
-                    result.RowsInserted++;
-                    imported[rec.Name] = rec;
-                }
-            }
-            return imported;
-        }
-
-        // ---------- Import: Work Orders ----------
+        // ========== 4. WORK ORDERS ==========
         private async Task<Dictionary<int, WorkOrder>> ImportWorkOrdersAsync(string folder, BackupImportOptions options,
             Dictionary<string, Vehicle> vehicles, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "WorkOrders.csv");
             if (!File.Exists(filePath)) return new Dictionary<int, WorkOrder>();
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<WorkOrder>().ToList();
+            var rows = ReadCsvRows(filePath);
             var imported = new Dictionary<int, WorkOrder>();
+            var existingOrders = await _unitOfWork.WorkOrders.GetAllAsync();
+            var existingDict = existingOrders.ToDictionary(o => o.Id);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                if (rec.Vehicle == null || string.IsNullOrWhiteSpace(rec.Vehicle.ChassisNumber))
+                var id = int.TryParse(row.GetValueOrDefault("Id"), out var i) ? i : 0;
+                var chassis = row.GetValueOrDefault("Vehicle")?.Trim();
+                if (string.IsNullOrEmpty(chassis))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = rec.Id.ToString(), ImportedValue = "Missing vehicle chassis" });
+                    result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = "Missing vehicle chassis" });
                     result.RowsSkipped++;
                     continue;
                 }
-                if (!vehicles.TryGetValue(rec.Vehicle.ChassisNumber, out var vehicle))
+                if (!vehicles.TryGetValue(chassis, out var vehicle))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = rec.Id.ToString(), ImportedValue = $"Vehicle '{rec.Vehicle.ChassisNumber}' not found" });
+                    result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = $"Vehicle '{chassis}' not found" });
                     result.RowsSkipped++;
                     continue;
                 }
-                rec.VehicleId = vehicle.Id;
-                rec.Vehicle = null;
 
-                var existing = await _unitOfWork.WorkOrders.GetByIdAsync(rec.Id);
-                if (existing != null)
+                if (existingDict.TryGetValue(id, out var existing))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = rec.Id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = rec.Id.ToString() });
-                    switch (options.WorkOrderConflict)
+                    result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.OrderDate = rec.OrderDate;
-                            existing.Status = rec.Status;
-                            existing.OrderType = rec.OrderType;
-                            existing.CompletedDate = rec.CompletedDate;
-                            existing.Notes = rec.Notes;
-                            existing.VehicleId = rec.VehicleId;
-                            existing.TotalAmount = rec.TotalAmount;
-                            if (!options.DryRun) await _unitOfWork.WorkOrders.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[existing.Id] = existing;
-                            break;
-                        case ConflictResolution.Merge:
-                            existing.OrderDate = rec.OrderDate;
-                            existing.Status = rec.Status;
-                            if (!string.IsNullOrWhiteSpace(rec.Notes)) existing.Notes = rec.Notes;
-                            existing.VehicleId = rec.VehicleId;
-                            if (rec.TotalAmount.HasValue) existing.TotalAmount = rec.TotalAmount;
-                            if (!options.DryRun) await _unitOfWork.WorkOrders.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            imported[existing.Id] = existing;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            imported[existing.Id] = existing;
-                            break;
+                        existing.OrderDate = DateTime.TryParse(row.GetValueOrDefault("OrderDate"), out var d) ? d : DateTime.Today;
+                        existing.Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned;
+                        existing.OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract;
+                        existing.CompletedDate = DateTime.TryParse(row.GetValueOrDefault("CompletedDate"), out var cd) ? cd : (DateTime?)null;
+                        existing.Notes = row.GetValueOrDefault("Notes");
+                        existing.VehicleId = vehicle.Id;
+                        existing.TotalAmount = decimal.TryParse(row.GetValueOrDefault("TotalAmount"), out var ta) ? ta : (decimal?)null;
+                        if (!options.DryRun) await _unitOfWork.WorkOrders.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
+                    imported[existing.Id] = existing;
                 }
                 else
                 {
-                    if (!options.DryRun) await _unitOfWork.WorkOrders.AddAsync(rec);
+                    var newOrder = new WorkOrder
+                    {
+                        Id = id,
+                        OrderDate = DateTime.TryParse(row.GetValueOrDefault("OrderDate"), out var d) ? d : DateTime.Today,
+                        Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned,
+                        OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract,
+                        CompletedDate = DateTime.TryParse(row.GetValueOrDefault("CompletedDate"), out var cd) ? cd : (DateTime?)null,
+                        Notes = row.GetValueOrDefault("Notes"),
+                        VehicleId = vehicle.Id,
+                        TotalAmount = decimal.TryParse(row.GetValueOrDefault("TotalAmount"), out var ta) ? ta : (decimal?)null
+                    };
+                    if (!options.DryRun) await _unitOfWork.WorkOrders.AddAsync(newOrder);
                     result.RowsInserted++;
-                    imported[rec.Id] = rec;
+                    imported[newOrder.Id] = newOrder;
+                    existingDict[newOrder.Id] = newOrder;
                 }
             }
             return imported;
         }
 
-        // ---------- Import: Work Tasks ----------
+        // ========== 5. WORK TASKS ==========
         private async Task ImportWorkTasksAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "WorkTasks.csv");
             if (!File.Exists(filePath)) return;
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<WorkTask>().ToList();
+            var rows = ReadCsvRows(filePath);
+            var existingTasks = await _unitOfWork.WorkTasks.GetAllAsync();
+            var existingDict = existingTasks.ToDictionary(t => t.Id);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                if (!workOrders.TryGetValue(rec.WorkOrderId, out var workOrder))
+                var id = int.TryParse(row.GetValueOrDefault("Id"), out var i) ? i : 0;
+                var workOrderId = int.TryParse(row.GetValueOrDefault("WorkOrderId"), out var woId) ? woId : 0;
+                if (!workOrders.TryGetValue(workOrderId, out var workOrder))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = rec.Id.ToString(), ImportedValue = $"WorkOrder {rec.WorkOrderId} not found" });
+                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = $"WorkOrder {workOrderId} not found" });
                     result.RowsSkipped++;
                     continue;
                 }
-                rec.WorkOrderId = workOrder.Id;
 
-                if (rec.Accessory == null || string.IsNullOrWhiteSpace(rec.Accessory.Name))
+                var accessoryName = row.GetValueOrDefault("Accessory")?.Trim();
+                if (string.IsNullOrEmpty(accessoryName))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = rec.Id.ToString(), ImportedValue = "Missing accessory name" });
+                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = "Missing accessory name" });
                     result.RowsSkipped++;
                     continue;
                 }
-                if (!accessories.TryGetValue(rec.Accessory.Name, out var accessory))
+                if (!accessories.TryGetValue(accessoryName, out var accessory))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = rec.Id.ToString(), ImportedValue = $"Accessory '{rec.Accessory.Name}' not found" });
+                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = $"Accessory '{accessoryName}' not found" });
                     result.RowsSkipped++;
                     continue;
                 }
-                rec.AccessoryId = accessory.Id;
-                rec.Accessory = null;
 
-                var existing = await _unitOfWork.WorkTasks.GetByIdAsync(rec.Id);
-                if (existing != null)
+                if (existingDict.TryGetValue(id, out var existing))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = rec.Id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = rec.Id.ToString() });
-                    switch (options.WorkTaskConflict)
+                    result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.Quantity = rec.Quantity;
-                            existing.TaskType = rec.TaskType;
-                            existing.TaskStatus = rec.TaskStatus;
-                            if (rec.Price.HasValue) existing.Price = rec.Price;
-                            existing.EstimatedMinutes = rec.EstimatedMinutes;
-                            existing.ActualMinutes = rec.ActualMinutes;
-                            existing.Notes = rec.Notes;
-                            existing.WorkOrderId = rec.WorkOrderId;
-                            existing.AccessoryId = rec.AccessoryId;
-                            if (!options.DryRun) await _unitOfWork.WorkTasks.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (rec.Quantity != 0) existing.Quantity = rec.Quantity;
-                            if (rec.TaskType != default) existing.TaskType = rec.TaskType;
-                            if (rec.TaskStatus != default) existing.TaskStatus = rec.TaskStatus;
-                            if (rec.Price.HasValue) existing.Price = rec.Price;
-                            if (rec.EstimatedMinutes.HasValue) existing.EstimatedMinutes = rec.EstimatedMinutes;
-                            if (rec.ActualMinutes.HasValue) existing.ActualMinutes = rec.ActualMinutes;
-                            if (!string.IsNullOrWhiteSpace(rec.Notes)) existing.Notes = rec.Notes;
-                            existing.WorkOrderId = rec.WorkOrderId;
-                            existing.AccessoryId = rec.AccessoryId;
-                            if (!options.DryRun) await _unitOfWork.WorkTasks.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            break;
+                        existing.Quantity = int.TryParse(row.GetValueOrDefault("Quantity"), out var q) ? q : 1;
+                        existing.TaskType = Enum.TryParse<TaskType>(row.GetValueOrDefault("TaskType"), out var tt) ? tt : TaskType.Fit;
+                        existing.TaskStatus = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("TaskStatus"), out var ts) ? ts : WorkStatus.Planned;
+                        existing.Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0;
+                        existing.EstimatedMinutes = int.TryParse(row.GetValueOrDefault("EstimatedMinutes"), out var em) ? em : (int?)null;
+                        existing.ActualMinutes = int.TryParse(row.GetValueOrDefault("ActualMinutes"), out var am) ? am : (int?)null;
+                        existing.Notes = row.GetValueOrDefault("Notes");
+                        existing.WorkOrderId = workOrder.Id;
+                        existing.AccessoryId = accessory.Id;
+                        if (!options.DryRun) await _unitOfWork.WorkTasks.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
                 }
                 else
                 {
-                    rec.Id = 0;
-                    if (!options.DryRun) await _unitOfWork.WorkTasks.AddAsync(rec);
+                    var newTask = new WorkTask
+                    {
+                        Id = id,
+                        Quantity = int.TryParse(row.GetValueOrDefault("Quantity"), out var q) ? q : 1,
+                        TaskType = Enum.TryParse<TaskType>(row.GetValueOrDefault("TaskType"), out var tt) ? tt : TaskType.Fit,
+                        TaskStatus = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("TaskStatus"), out var ts) ? ts : WorkStatus.Planned,
+                        Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0,
+                        EstimatedMinutes = int.TryParse(row.GetValueOrDefault("EstimatedMinutes"), out var em) ? em : (int?)null,
+                        ActualMinutes = int.TryParse(row.GetValueOrDefault("ActualMinutes"), out var am) ? am : (int?)null,
+                        Notes = row.GetValueOrDefault("Notes"),
+                        WorkOrderId = workOrder.Id,
+                        AccessoryId = accessory.Id
+                    };
+                    if (!options.DryRun) await _unitOfWork.WorkTasks.AddAsync(newTask);
                     result.RowsInserted++;
+                    existingDict[newTask.Id] = newTask;
                 }
             }
         }
 
-        // ---------- Import: Travels ----------
+        // ========== 6. TRAVELS ==========
         private async Task ImportTravelsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Travels.csv");
             if (!File.Exists(filePath)) return;
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<Travel>().ToList();
+            var rows = ReadCsvRows(filePath);
+            var existingTravels = await _unitOfWork.Travels.GetAllAsync();
+            var existingDict = existingTravels.ToDictionary(t => t.Id);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                if (!workOrders.TryGetValue(rec.WorkOrderId, out var workOrder))
+                var id = int.TryParse(row.GetValueOrDefault("Id"), out var i) ? i : 0;
+                var workOrderId = int.TryParse(row.GetValueOrDefault("WorkOrderId"), out var woId) ? woId : 0;
+                if (!workOrders.TryGetValue(workOrderId, out var workOrder))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "Travels", Key = rec.Id.ToString(), ImportedValue = $"WorkOrder {rec.WorkOrderId} not found" });
+                    result.Conflicts.Add(new Conflict { Table = "Travels", Key = id.ToString(), ImportedValue = $"WorkOrder {workOrderId} not found" });
                     result.RowsSkipped++;
                     continue;
                 }
-                rec.WorkOrderId = workOrder.Id;
 
-                var existing = await _unitOfWork.Travels.GetByIdAsync(rec.Id);
-                if (existing != null)
+                if (existingDict.TryGetValue(id, out var existing))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "Travels", Key = rec.Id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = rec.Id.ToString() });
-                    switch (options.TravelConflict)
+                    result.Conflicts.Add(new Conflict { Table = "Travels", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.TravelDate = rec.TravelDate;
-                            existing.Destination = rec.Destination;
-                            existing.DistanceKm = rec.DistanceKm;
-                            existing.TravelCost = rec.TravelCost;
-                            existing.Notes = rec.Notes;
-                            existing.WorkOrderId = rec.WorkOrderId;
-                            if (!options.DryRun) await _unitOfWork.Travels.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (rec.TravelDate != default) existing.TravelDate = rec.TravelDate;
-                            if (!string.IsNullOrWhiteSpace(rec.Destination)) existing.Destination = rec.Destination;
-                            if (rec.DistanceKm.HasValue) existing.DistanceKm = rec.DistanceKm;
-                            if (rec.TravelCost.HasValue) existing.TravelCost = rec.TravelCost;
-                            if (!string.IsNullOrWhiteSpace(rec.Notes)) existing.Notes = rec.Notes;
-                            existing.WorkOrderId = rec.WorkOrderId;
-                            if (!options.DryRun) await _unitOfWork.Travels.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            break;
+                        existing.TravelDate = DateTime.TryParse(row.GetValueOrDefault("TravelDate"), out var d) ? d : DateTime.Today;
+                        existing.Destination = row.GetValueOrDefault("Destination");
+                        existing.DistanceKm = decimal.TryParse(row.GetValueOrDefault("DistanceKm"), out var km) ? km : (decimal?)null;
+                        existing.TravelCost = decimal.TryParse(row.GetValueOrDefault("TravelCost"), out var cost) ? cost : (decimal?)null;
+                        existing.Notes = row.GetValueOrDefault("Notes");
+                        existing.WorkOrderId = workOrder.Id;
+                        if (!options.DryRun) await _unitOfWork.Travels.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
                 }
                 else
                 {
-                    rec.Id = 0;
-                    if (!options.DryRun) await _unitOfWork.Travels.AddAsync(rec);
+                    var newTravel = new Travel
+                    {
+                        Id = id,
+                        TravelDate = DateTime.TryParse(row.GetValueOrDefault("TravelDate"), out var d) ? d : DateTime.Today,
+                        Destination = row.GetValueOrDefault("Destination"),
+                        DistanceKm = decimal.TryParse(row.GetValueOrDefault("DistanceKm"), out var km) ? km : (decimal?)null,
+                        TravelCost = decimal.TryParse(row.GetValueOrDefault("TravelCost"), out var cost) ? cost : (decimal?)null,
+                        Notes = row.GetValueOrDefault("Notes"),
+                        WorkOrderId = workOrder.Id
+                    };
+                    if (!options.DryRun) await _unitOfWork.Travels.AddAsync(newTravel);
                     result.RowsInserted++;
+                    existingDict[newTravel.Id] = newTravel;
                 }
             }
         }
 
-        // ---------- Import: ProtectedRates ----------
+        // ========== 7. PROTECTED RATES ==========
         private async Task ImportProtectedRatesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "ProtectedRates.csv");
             if (!File.Exists(filePath)) return;
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<ProtectedRate>().ToList();
+            var rows = ReadCsvRows(filePath);
+            var existingRates = await _unitOfWork.ProtectedRates.GetAllAsync();
+            var existingDict = existingRates.ToDictionary(r => r.Id);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                if (rec.Accessory == null || string.IsNullOrWhiteSpace(rec.Accessory.Name))
+                var id = int.TryParse(row.GetValueOrDefault("Id"), out var i) ? i : 0;
+                var accessoryName = row.GetValueOrDefault("Accessory")?.Trim();
+                if (string.IsNullOrEmpty(accessoryName))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = rec.Id.ToString(), ImportedValue = "Missing accessory name" });
+                    result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = id.ToString(), ImportedValue = "Missing accessory name" });
                     result.RowsSkipped++;
                     continue;
                 }
-                if (!accessories.TryGetValue(rec.Accessory.Name, out var accessory))
+                if (!accessories.TryGetValue(accessoryName, out var accessory))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = rec.Id.ToString(), ImportedValue = $"Accessory '{rec.Accessory.Name}' not found" });
+                    result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = id.ToString(), ImportedValue = $"Accessory '{accessoryName}' not found" });
                     result.RowsSkipped++;
                     continue;
                 }
-                rec.AccessoryId = accessory.Id;
-                rec.Accessory = null;
 
-                var existing = await _unitOfWork.ProtectedRates.GetByIdAsync(rec.Id);
-                if (existing != null)
+                if (existingDict.TryGetValue(id, out var existing))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = rec.Id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = rec.Id.ToString() });
-                    switch (options.ProtectedRateConflict)
+                    result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.ValidFrom = rec.ValidFrom;
-                            existing.ValidTo = rec.ValidTo;
-                            existing.HourlyRate = rec.HourlyRate;
-                            existing.Currency = rec.Currency;
-                            // TODO: existing.EncryptedData = rec.EncryptedData; // Uncomment if your entity has EncryptedData property
-                            existing.AccessoryId = rec.AccessoryId;
-                            if (!options.DryRun) await _unitOfWork.ProtectedRates.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (rec.ValidFrom != default) existing.ValidFrom = rec.ValidFrom;
-                            if (rec.ValidTo.HasValue) existing.ValidTo = rec.ValidTo;
-                            if (rec.HourlyRate != default) existing.HourlyRate = rec.HourlyRate;
-                            if (!string.IsNullOrWhiteSpace(rec.Currency)) existing.Currency = rec.Currency;
-                            // TODO: if (rec.EncryptedData != null) existing.EncryptedData = rec.EncryptedData;
-                            existing.AccessoryId = rec.AccessoryId;
-                            if (!options.DryRun) await _unitOfWork.ProtectedRates.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            break;
+                        existing.ValidFrom = DateTime.TryParse(row.GetValueOrDefault("ValidFrom"), out var vf) ? vf : DateTime.Today;
+                        existing.ValidTo = DateTime.TryParse(row.GetValueOrDefault("ValidTo"), out var vt) ? vt : (DateTime?)null;
+                        existing.HourlyRate = decimal.TryParse(row.GetValueOrDefault("HourlyRate"), out var hr) ? hr : 0;
+                        existing.Currency = row.GetValueOrDefault("Currency") ?? "EUR";
+                        existing.AccessoryId = accessory.Id;
+                        if (!options.DryRun) await _unitOfWork.ProtectedRates.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
                 }
                 else
                 {
-                    rec.Id = 0;
-                    if (!options.DryRun) await _unitOfWork.ProtectedRates.AddAsync(rec);
+                    var newRate = new ProtectedRate
+                    {
+                        Id = id,
+                        ValidFrom = DateTime.TryParse(row.GetValueOrDefault("ValidFrom"), out var vf) ? vf : DateTime.Today,
+                        ValidTo = DateTime.TryParse(row.GetValueOrDefault("ValidTo"), out var vt) ? vt : (DateTime?)null,
+                        HourlyRate = decimal.TryParse(row.GetValueOrDefault("HourlyRate"), out var hr) ? hr : 0,
+                        Currency = row.GetValueOrDefault("Currency") ?? "EUR",
+                        AccessoryId = accessory.Id
+                    };
+                    if (!options.DryRun) await _unitOfWork.ProtectedRates.AddAsync(newRate);
                     result.RowsInserted++;
+                    existingDict[newRate.Id] = newRate;
                 }
             }
         }
 
-        // ---------- Import: Users ----------
+        // ========== 8. USERS ==========
         private async Task ImportUsersAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "Users.csv");
             if (!File.Exists(filePath)) return;
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<User>().ToList();
+            var rows = ReadCsvRows(filePath);
+            var existingUsers = await _unitOfWork.Users.GetAllAsync();
+            var existingDict = existingUsers.ToDictionary(u => u.Username?.Trim() ?? "", u => u, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                var existing = (await _unitOfWork.Users.FindAsync(u => u.Username == rec.Username)).FirstOrDefault();
-                if (existing != null)
+                var username = row.GetValueOrDefault("Username")?.Trim();
+                if (string.IsNullOrEmpty(username)) continue;
+
+                if (existingDict.TryGetValue(username, out var existing))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "Users", Key = rec.Username, ExistingValue = existing.Username, ImportedValue = rec.Username });
-                    switch (options.UserConflict)
+                    result.Conflicts.Add(new Conflict { Table = "Users", Key = username, ExistingValue = existing.Username, ImportedValue = username });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.PasswordHash = rec.PasswordHash;
-                            existing.Role = rec.Role;
-                            existing.IsActive = rec.IsActive;
-                            if (!options.DryRun) await _unitOfWork.Users.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (!string.IsNullOrWhiteSpace(rec.PasswordHash)) existing.PasswordHash = rec.PasswordHash;
-                            existing.Role = rec.Role;
-                            existing.IsActive = rec.IsActive;
-                            if (!options.DryRun) await _unitOfWork.Users.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            break;
+                        existing.PasswordHash = row.GetValueOrDefault("PasswordHash");
+                        existing.Role = row.GetValueOrDefault("Role") ?? "User";
+                        existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
+                        if (!options.DryRun) await _unitOfWork.Users.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
                 }
                 else
                 {
-                    rec.Id = 0;
-                    if (!options.DryRun) await _unitOfWork.Users.AddAsync(rec);
+                    var newUser = new User
+                    {
+                        Username = username,
+                        PasswordHash = row.GetValueOrDefault("PasswordHash"),
+                        Role = row.GetValueOrDefault("Role") ?? "User",
+                        IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1"
+                    };
+                    if (!options.DryRun) await _unitOfWork.Users.AddAsync(newUser);
                     result.RowsInserted++;
+                    existingDict[username] = newUser;
                 }
             }
         }
 
-        // ---------- Import: SourceDocuments ----------
+        // ========== 9. SOURCE DOCUMENTS ==========
         private async Task ImportSourceDocumentsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
             var filePath = Path.Combine(folder, "SourceDocuments.csv");
             if (!File.Exists(filePath)) return;
 
-            using var csv = CreateCsvReader(filePath);
-            var records = csv.GetRecords<SourceDocument>().ToList();
+            var rows = ReadCsvRows(filePath);
+            var existingDocs = await _unitOfWork.SourceDocuments.GetAllAsync();
+            var existingDict = existingDocs.ToDictionary(d => d.FileHash ?? "", d => d, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var rec in records)
+            foreach (var row in rows)
             {
-                if (!workOrders.TryGetValue(rec.WorkOrderId, out var workOrder))
+                var id = int.TryParse(row.GetValueOrDefault("Id"), out var i) ? i : 0;
+                var workOrderId = int.TryParse(row.GetValueOrDefault("WorkOrderId"), out var woId) ? woId : 0;
+                if (!workOrders.TryGetValue(workOrderId, out var workOrder))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = rec.Id.ToString(), ImportedValue = $"WorkOrder {rec.WorkOrderId} not found" });
+                    result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = id.ToString(), ImportedValue = $"WorkOrder {workOrderId} not found" });
                     result.RowsSkipped++;
                     continue;
                 }
-                rec.WorkOrderId = workOrder.Id;
-
-                var existing = (await _unitOfWork.SourceDocuments.FindAsync(s => s.FileHash == rec.FileHash)).FirstOrDefault();
-                if (existing != null)
+                var fileHash = row.GetValueOrDefault("FileHash")?.Trim();
+                if (string.IsNullOrEmpty(fileHash))
                 {
-                    result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = rec.FileHash, ExistingValue = existing.FileHash, ImportedValue = rec.FileHash });
-                    switch (options.SourceDocumentConflict)
+                    result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = id.ToString(), ImportedValue = "Missing file hash" });
+                    result.RowsSkipped++;
+                    continue;
+                }
+
+                if (existingDict.TryGetValue(fileHash, out var existing))
+                {
+                    result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = fileHash, ExistingValue = existing.FileHash, ImportedValue = fileHash });
+                    if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        case ConflictResolution.Overwrite:
-                            existing.DocumentType = rec.DocumentType;
-                            existing.FilePath = rec.FilePath;
-                            existing.OriginalFilename = rec.OriginalFilename;
-                            // TODO: existing.ImportedAt = rec.ImportedAt; // Uncomment if your entity has ImportedAt property
-                            existing.WorkOrderId = rec.WorkOrderId;
-                            if (!options.DryRun) await _unitOfWork.SourceDocuments.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        case ConflictResolution.Merge:
-                            if (!string.IsNullOrWhiteSpace(rec.DocumentType)) existing.DocumentType = rec.DocumentType;
-                            if (!string.IsNullOrWhiteSpace(rec.FilePath)) existing.FilePath = rec.FilePath;
-                            if (!string.IsNullOrWhiteSpace(rec.OriginalFilename)) existing.OriginalFilename = rec.OriginalFilename;
-                            // if (rec.ImportedAt != default) existing.ImportedAt = rec.ImportedAt;
-                            existing.WorkOrderId = rec.WorkOrderId;
-                            if (!options.DryRun) await _unitOfWork.SourceDocuments.UpdateAsync(existing);
-                            result.RowsUpdated++;
-                            break;
-                        default:
-                            result.RowsSkipped++;
-                            break;
+                        existing.DocumentType = row.GetValueOrDefault("DocumentType");
+                        existing.FilePath = row.GetValueOrDefault("FilePath");
+                        existing.OriginalFilename = row.GetValueOrDefault("OriginalFilename");
+                        existing.WorkOrderId = workOrder.Id;
+                        if (!options.DryRun) await _unitOfWork.SourceDocuments.UpdateAsync(existing);
+                        result.RowsUpdated++;
                     }
+                    else result.RowsSkipped++;
                 }
                 else
                 {
-                    rec.Id = 0;
-                    if (!options.DryRun) await _unitOfWork.SourceDocuments.AddAsync(rec);
+                    var newDoc = new SourceDocument
+                    {
+                        Id = id,
+                        DocumentType = row.GetValueOrDefault("DocumentType"),
+                        FilePath = row.GetValueOrDefault("FilePath"),
+                        FileHash = fileHash,
+                        OriginalFilename = row.GetValueOrDefault("OriginalFilename"),
+                        WorkOrderId = workOrder.Id
+                    };
+                    if (!options.DryRun) await _unitOfWork.SourceDocuments.AddAsync(newDoc);
                     result.RowsInserted++;
+                    existingDict[fileHash] = newDoc;
                 }
             }
         }

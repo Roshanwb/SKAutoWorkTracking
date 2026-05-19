@@ -4,10 +4,7 @@ using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
 using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows;
-
 
 namespace SKAuto.UI.ViewModels
 {
@@ -28,42 +25,13 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _isDryRun = true;
 
-        // Conflict resolution properties
         [ObservableProperty]
-        private ConflictResolution _clientConflict = ConflictResolution.Prompt;
+        private ConflictResolution _conflict = ConflictResolution.Skip;
 
-        [ObservableProperty]
-        private ConflictResolution _vehicleConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _accessoryConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _workOrderConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _workTaskConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _travelConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _protectedRateConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _userConflict = ConflictResolution.Prompt;
-
-        [ObservableProperty]
-        private ConflictResolution _sourceDocumentConflict = ConflictResolution.Prompt;
-
-        
         [ObservableProperty]
         private string _statusMessage;
         [ObservableProperty]
         private BackupImportResult _lastImportResult;
-
-        // Enum lists for binding
-        public Array ConflictResolutions => Enum.GetValues(typeof(ConflictResolution));
 
         public IAsyncRelayCommand SelectBackupFolderCommand { get; }
         public IAsyncRelayCommand SelectExportFolderCommand { get; }
@@ -84,7 +52,7 @@ namespace SKAuto.UI.ViewModels
             BackupCommand = new AsyncRelayCommand(BackupAsync);
             ExportCommand = new AsyncRelayCommand(ExportAsync);
             ImportCommand = new AsyncRelayCommand(ImportAsync);
-            CloseCommand = new RelayCommand(CloseWindow);
+            CloseCommand = new RelayCommand(() => CloseWindow());
         }
 
         private async Task SelectBackupFolderAsync()
@@ -160,15 +128,7 @@ namespace SKAuto.UI.ViewModels
             var options = new BackupImportOptions
             {
                 DryRun = IsDryRun,
-                ClientConflict = ClientConflict,
-                VehicleConflict = VehicleConflict,
-                AccessoryConflict = AccessoryConflict,
-                WorkOrderConflict = WorkOrderConflict,
-                WorkTaskConflict = WorkTaskConflict,
-                TravelConflict = TravelConflict,
-                ProtectedRateConflict = ProtectedRateConflict,
-                UserConflict = UserConflict,
-                SourceDocumentConflict = SourceDocumentConflict
+                Conflict = Conflict
             };
 
             try
@@ -180,8 +140,8 @@ namespace SKAuto.UI.ViewModels
                 {
                     var msg = IsDryRun ? "Dry run completed." : "Import completed.";
                     msg += $"\nInserted: {result.RowsInserted}, Updated: {result.RowsUpdated}, Skipped: {result.RowsSkipped}";
-                    if (result.Conflicts.Any())
-                        msg += $"\nConflicts detected: {result.Conflicts.Count} (see log)";
+                    if (result.Conflicts.Count > 0)
+                        msg += $"\nConflicts: {result.Conflicts.Count} (see log)";
                     StatusMessage = msg;
                     _loggingService.LogInfo(msg);
                     MessageBox.Show(msg, IsDryRun ? "Dry Run Result" : "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
