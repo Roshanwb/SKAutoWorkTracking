@@ -5,9 +5,11 @@ using SKAuto.Core.Interfaces;
 using SKAuto.UI.Views;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -20,6 +22,16 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private Vehicle? _selectedVehicle;
+
+        [ObservableProperty]
+        private string _searchText = "";
+
+        private ICollectionView? _filteredVehicles;
+        public ICollectionView FilteredVehicles
+        {
+            get => _filteredVehicles;
+            set => SetProperty(ref _filteredVehicles, value);
+        }
 
         public IAsyncRelayCommand LoadVehiclesCommand { get; }
         public IRelayCommand AddVehicleCommand { get; }
@@ -43,6 +55,23 @@ namespace SKAuto.UI.ViewModels
         {
             var list = await _unitOfWork.Vehicles.GetAllAsync();
             Vehicles = new ObservableCollection<Vehicle>(list.OrderBy(v => v.ChassisNumber));
+            FilteredVehicles = CollectionViewSource.GetDefaultView(Vehicles);
+            FilteredVehicles.Filter = VehicleFilter;
+            OnPropertyChanged(nameof(FilteredVehicles));
+        }
+
+        private bool VehicleFilter(object item)
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+                return true;
+            var vehicle = item as Vehicle;
+            if (vehicle == null) return false;
+            return vehicle.ChassisNumber?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        partial void OnSearchTextChanged(string value)
+        {
+            FilteredVehicles?.Refresh();
         }
 
         private void AddVehicle()

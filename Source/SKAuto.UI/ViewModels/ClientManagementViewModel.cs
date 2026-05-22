@@ -5,9 +5,11 @@ using SKAuto.Core.Interfaces;
 using SKAuto.UI.Views;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -20,6 +22,16 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private Client? _selectedClient;
+
+        [ObservableProperty]
+        private string _searchText = "";
+
+        private ICollectionView? _filteredClients;
+        public ICollectionView FilteredClients
+        {
+            get => _filteredClients;
+            set => SetProperty(ref _filteredClients, value);
+        }
 
         public IAsyncRelayCommand LoadClientsCommand { get; }
         public IRelayCommand AddClientCommand { get; }
@@ -43,6 +55,23 @@ namespace SKAuto.UI.ViewModels
         {
             var list = await _unitOfWork.Clients.GetAllAsync();
             Clients = new ObservableCollection<Client>(list.OrderBy(c => c.Name));
+            FilteredClients = CollectionViewSource.GetDefaultView(Clients);
+            FilteredClients.Filter = ClientFilter;
+            OnPropertyChanged(nameof(FilteredClients));
+        }
+
+        private bool ClientFilter(object item)
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+                return true;
+            var client = item as Client;
+            if (client == null) return false;
+            return client.Name?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        partial void OnSearchTextChanged(string value)
+        {
+            FilteredClients?.Refresh();
         }
 
         private void AddClient()
@@ -52,19 +81,18 @@ namespace SKAuto.UI.ViewModels
             var win = new ClientEditWindow { DataContext = vm };
             if (win.ShowDialog() == true)
             {
-                LoadClientsCommand.Execute(null); // refresh list
+                LoadClientsCommand.Execute(null);
             }
         }
 
         private async Task EditClientAsync()
         {
             if (SelectedClient == null) return;
-            // Clone or use the actual entity? We'll pass the selected client directly.
             var vm = new ClientEditViewModel(_unitOfWork, SelectedClient);
             var win = new ClientEditWindow { DataContext = vm };
             if (win.ShowDialog() == true)
             {
-                await LoadClientsAsync(); // refresh
+                await LoadClientsAsync();
             }
         }
 
@@ -96,10 +124,7 @@ namespace SKAuto.UI.ViewModels
                     break;
                 }
         }
-        /// <summary>
-        ///  This method is called by the source generator whenever the SelectedClient property changes. It updates the CanExecute state of the Edit and Delete commands, enabling or disabling them based on whether a client is selected. --!
-        /// </summary>
-        /// <param name="value"></param>
+
         partial void OnSelectedClientChanged(Client? value)
         {
             EditClientCommand.NotifyCanExecuteChanged();
