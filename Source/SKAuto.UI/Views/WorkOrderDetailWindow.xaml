@@ -59,51 +59,55 @@
 
                 <Label Grid.Row="0" Grid.Column="0" Content="Client:" VerticalAlignment="Center"/>
                 <ComboBox Grid.Row="0" Grid.Column="1" 
-                          ItemsSource="{Binding Clients}"
-                          SelectedItem="{Binding SelectedClient}"
-                          DisplayMemberPath="Name"
-                          Margin="5,5,0,5" Height="30" MinWidth="300"
-                          IsEditable="True"
-                          HorizontalAlignment="Left"/>
+                  ItemsSource="{Binding Clients}"
+                  SelectedItem="{Binding SelectedClient}"
+                  DisplayMemberPath="Name"
+                  Margin="5,5,0,5" Height="30" MinWidth="300"
+                  IsEditable="True"
+                  HorizontalAlignment="Left"/>
 
                 <Label Grid.Row="0" Grid.Column="2" Content="Order Date:" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <DatePicker Grid.Row="0" Grid.Column="3" 
-                            SelectedDate="{Binding WorkOrder.OrderDate}"
-                            Margin="5" Height="30" MinWidth="300"
-                            HorizontalAlignment="Left"/>
+                    SelectedDate="{Binding WorkOrder.OrderDate}"
+                    Margin="5" Height="30" MinWidth="300"
+                    HorizontalAlignment="Left"/>
 
                 <Label Grid.Row="1" Grid.Column="0" Content="Chassis:" VerticalAlignment="Center"/>
                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-                    <TextBox Text="{Binding ChassisSearch, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="5" Height="30" BorderBrush="#dee2e6"/>
+                    <TextBox x:Name="ChassisTextBox" 
+                     Text="{Binding ChassisSearch, UpdateSourceTrigger=PropertyChanged}" 
+                     Width="150" Margin="5" Height="30" CharacterCasing="Upper" 
+                     TextOptions.TextRenderingMode="Auto" BorderBrush="#dee2e6"
+                     KeyDown="ChassisTextBox_KeyDown"/>
                     <Button Content="Search" Command="{Binding SearchVehicleCommand}" 
-                            Style="{StaticResource ActionButton}" Background="#3498db"
-                            Width="70" Height="30" Margin="5"/>
+                    Style="{StaticResource ActionButton}" Background="#3498db"
+                    Width="70" Height="30" Margin="5"/>
                 </StackPanel>
 
                 <Label Grid.Row="1" Grid.Column="2" Content="Selected Vehicle:" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <Button Grid.Row="1" Grid.Column="3" 
-                    Command="{Binding OpenVehicleEditCommand}"
-                    Style="{StaticResource LinkButtonStyle}"
-                    VerticalAlignment="Center" Margin="5">
-                            <TextBlock Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}" 
-                           TextDecorations="Underline" Cursor="Hand"/>
-                </Button>       
-                
+                Command="{Binding OpenVehicleEditCommand}"
+                Style="{StaticResource LinkButtonStyle}"
+                VerticalAlignment="Center" Margin="5">
+                    <TextBlock Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}" 
+                       TextDecorations="Underline" Cursor="Hand"/>
+                </Button>
+
                 <Label Grid.Row="2" Grid.Column="0" Content="Order Type:" VerticalAlignment="Center"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" 
-                          ItemsSource="{Binding OrderTypeValues}"
-                          SelectedItem="{Binding WorkOrder.OrderType}"                          
-                          Margin="5" Height="30" MinWidth="300"
-                          IsEditable="True"
-                          HorizontalAlignment="Left"/>
+                  ItemsSource="{Binding OrderTypeValues}"
+                  SelectedItem="{Binding WorkOrder.OrderType}"                          
+                  Margin="5" Height="30" MinWidth="300"
+                  IsEditable="True"
+                  HorizontalAlignment="Left"/>
 
                 <Label Grid.Row="2" Grid.Column="2" Content="Status:" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <ComboBox Grid.Row="2" Grid.Column="3" 
-                          ItemsSource="{Binding WorkStatusValues}"
-                          SelectedItem="{Binding WorkOrder.Status}"                          
-                          Margin="5" Height="30" MinWidth="200"
-                          IsEditable="True"
-                          HorizontalAlignment="Left"/>
+                  ItemsSource="{Binding WorkStatusValues}"
+                  SelectedItem="{Binding WorkOrder.Status}"                          
+                  Margin="5" Height="30" MinWidth="200"
+                  IsEditable="True"
+                  HorizontalAlignment="Left"/>
             </Grid>
         </GroupBox>
 

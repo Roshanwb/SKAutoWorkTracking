@@ -122,7 +122,7 @@ namespace SKAuto.UI.ViewModels
         }
 
 
-        private void OpenVehicleEdit()
+        private async void OpenVehicleEdit()
         {
             if (SelectedVehicle == null) return;
 
@@ -130,14 +130,24 @@ namespace SKAuto.UI.ViewModels
             var viewModel = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
             editWindow.DataContext = viewModel;
             editWindow.Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
+
             if (editWindow.ShowDialog() == true)
             {
-                // Refresh the selected vehicle with updated data
-                SelectedVehicle = viewModel.Vehicle;
-                // Also refresh the Vehicles collection in case the chassis or model changed
-                // (You may want to reload the Vehicles list, but for simplicity, we'll update the reference)
+                // Refresh the selected vehicle with updated data from database
+                var refreshedVehicle = await _unitOfWork.Vehicles.GetByIdAsync(SelectedVehicle.Id);
+                if (refreshedVehicle != null)
+                {
+                    SelectedVehicle = refreshedVehicle;
+                    // Also refresh the vehicle's client reference
+                    if (refreshedVehicle.Client != null)
+                    {
+                        SelectedClient = refreshedVehicle.Client;
+                        WorkOrder.VehicleId = refreshedVehicle.Id;
+                    }
+                    _logger.LogInfo($"Vehicle refreshed after edit: {refreshedVehicle.ChassisNumber}");
+                }
+                await RefreshVehiclesList();
                 OnPropertyChanged(nameof(SelectedVehicle));
-                // Optionally refresh the main vehicle list in the parent window? Not needed here.
             }
         }
 
@@ -304,7 +314,13 @@ namespace SKAuto.UI.ViewModels
 
         partial void OnSelectedClientChanged(Client? value)
         {
-            // Client is read-only when vehicle is selected; just for logging
+            if (value != null && SelectedVehicle != null)
+            {
+                // Update the vehicle's client when client is manually changed
+                SelectedVehicle.ClientId = value.Id;
+                SelectedVehicle.Client = value;
+                _logger.LogInfo($"Updated vehicle client to {value.Name} (ID {value.Id})");
+            }
             if (value != null)
                 _logger.LogInfo($"Selected client changed to {value.Name} (ID {value.Id})");
         }
@@ -345,11 +361,23 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 _logger.LogInfo("SaveAsync started");
-                if (WorkOrder.VehicleId == 0 || SelectedVehicle == null)
+
+                if (SelectedVehicle == null)
                 {
                     _logger.LogWarning("Save attempted without a vehicle selected");
                     MessageBox.Show("Please select a vehicle.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
+                }
+
+                // Ensure WorkOrder has the correct VehicleId
+                WorkOrder.VehicleId = SelectedVehicle.Id;
+
+                // If client was manually changed, update the vehicle's client
+                if (SelectedClient != null && SelectedVehicle.ClientId != SelectedClient.Id)
+                {
+                    _logger.LogInfo($"Updating vehicle client from {SelectedVehicle.ClientId} to {SelectedClient.Id}");
+                    SelectedVehicle.ClientId = SelectedClient.Id;
+                    await _unitOfWork.Vehicles.UpdateAsync(SelectedVehicle);
                 }
 
                 WorkOrder.CalculateTotal();
