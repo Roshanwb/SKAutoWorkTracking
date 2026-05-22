@@ -8,7 +8,9 @@
         Title="SK Auto Work Tracking" 
         Height="700" Width="1200"
         WindowStartupLocation="CenterScreen">
-
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding CreateWorkOrderCommand}"/>
+    </Window.InputBindings>
     <Window.Resources>
         <!-- Converters -->
         <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
@@ -124,10 +126,14 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Header -->
-                <RowDefinition Height="*"/>    <!-- Main Content -->
-                <RowDefinition Height="Auto"/> <!-- Status Bar -->
-                <RowDefinition Height="Auto"/> <!-- Footer -->
+                <RowDefinition Height="Auto"/>
+                <!-- Header -->
+                <RowDefinition Height="*"/>
+                <!-- Main Content -->
+                <RowDefinition Height="Auto"/>
+                <!-- Status Bar -->
+                <RowDefinition Height="Auto"/>
+                <!-- Footer -->
             </Grid.RowDefinitions>
 
             <!-- Header -->
@@ -274,6 +280,15 @@
                         </StackPanel>
                     </Border>
 
+
+                    <!-- Action buttons -->
+                    <Button Content="New Work Order" 
+                            Style="{StaticResource ActionButton}"
+                            Height="60"
+                            FontSize="15"
+                            Background="#E91E63        "
+                            Command="{Binding CreateWorkOrderCommand}"/>
+
                     <!-- Management buttons -->
                     <Button Content="Manage Clients" 
                             Style="{StaticResource ActionButton}"
@@ -281,22 +296,17 @@
                             Command="{Binding OpenClientManagementCommand}"/>
                     <Button Content="Manage Vehicles" 
                             Style="{StaticResource ActionButton}"
-                            Background="#6c757d"
+                            Background="#17a2b8"
                             Command="{Binding OpenVehicleManagementCommand}"/>
 
-                    <!-- Action buttons -->
-                    <Button Content="New Work Order" 
-                            Style="{StaticResource ActionButton}"
-                            Background="#3498db"
-                            Command="{Binding CreateWorkOrderCommand}"/>
-                    <Button Content="Import Data" 
-                            Style="{StaticResource ActionButton}"
-                            Background="#6c757d"
-                            Command="{Binding ImportDataCommand}"/>
                     <Button Content="Generate Reports" 
                             Style="{StaticResource ActionButton}"
                             Background="#27ae60"
                             Command="{Binding OpenReportsCommand}"/>
+                    <Button Content="Import Data" 
+                             Style="{StaticResource ActionButton}"
+                             Background="#8BC34A "
+                             Command="{Binding ImportDataCommand}"/>
 
                     <TextBlock Text="Update Status" FontWeight="SemiBold" Margin="0,8,0,5"/>
                     <Button Content="Mark In Progress" 
@@ -332,7 +342,7 @@
                 </StackPanel>
             </Grid>
 
-           
+
 
             <!-- Footer -->
             <Border Grid.Row="3" Background="#ecf0f1" Padding="8">

@@ -251,6 +251,10 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
             var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            // ✅ Set the owner to the current MainWindow
+            window.Owner = Application.Current.MainWindow;
+            // ✅ Set startup location (already in XAML, but ensure it's set)
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (window.ShowDialog() == true)
             {
                 LoadTodayWorkCommand.Execute(null);
@@ -284,7 +288,7 @@ namespace SKAuto.UI.ViewModels
             );
 
             var importView = new ImportView { DataContext = importVM };
-            importView.Show();
+            importView.ShowDialog();
             LoadTodayWorkCommand.Execute(null);
         }
 
