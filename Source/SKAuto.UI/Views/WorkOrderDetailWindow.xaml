@@ -78,10 +78,10 @@
                      Text="{Binding ChassisSearch, UpdateSourceTrigger=PropertyChanged}" 
                      Width="150" Margin="5" Height="30" CharacterCasing="Upper" 
                      TextOptions.TextRenderingMode="Auto" BorderBrush="#dee2e6"
-                     KeyDown="ChassisTextBox_KeyDown"/>
+                     KeyDown="ChassisTextBox_KeyDown" TabIndex="0"/>
                     <Button Content="Search" Command="{Binding SearchVehicleCommand}" 
                     Style="{StaticResource ActionButton}" Background="#3498db"
-                    Width="70" Height="30" Margin="5"/>
+                    Width="70" Height="30" Margin="5" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <Label Grid.Row="1" Grid.Column="2" Content="Selected Vehicle:" VerticalAlignment="Center" Margin="10,0,0,0"/>
@@ -119,9 +119,8 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Task Label -->
@@ -135,23 +134,18 @@
                   Margin="5" Height="30"
                   HorizontalAlignment="Left"
                   IsEditable="True" Width="250"/>
-
-                <!-- + Button to add new task -->
-                <Button Grid.Column="2" Content="Add New" Command="{Binding OpenAddTaskCommand}"
-                Style="{StaticResource ActionButton}" Background="#4CAF50"
-                FontSize="12" FontWeight="Normal" Width="65" Height="30" Margin="5"/>
-                <Label Grid.Column="3" Content="" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                <!-- Qty Label -->
-                <Label Grid.Column="4" Content="Qty:" VerticalAlignment="Center" Margin="5,0,0,0"/>
-
-                <!-- Qty TextBox -->
-                <TextBox Grid.Column="5" Text="{Binding Quantity}" Width="50" Margin="5" Height="30" 
-                 VerticalContentAlignment="Center" BorderBrush="#dee2e6"/>
-
                 <!-- Add Button -->
-                <Button Grid.Column="5" Content="Add" Command="{Binding AddTaskCommand}" 
+                <Button Grid.Column="2" Content="Add" Command="{Binding AddTaskCommand}" 
                 Style="{StaticResource ActionButton}" Background="#2196F3"
                 Width="60" Height="30" Margin="5"/>
+                
+                <!-- + Button to add new task -->
+                <Button Grid.Column="3" Content="Add New Task Name" Command="{Binding OpenAddTaskCommand}"
+                Style="{StaticResource ActionButton}" Background="#4CAF50"
+                FontSize="12" FontWeight="Normal" Width="120" Height="30" Margin="5"/>
+
+
+                <Label Grid.Column="4" Content="" VerticalAlignment="Center" Margin="5,0,0,0"/>
             </Grid>
         </GroupBox>
 

@@ -9,6 +9,7 @@ namespace SKAuto.UI.Views
         public WorkOrderDetailWindow()
         {
             InitializeComponent();
+            this.ChassisTextBox.Focus();
         }
         private void ChassisTextBox_KeyDown(object sender, KeyEventArgs e)
         {
