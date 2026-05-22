@@ -22,13 +22,16 @@
             </StackPanel>
         </Border>
 
-        <!-- DataGrid -->
-        <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredClients}" SelectedItem="{Binding SelectedClient}"
-                  AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10"
-                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
-                  BorderBrush="#dee2e6" BorderThickness="1"
-                  RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
-            <DataGrid.Columns>
+        <!-- DataGrid with multi-select -->
+        <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredClients}" 
+          SelectedItem="{Binding SelectedClient}"
+          SelectionMode="Extended" SelectionUnit="FullRow"
+          SelectionChanged="DataGrid_SelectionChanged"
+          AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10"
+          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+          BorderBrush="#dee2e6" BorderThickness="1"
+          RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
+        <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150" SortDirection="Ascending"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80"/>
@@ -41,6 +44,9 @@
 
         <!-- Buttons -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Merge Selected" Command="{Binding MergeClientsCommand}"
+                    Style="{StaticResource ActionButton}" Background="#17a2b8"
+                    Width="100" Margin="5"/>
             <Button Content="Add" Command="{Binding AddClientCommand}" 
                     Style="{StaticResource ActionButton}" Background="#4CAF50"
                     Width="80" Margin="5"/>

@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using SKAuto.Core.Entities;
+using SKAuto.UI.ViewModels;
 
 namespace SKAuto.UI.Views
 {
@@ -19,6 +10,20 @@ namespace SKAuto.UI.Views
         public ClientManagementView()
         {
             InitializeComponent();
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is ClientManagementViewModel vm && sender is DataGrid grid)
+            {
+                vm.SelectedClients.Clear();
+                foreach (Client client in grid.SelectedItems)
+                {
+                    vm.SelectedClients.Add(client);
+                }
+                // Notify command that CanExecute state may have changed
+                vm.MergeClientsCommand.NotifyCanExecuteChanged();
+            }
         }
     }
 }

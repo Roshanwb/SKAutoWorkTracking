@@ -26,6 +26,9 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private string _searchText = "";
 
+        [ObservableProperty]
+        private ObservableCollection<Client> _selectedClients = new();
+
         private ICollectionView? _filteredClients;
         public ICollectionView FilteredClients
         {
@@ -38,6 +41,7 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand EditClientCommand { get; }
         public IAsyncRelayCommand DeleteClientCommand { get; }
         public IRelayCommand CloseCommand { get; }
+        public IAsyncRelayCommand MergeClientsCommand { get; }
 
         public ClientManagementViewModel(IUnitOfWork unitOfWork)
         {
@@ -47,6 +51,8 @@ namespace SKAuto.UI.ViewModels
             EditClientCommand = new AsyncRelayCommand(EditClientAsync, () => SelectedClient != null);
             DeleteClientCommand = new AsyncRelayCommand(DeleteClientAsync, () => SelectedClient != null);
             CloseCommand = new RelayCommand(CloseWindow);
+            SelectedClients = new ObservableCollection<Client>();
+            MergeClientsCommand = new AsyncRelayCommand(MergeClientsAsync, () => SelectedClients.Count >= 2);
 
             LoadClientsCommand.Execute(null);
         }
@@ -58,6 +64,12 @@ namespace SKAuto.UI.ViewModels
             FilteredClients = CollectionViewSource.GetDefaultView(Clients);
             FilteredClients.Filter = ClientFilter;
             OnPropertyChanged(nameof(FilteredClients));
+        }
+
+        partial void OnSelectedClientsChanged(ObservableCollection<Client> value)
+        {
+            // ✅ Added null-conditional operator to prevent NullReferenceException
+            MergeClientsCommand?.NotifyCanExecuteChanged();
         }
 
         private bool ClientFilter(object item)
@@ -129,6 +141,61 @@ namespace SKAuto.UI.ViewModels
         {
             EditClientCommand.NotifyCanExecuteChanged();
             DeleteClientCommand.NotifyCanExecuteChanged();
+        }
+
+        private async Task MergeClientsAsync()
+        {
+            if (SelectedClients == null || SelectedClients.Count < 2)
+            {
+                MessageBox.Show("Please select at least two clients to merge.", "Merge Clients", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var master = SelectedClients.OrderBy(c => c.Id).First();
+            var others = SelectedClients.Where(c => c.Id != master.Id).ToList();
+
+            var dialog = new ClientMergeDialog(master);
+            if (dialog.ShowDialog() != true)
+                return;
+
+            // Update master with user-modified values
+            master.Name = dialog.ClientName;
+            master.Phone = dialog.Phone;
+            master.Email = dialog.Email;
+            master.Address = dialog.Address;
+            master.Notes = dialog.Notes;
+            master.IsActive = dialog.IsActive;
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                // Reassign vehicles
+                foreach (var client in others)
+                {
+                    var vehicles = await _unitOfWork.Vehicles.FindAsync(v => v.ClientId == client.Id);
+                    foreach (var vehicle in vehicles)
+                    {
+                        vehicle.ClientId = master.Id;
+                        await _unitOfWork.Vehicles.UpdateAsync(vehicle);
+                    }
+                }
+                await _unitOfWork.Clients.UpdateAsync(master);
+                foreach (var client in others)
+                {
+                    await _unitOfWork.Clients.DeleteAsync(client);
+                }
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                MessageBox.Show($"Successfully merged {others.Count} client(s) into '{master.Name}'.", "Merge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadClientsAsync();
+                SelectedClients.Clear();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                MessageBox.Show($"Error merging clients: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
