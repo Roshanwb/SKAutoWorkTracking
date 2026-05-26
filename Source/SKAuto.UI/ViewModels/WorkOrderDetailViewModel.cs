@@ -49,12 +49,18 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<WorkTask> _tasks = new();
 
+        // NEW: Travels collection
+        [ObservableProperty]
+        private ObservableCollection<Travel> _travels = new();
+
         public Array OrderTypeValues => Enum.GetValues(typeof(OrderType));
         public Array WorkStatusValues => Enum.GetValues(typeof(WorkStatus));
 
         public IAsyncRelayCommand SearchVehicleCommand { get; }
         public IRelayCommand AddTaskCommand { get; }
         public IRelayCommand<WorkTask> RemoveTaskCommand { get; }
+        public IRelayCommand AddTravelCommand { get; }
+        public IRelayCommand<Travel> RemoveTravelCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
         public IRelayCommand CancelCommand { get; }
         public IAsyncRelayCommand DeleteCommand { get; }
@@ -72,15 +78,60 @@ namespace SKAuto.UI.ViewModels
             SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync);
             AddTaskCommand = new RelayCommand(AddTask);
             RemoveTaskCommand = new RelayCommand<WorkTask>(RemoveTask);
+            AddTravelCommand = new RelayCommand(AddTravel);
+            RemoveTravelCommand = new RelayCommand<Travel>(RemoveTravel);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             CancelCommand = new RelayCommand(() => CloseWindow());
             DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew);
             OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
             OpenAddTaskCommand = new RelayCommand(OpenAddTask);
 
-            // Fire-and-forget initialization – we'll log any errors
             _ = InitializeAsync(workOrderId);
         }
+
+        private void AddTravel()
+        {
+            _logger.LogInfo("AddTravel called");
+            var dialog = new TravelDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var travel = new Travel
+                    {
+                        WorkOrderId = WorkOrder.Id,
+                        TravelDate = dialog.TravelDate,
+                        Destination = dialog.Destination,
+                        DistanceKm = decimal.TryParse(dialog.DistanceKm, out var km) ? km : (decimal?)null,
+                        TravelCost = decimal.TryParse(dialog.TravelCost, out var cost) ? cost : (decimal?)null,
+                        Notes = dialog.Notes
+                    };
+                    Travels.Add(travel);
+                    WorkOrder.Travels.Add(travel);
+                    _logger.LogInfo($"Added travel to {travel.Destination} on {travel.TravelDate:yyyy-MM-dd}, cost={travel.TravelCost}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to add travel", ex);
+                    MessageBox.Show($"Error adding travel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                _logger.LogInfo("Add travel cancelled by user");
+            }
+        }
+
+        // NEW: Remove travel
+        private void RemoveTravel(Travel? travel)
+        {
+            if (travel == null) return;
+            _logger.LogInfo($"Removing travel: Destination={travel.Destination}, Date={travel.TravelDate:yyyy-MM-dd}");
+            Travels.Remove(travel);
+            WorkOrder.Travels.Remove(travel);
+        }
+
+
 
 
         private void OpenAddTask()
@@ -189,7 +240,8 @@ namespace SKAuto.UI.ViewModels
                         _logger.LogInfo($"Loaded existing work order #{WorkOrder.Id}, Vehicle: {SelectedVehicle.ChassisNumber}, Client: {SelectedClient?.Name ?? "None"}");
                     }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
-                    _logger.LogInfo($"Loaded {Tasks.Count} tasks for work order");
+                    Travels = new ObservableCollection<Travel>(WorkOrder.Travels); // NEW
+                    _logger.LogInfo($"Loaded {Tasks.Count} tasks and {Travels.Count} travels for work order");
                 }
                 else
                 {
@@ -200,6 +252,7 @@ namespace SKAuto.UI.ViewModels
                         OrderType = OrderType.PSA_Contract
                     };
                     Tasks = new ObservableCollection<WorkTask>();
+                    Travels = new ObservableCollection<Travel>(); // NEW
                     _logger.LogInfo("Created new work order");
                 }
             }

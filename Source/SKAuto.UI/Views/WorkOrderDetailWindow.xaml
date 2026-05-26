@@ -3,7 +3,7 @@
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
-        Title="Work Order Details" Height="700" Width="900"
+        Title="Work Order Details" Height="770" Width="900"
         WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
@@ -36,10 +36,15 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- 0: Work Order Info -->
             <RowDefinition Height="Auto"/>
+            <!-- 1: Add Task -->
             <RowDefinition Height="Auto"/>
+            <!-- 2: Tasks -->
             <RowDefinition Height="*"/>
+            <!-- 3: Travels (formerly *) -->
             <RowDefinition Height="Auto"/>
+            <!-- 4: Buttons -->
         </Grid.RowDefinitions>
 
         <!-- Work Order Info GroupBox -->
@@ -112,7 +117,6 @@
         </GroupBox>
 
         <!-- Add Task GroupBox -->
-        <!-- Add Task GroupBox -->
         <GroupBox Grid.Row="1" Header="Add Task" Margin="0,0,0,10" Padding="10">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -148,7 +152,6 @@
                 <Label Grid.Column="4" Content="" VerticalAlignment="Center" Margin="5,0,0,0"/>
             </Grid>
         </GroupBox>
-
         <!-- Tasks GroupBox -->
         <GroupBox Grid.Row="2" Header="Tasks" Margin="0,0,0,10" Padding="10">
             <DataGrid ItemsSource="{Binding Tasks}" AutoGenerateColumns="False" CanUserAddRows="False" Height="200"
@@ -177,6 +180,43 @@
             </DataGrid>
         </GroupBox>
 
+        <!-- After Tasks GroupBox, add Travels GroupBox -->
+        <GroupBox Grid.Row="3" Header="Travels" Margin="0,0,0,10" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Content="Add Travel" Command="{Binding AddTravelCommand}" 
+                    Style="{StaticResource ActionButton}" Background="#17a2b8"
+                    Width="100" Height="30" Margin="0,0,10,0"/>
+                </StackPanel>
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Travels}" AutoGenerateColumns="False" CanUserAddRows="False" Height="120"
+                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                  BorderBrush="#dee2e6" BorderThickness="1"
+                  RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding TravelDate, StringFormat=dd/MM/yyyy}" Width="80" SortDirection="Descending"/>
+                        <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="*"/>
+                        <DataGridTextColumn Header="Distance (km)" Binding="{Binding DistanceKm}" Width="80"/>
+                        <DataGridTextColumn Header="Cost (€)" Binding="{Binding TravelCost, StringFormat=C}" Width="80"/>
+                        <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="150"/>
+                        <DataGridTemplateColumn Header="Action" Width="60">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Remove" 
+                                    Command="{Binding DataContext.RemoveTravelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource StatusButton}" Background="#F44336"
+                                    FontSize="10" Padding="2"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
         <!-- Buttons -->
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
             <Button Content="Delete" Command="{Binding DeleteCommand}" 
