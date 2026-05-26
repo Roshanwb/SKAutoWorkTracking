@@ -89,6 +89,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -121,26 +122,19 @@
                     <TextBox Grid.Row="2" Grid.Column="3" Margin="5" BorderBrush="#dee2e6"
                              Text="{Binding CurrentEditAccessory.Price}"/>
                     <!-- bound to Price -->
-                </Grid>
 
-                <Grid Margin="0,5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- removed old price fields, kept only checkbox -->
-                    <CheckBox Grid.Column="2" Grid.ColumnSpan="2" 
+                    <!-- Row 4 -->
+                    <Label Content="Task Type:" Grid.Row="3" Grid.Column="0"  Margin="5"/>
+                    <ComboBox ItemsSource="{Binding TaskTypeValues}" Grid.Row="3" Grid.Column="1" 
+                              SelectedItem="{Binding CurrentEditAccessory.TaskType, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"
+                              Margin="5" Height="30"/>
+                    <CheckBox Content="Is Active"  Margin="5" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center"
+                          IsChecked="{Binding CurrentEditAccessory.IsActive}"/>
+                    <CheckBox Grid.Row="3" Grid.Column="3" 
                               Content="Requires Password Protection" 
                               Margin="5" VerticalAlignment="Center"
                               IsChecked="{Binding CurrentEditAccessory.RequiresPassword}"/>
                 </Grid>
-
-                <CheckBox Content="Is Active" 
-                          Margin="5" 
-                          IsChecked="{Binding CurrentEditAccessory.IsActive}"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
                     <Button Content="Save" Padding="15,5" Margin="5"

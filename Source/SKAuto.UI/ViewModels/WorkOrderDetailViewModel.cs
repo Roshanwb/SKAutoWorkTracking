@@ -335,14 +335,14 @@ namespace SKAuto.UI.ViewModels
                 AccessoryId = SelectedAccessory.Id,
                 Accessory = SelectedAccessory,
                 Quantity = Quantity,
-                TaskType = TaskType.Fit,
+                TaskType = SelectedAccessory.TaskType,   
                 TaskStatus = WorkStatus.Planned,
                 Price = SelectedAccessory.Price,
                 EstimatedMinutes = SelectedAccessory.Time
             };
             Tasks.Add(task);
             WorkOrder.WorkTasks.Add(task);
-            _logger.LogInfo($"Added task: Accessory '{SelectedAccessory.Name}', Quantity {Quantity}, Price {SelectedAccessory.Price}");
+            _logger.LogInfo($"Added task: Accessory '{SelectedAccessory.Name}', Type '{SelectedAccessory.TaskType}', Quantity {Quantity}, Price {SelectedAccessory.Price}");
         }
 
         private void RemoveTask(WorkTask? task)

@@ -14,6 +14,10 @@ using System.Threading.Tasks;
 
 namespace SKAuto.Core.Services
 {
+    /// <summary>
+    /// Handles database backup, CSV export/import, and ZIP packaging.
+    /// All operations are logged and support dry-run transactions.
+    /// </summary>
     public class BackupService : IBackupService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -27,23 +31,27 @@ namespace SKAuto.Core.Services
             _dbPath = dbPath;
         }
 
-        // ---------- Backup Database ----------
+        // ---------- Backup (copy .db file) ----------
         public async Task<string> BackupDatabaseAsync(string backupFolder)
         {
+            _logger.LogInfo($"BackupDatabaseAsync started. Target folder: {backupFolder}");
             var fileName = $"SKAuto_{DateTime.Now:yyyyMMdd_HHmmss}.db";
             var destPath = Path.Combine(backupFolder, fileName);
             Directory.CreateDirectory(backupFolder);
             File.Copy(_dbPath, destPath, true);
+            _logger.LogInfo($"Backup created: {destPath}");
             await Task.CompletedTask;
             return destPath;
         }
 
-        // ---------- Export ----------
+        // ---------- Export all tables to CSV and zip ----------
         public async Task<string> ExportDataAsync(string exportFolder)
         {
+            _logger.LogInfo($"ExportDataAsync started. Export folder: {exportFolder}");
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var tempDir = Path.Combine(Path.GetTempPath(), $"SKAuto_Export_{timestamp}");
             Directory.CreateDirectory(tempDir);
+            _logger.LogInfo($"Temporary directory created: {tempDir}");
 
             await ExportTableToCsvAsync(await _unitOfWork.Clients.GetAllAsync(), tempDir, "Clients.csv");
             await ExportTableToCsvAsync(await _unitOfWork.Accessories.GetAllAsync(), tempDir, "Accessories.csv");
@@ -57,6 +65,7 @@ namespace SKAuto.Core.Services
 
             var zipPath = Path.Combine(exportFolder, $"SKAuto_Export_{timestamp}.zip");
             ZipFile.CreateFromDirectory(tempDir, zipPath);
+            _logger.LogInfo($"Export ZIP created: {zipPath}");
             Directory.Delete(tempDir, true);
             return zipPath;
         }
@@ -66,14 +75,17 @@ namespace SKAuto.Core.Services
             using var writer = new StreamWriter(Path.Combine(folder, filename), false, System.Text.Encoding.UTF8);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             await csv.WriteRecordsAsync(records);
+            _logger.LogInfo($"Exported {records.Count()} records to {filename}");
         }
 
-        // ---------- Main Import ----------
+        // ---------- Main Import (orchestrates all tables with transaction) ----------
         public async Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options)
         {
+            _logger.LogInfo($"ImportDataAsync started. ZIP: {zipPath}, DryRun: {options.DryRun}, Conflict: {options.Conflict}");
             var result = new BackupImportResult();
             var extractDir = Path.Combine(Path.GetTempPath(), $"SKAuto_Import_{Guid.NewGuid()}");
             ZipFile.ExtractToDirectory(zipPath, extractDir);
+            _logger.LogInfo($"Extracted ZIP to {extractDir}");
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -81,7 +93,7 @@ namespace SKAuto.Core.Services
                 // 1. Clients (natural key: Name)
                 var clients = await ImportClientsAsync(extractDir, options, result);
 
-                // 2. Accessories (natural key: Name) – no client relation
+                // 2. Accessories (natural key: Name) – no client relation, includes TaskType
                 var accessories = await ImportAccessoriesAsync(extractDir, options, result);
 
                 // 3. Vehicles (requires ClientId)
@@ -127,13 +139,15 @@ namespace SKAuto.Core.Services
             finally
             {
                 Directory.Delete(extractDir, true);
+                _logger.LogInfo($"Cleaned up temporary directory {extractDir}");
             }
             return result;
         }
 
-        // ========== HELPER: Read CSV with manual column mapping ==========
+        // ========== Helper: Read CSV into list of dictionaries (manual mapping) ==========
         private List<Dictionary<string, string>> ReadCsvRows(string filePath)
         {
+            _logger.LogInfo($"Reading CSV file: {filePath}");
             var rows = new List<Dictionary<string, string>>();
             using var reader = new StreamReader(filePath);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -155,12 +169,14 @@ namespace SKAuto.Core.Services
                 }
                 rows.Add(row);
             }
+            _logger.LogInfo($"Read {rows.Count} rows from {Path.GetFileName(filePath)}");
             return rows;
         }
 
         // ========== 1. CLIENTS ==========
         private async Task<Dictionary<string, Client>> ImportClientsAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
+            _logger.LogInfo("ImportClientsAsync started");
             var filePath = Path.Combine(folder, "Clients.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Client>();
 
@@ -186,6 +202,7 @@ namespace SKAuto.Core.Services
                         existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
                         if (!options.DryRun) await _unitOfWork.Clients.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated client: {name}");
                     }
                     else result.RowsSkipped++;
                     imported[name] = existing;
@@ -205,14 +222,17 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[name] = newClient;
                     existingDict[name] = newClient;
+                    _logger.LogInfo($"Inserted new client: {name}");
                 }
             }
+            _logger.LogInfo($"ImportClientsAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
             return imported;
         }
 
-        // ========== 2. ACCESSORIES (no client relation) ==========
+        // ========== 2. ACCESSORIES (with TaskType) ==========
         private async Task<Dictionary<string, Accessory>> ImportAccessoriesAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
+            _logger.LogInfo("ImportAccessoriesAsync started");
             var filePath = Path.Combine(folder, "Accessories.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Accessory>();
 
@@ -226,6 +246,10 @@ namespace SKAuto.Core.Services
                 var name = row.GetValueOrDefault("Name")?.Trim();
                 if (string.IsNullOrEmpty(name)) continue;
 
+                // Read TaskType (new column)
+                var taskTypeStr = row.GetValueOrDefault("TaskType");
+                var taskType = Enum.TryParse<TaskType>(taskTypeStr, true, out var tt) ? tt : TaskType.Fit;
+
                 if (existingDict.TryGetValue(name, out var existing))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Accessories", Key = name, ExistingValue = existing.Name, ImportedValue = name });
@@ -237,8 +261,10 @@ namespace SKAuto.Core.Services
                         existing.Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0;
                         existing.RequiresPassword = row.GetValueOrDefault("RequiresPassword") == "True" || row.GetValueOrDefault("RequiresPassword") == "true" || row.GetValueOrDefault("RequiresPassword") == "1";
                         existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
+                        existing.TaskType = taskType;   // ← new
                         if (!options.DryRun) await _unitOfWork.Accessories.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated accessory: {name}, TaskType={taskType}");
                     }
                     else result.RowsSkipped++;
                     imported[name] = existing;
@@ -253,14 +279,17 @@ namespace SKAuto.Core.Services
                         Time = int.TryParse(row.GetValueOrDefault("Time"), out var t) ? t : (int?)null,
                         Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0,
                         RequiresPassword = row.GetValueOrDefault("RequiresPassword") == "True" || row.GetValueOrDefault("RequiresPassword") == "true" || row.GetValueOrDefault("RequiresPassword") == "1",
-                        IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1"
+                        IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1",
+                        TaskType = taskType   // ← new
                     };
                     if (!options.DryRun) await _unitOfWork.Accessories.AddAsync(newAcc);
                     result.RowsInserted++;
                     imported[name] = newAcc;
                     existingDict[name] = newAcc;
+                    _logger.LogInfo($"Inserted new accessory: {name}, TaskType={taskType}");
                 }
             }
+            _logger.LogInfo($"ImportAccessoriesAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
             return imported;
         }
 
@@ -268,6 +297,7 @@ namespace SKAuto.Core.Services
         private async Task<Dictionary<string, Vehicle>> ImportVehiclesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Client> clients, BackupImportResult result)
         {
+            _logger.LogInfo("ImportVehiclesAsync started");
             var filePath = Path.Combine(folder, "Vehicles.csv");
             if (!File.Exists(filePath)) return new Dictionary<string, Vehicle>();
 
@@ -286,12 +316,14 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = "Missing client name" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped vehicle {chassis}: missing client name");
                     continue;
                 }
                 if (!clients.TryGetValue(clientName, out var client))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = $"Client '{clientName}' not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped vehicle {chassis}: client '{clientName}' not found");
                     continue;
                 }
 
@@ -308,6 +340,7 @@ namespace SKAuto.Core.Services
                         existing.ClientId = client.Id;
                         if (!options.DryRun) await _unitOfWork.Vehicles.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated vehicle: {chassis}");
                     }
                     else result.RowsSkipped++;
                     imported[chassis] = existing;
@@ -328,8 +361,10 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[chassis] = newVehicle;
                     existingDict[chassis] = newVehicle;
+                    _logger.LogInfo($"Inserted new vehicle: {chassis}");
                 }
             }
+            _logger.LogInfo($"ImportVehiclesAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
             return imported;
         }
 
@@ -337,6 +372,7 @@ namespace SKAuto.Core.Services
         private async Task<Dictionary<int, WorkOrder>> ImportWorkOrdersAsync(string folder, BackupImportOptions options,
             Dictionary<string, Vehicle> vehicles, BackupImportResult result)
         {
+            _logger.LogInfo("ImportWorkOrdersAsync started");
             var filePath = Path.Combine(folder, "WorkOrders.csv");
             if (!File.Exists(filePath)) return new Dictionary<int, WorkOrder>();
 
@@ -353,12 +389,14 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = "Missing vehicle chassis" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped work order ID {id}: missing vehicle chassis");
                     continue;
                 }
                 if (!vehicles.TryGetValue(chassis, out var vehicle))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = $"Vehicle '{chassis}' not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped work order ID {id}: vehicle '{chassis}' not found");
                     continue;
                 }
 
@@ -376,6 +414,7 @@ namespace SKAuto.Core.Services
                         existing.TotalAmount = decimal.TryParse(row.GetValueOrDefault("TotalAmount"), out var ta) ? ta : (decimal?)null;
                         if (!options.DryRun) await _unitOfWork.WorkOrders.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated work order ID {id}");
                     }
                     else result.RowsSkipped++;
                     imported[existing.Id] = existing;
@@ -397,8 +436,10 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[newOrder.Id] = newOrder;
                     existingDict[newOrder.Id] = newOrder;
+                    _logger.LogInfo($"Inserted new work order ID {id}");
                 }
             }
+            _logger.LogInfo($"ImportWorkOrdersAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
             return imported;
         }
 
@@ -406,6 +447,7 @@ namespace SKAuto.Core.Services
         private async Task ImportWorkTasksAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
+            _logger.LogInfo("ImportWorkTasksAsync started");
             var filePath = Path.Combine(folder, "WorkTasks.csv");
             if (!File.Exists(filePath)) return;
 
@@ -421,6 +463,7 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = $"WorkOrder {workOrderId} not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped task ID {id}: work order {workOrderId} not found");
                     continue;
                 }
 
@@ -429,12 +472,14 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = "Missing accessory name" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped task ID {id}: missing accessory name");
                     continue;
                 }
                 if (!accessories.TryGetValue(accessoryName, out var accessory))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = $"Accessory '{accessoryName}' not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped task ID {id}: accessory '{accessoryName}' not found");
                     continue;
                 }
 
@@ -454,6 +499,7 @@ namespace SKAuto.Core.Services
                         existing.AccessoryId = accessory.Id;
                         if (!options.DryRun) await _unitOfWork.WorkTasks.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated task ID {id}");
                     }
                     else result.RowsSkipped++;
                 }
@@ -475,14 +521,17 @@ namespace SKAuto.Core.Services
                     if (!options.DryRun) await _unitOfWork.WorkTasks.AddAsync(newTask);
                     result.RowsInserted++;
                     existingDict[newTask.Id] = newTask;
+                    _logger.LogInfo($"Inserted new task ID {id}");
                 }
             }
+            _logger.LogInfo($"ImportWorkTasksAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
         // ========== 6. TRAVELS ==========
         private async Task ImportTravelsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
+            _logger.LogInfo("ImportTravelsAsync started");
             var filePath = Path.Combine(folder, "Travels.csv");
             if (!File.Exists(filePath)) return;
 
@@ -498,6 +547,7 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "Travels", Key = id.ToString(), ImportedValue = $"WorkOrder {workOrderId} not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped travel ID {id}: work order {workOrderId} not found");
                     continue;
                 }
 
@@ -514,6 +564,7 @@ namespace SKAuto.Core.Services
                         existing.WorkOrderId = workOrder.Id;
                         if (!options.DryRun) await _unitOfWork.Travels.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated travel ID {id}");
                     }
                     else result.RowsSkipped++;
                 }
@@ -532,14 +583,17 @@ namespace SKAuto.Core.Services
                     if (!options.DryRun) await _unitOfWork.Travels.AddAsync(newTravel);
                     result.RowsInserted++;
                     existingDict[newTravel.Id] = newTravel;
+                    _logger.LogInfo($"Inserted new travel ID {id}");
                 }
             }
+            _logger.LogInfo($"ImportTravelsAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
         // ========== 7. PROTECTED RATES ==========
         private async Task ImportProtectedRatesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
+            _logger.LogInfo("ImportProtectedRatesAsync started");
             var filePath = Path.Combine(folder, "ProtectedRates.csv");
             if (!File.Exists(filePath)) return;
 
@@ -555,12 +609,14 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = id.ToString(), ImportedValue = "Missing accessory name" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped protected rate ID {id}: missing accessory name");
                     continue;
                 }
                 if (!accessories.TryGetValue(accessoryName, out var accessory))
                 {
                     result.Conflicts.Add(new Conflict { Table = "ProtectedRates", Key = id.ToString(), ImportedValue = $"Accessory '{accessoryName}' not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped protected rate ID {id}: accessory '{accessoryName}' not found");
                     continue;
                 }
 
@@ -576,6 +632,7 @@ namespace SKAuto.Core.Services
                         existing.AccessoryId = accessory.Id;
                         if (!options.DryRun) await _unitOfWork.ProtectedRates.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated protected rate ID {id}");
                     }
                     else result.RowsSkipped++;
                 }
@@ -593,13 +650,16 @@ namespace SKAuto.Core.Services
                     if (!options.DryRun) await _unitOfWork.ProtectedRates.AddAsync(newRate);
                     result.RowsInserted++;
                     existingDict[newRate.Id] = newRate;
+                    _logger.LogInfo($"Inserted new protected rate ID {id}");
                 }
             }
+            _logger.LogInfo($"ImportProtectedRatesAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
         // ========== 8. USERS ==========
         private async Task ImportUsersAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
+            _logger.LogInfo("ImportUsersAsync started");
             var filePath = Path.Combine(folder, "Users.csv");
             if (!File.Exists(filePath)) return;
 
@@ -622,6 +682,7 @@ namespace SKAuto.Core.Services
                         existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
                         if (!options.DryRun) await _unitOfWork.Users.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated user: {username}");
                     }
                     else result.RowsSkipped++;
                 }
@@ -637,14 +698,17 @@ namespace SKAuto.Core.Services
                     if (!options.DryRun) await _unitOfWork.Users.AddAsync(newUser);
                     result.RowsInserted++;
                     existingDict[username] = newUser;
+                    _logger.LogInfo($"Inserted new user: {username}");
                 }
             }
+            _logger.LogInfo($"ImportUsersAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
         // ========== 9. SOURCE DOCUMENTS ==========
         private async Task ImportSourceDocumentsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
+            _logger.LogInfo("ImportSourceDocumentsAsync started");
             var filePath = Path.Combine(folder, "SourceDocuments.csv");
             if (!File.Exists(filePath)) return;
 
@@ -660,6 +724,7 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = id.ToString(), ImportedValue = $"WorkOrder {workOrderId} not found" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped source document ID {id}: work order {workOrderId} not found");
                     continue;
                 }
                 var fileHash = row.GetValueOrDefault("FileHash")?.Trim();
@@ -667,6 +732,7 @@ namespace SKAuto.Core.Services
                 {
                     result.Conflicts.Add(new Conflict { Table = "SourceDocuments", Key = id.ToString(), ImportedValue = "Missing file hash" });
                     result.RowsSkipped++;
+                    _logger.LogWarning($"Skipped source document ID {id}: missing file hash");
                     continue;
                 }
 
@@ -681,6 +747,7 @@ namespace SKAuto.Core.Services
                         existing.WorkOrderId = workOrder.Id;
                         if (!options.DryRun) await _unitOfWork.SourceDocuments.UpdateAsync(existing);
                         result.RowsUpdated++;
+                        _logger.LogInfo($"Updated source document with hash {fileHash}");
                     }
                     else result.RowsSkipped++;
                 }
@@ -698,8 +765,10 @@ namespace SKAuto.Core.Services
                     if (!options.DryRun) await _unitOfWork.SourceDocuments.AddAsync(newDoc);
                     result.RowsInserted++;
                     existingDict[fileHash] = newDoc;
+                    _logger.LogInfo($"Inserted new source document with hash {fileHash}");
                 }
             }
+            _logger.LogInfo($"ImportSourceDocumentsAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
     }
 }

@@ -466,10 +466,10 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenClientManagement()
         {
-            var vm = new ClientManagementViewModel(_unitOfWork);
+            var logger = App.GetService<ILoggingService>();
+            var vm = new ClientManagementViewModel(_unitOfWork, logger);
             var win = new ClientManagementView { DataContext = vm };
             win.Show();
-            // Refresh main grid in case client names changed
             LoadTodayWorkCommand.Execute(null);
         }
 

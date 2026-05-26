@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SKAuto.Core.Enums;
 
 namespace SKAuto.Core.Entities
 {
@@ -15,6 +13,9 @@ namespace SKAuto.Core.Entities
         public decimal? Price { get; set; }
         public bool RequiresPassword { get; set; }
         public bool IsActive { get; set; } = true;
+
+        // NEW: Task type for this accessory (default Fit)
+        public TaskType TaskType { get; set; } = TaskType.Fit;
 
         // Navigation properties
         public virtual ICollection<WorkTask> WorkTasks { get; set; } = new List<WorkTask>();
