@@ -10,10 +10,6 @@ using System.Threading.Tasks;
 
 namespace SKAuto.Export.Excel
 {
-    /// <summary>
-    /// Generates Excel reports (daily, work order, work orders summary, clients, vehicles, monthly, PSA performance).
-    /// All operations are logged via ILoggingService.
-    /// </summary>
     public class ExcelReportGenerator : IExportService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -25,7 +21,7 @@ namespace SKAuto.Export.Excel
             _logger = logger;
         }
 
-        // ---------- DAILY REPORT ----------
+        // ========== DAILY REPORT ==========
         public async Task<byte[]> GenerateDailyReportAsync(DateTime date)
         {
             _logger.LogInfo($"GenerateDailyReportAsync started for date {date:yyyy-MM-dd}");
@@ -56,7 +52,6 @@ namespace SKAuto.Export.Excel
                 return stream.ToArray();
             }
 
-            // Summary section
             worksheet.Cell("A5").Value = "Summary";
             worksheet.Cell("A5").Style.Font.Bold = true;
             worksheet.Cell("A6").Value = "Total Orders:";
@@ -69,13 +64,12 @@ namespace SKAuto.Export.Excel
             worksheet.Cell("B9").Value = ordersList.Sum(o => o.TotalAmount ?? 0);
             worksheet.Cell("B9").Style.NumberFormat.Format = "€#,##0.00";
 
-            // Work orders table
             int row = 12;
             worksheet.Cell($"A{row}").Value = "Work Orders";
             worksheet.Cell($"A{row}").Style.Font.Bold = true;
             row++;
 
-            var headers = new[] { "ID", "Client", "Vehicle", "Chassis", "Status", "Tasks", "Travels", "Total", "Notes" };
+            var headers = new[] { "ID", "Client", "Vehicle", "Chassis", "Status", "Tasks", "Total", "Notes" };
             for (int i = 0; i < headers.Length; i++)
             {
                 worksheet.Cell(row, i + 1).Value = headers[i];
@@ -87,9 +81,7 @@ namespace SKAuto.Export.Excel
             foreach (var order in ordersList.OrderBy(o => o.Id))
             {
                 var tasks = order.WorkTasks?.Select(t => t.Accessory?.Name).Where(n => !string.IsNullOrEmpty(n)).ToList() ?? new();
-                var travels = order.Travels?.Select(t => $"{t.Destination} ({t.TravelCost:C})").ToList() ?? new();
                 string taskNames = string.Join(", ", tasks);
-                string travelInfo = string.Join(", ", travels);
 
                 worksheet.Cell(row, 1).Value = order.Id;
                 worksheet.Cell(row, 2).Value = order.Vehicle?.Client?.Name ?? "N/A";
@@ -97,15 +89,14 @@ namespace SKAuto.Export.Excel
                 worksheet.Cell(row, 4).Value = order.Vehicle?.ChassisNumber ?? "N/A";
                 worksheet.Cell(row, 5).Value = order.Status.ToString();
                 worksheet.Cell(row, 6).Value = taskNames;
-                worksheet.Cell(row, 7).Value = travelInfo;
-                worksheet.Cell(row, 8).Value = order.TotalAmount ?? 0;
-                worksheet.Cell(row, 8).Style.NumberFormat.Format = "€#,##0.00";
-                worksheet.Cell(row, 9).Value = order.Notes;
+                worksheet.Cell(row, 7).Value = order.TotalAmount ?? 0;
+                worksheet.Cell(row, 7).Style.NumberFormat.Format = "€#,##0.00";
+                worksheet.Cell(row, 8).Value = order.Notes;
                 row++;
             }
 
             worksheet.Columns().AdjustToContents();
-            var dataRange = worksheet.Range($"A{row - ordersList.Count - 1}:I{row - 1}");
+            var dataRange = worksheet.Range($"A{row - ordersList.Count - 1}:H{row - 1}");
             dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
@@ -115,7 +106,7 @@ namespace SKAuto.Export.Excel
             return memoryStream.ToArray();
         }
 
-        // ---------- SINGLE WORK ORDER REPORT (includes travels) ----------
+        // ========== SINGLE WORK ORDER REPORT ==========
         public async Task<byte[]> GenerateWorkOrderReportAsync(int workOrderId)
         {
             _logger.LogInfo($"GenerateWorkOrderReportAsync started for work order ID {workOrderId}");
@@ -156,7 +147,6 @@ namespace SKAuto.Export.Excel
             worksheet.Cell(row, 2).Value = order.Status.ToString();
             row += 2;
 
-            // Tasks
             worksheet.Cell(row, 1).Value = "Tasks";
             worksheet.Cell(row, 1).Style.Font.Bold = true;
             row++;
@@ -201,7 +191,6 @@ namespace SKAuto.Export.Excel
                 }
             }
 
-            // Travels
             if (order.Travels.Any())
             {
                 row++;
@@ -229,7 +218,6 @@ namespace SKAuto.Export.Excel
                 }
             }
 
-            // Total
             row++;
             worksheet.Cell(row, 5).Value = "Total:";
             worksheet.Cell(row, 5).Style.Font.Bold = true;
@@ -253,139 +241,179 @@ namespace SKAuto.Export.Excel
             return stream.ToArray();
         }
 
-        // ---------- WORK ORDERS SUMMARY REPORT ----------
+        // ========== WORK ORDERS SUMMARY REPORT (with correct filtering) ==========
         public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
         {
             _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
                 $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}");
 
-            // Load orders
-            var orders = (await _unitOfWork.WorkOrders.FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To)).ToList();
-            _logger.LogInfo($"Loaded {orders.Count} raw orders in date range");
+            // 1. Load all work orders in date range
+            var orders = (await _unitOfWork.WorkOrders
+                .FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To))
+                .ToList();
 
-            // Load related data
+            // 2. Apply work status filter at work order level
+            if (filter.WorkStatus.HasValue)
+                orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
+
+            if (!orders.Any())
+            {
+                using var emptyWorkbook = new XLWorkbook();
+                var ws = emptyWorkbook.Worksheets.Add("No Data");
+                ws.Cell(1, 1).Value = "No work orders match the date and status filters.";
+                using var stream = new MemoryStream();
+                emptyWorkbook.SaveAs(stream);
+                return stream.ToArray();
+            }
+
+            // 3. Load related data for filtering and display
             var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
             var vehicles = (await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id))).ToDictionary(v => v.Id);
             var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
             var clients = (await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id))).ToDictionary(c => c.Id);
 
             var orderIds = orders.Select(o => o.Id).ToList();
-            var tasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId)))
-                .GroupBy(t => t.WorkOrderId)
-                .ToDictionary(g => g.Key, g => g.ToList());
-            var accessoryIds = tasks.Values.SelectMany(list => list.Select(t => t.AccessoryId)).Distinct().ToList();
+            var allTasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
+            var allTravels = (await _unitOfWork.Travels.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
+
+            var accessoryIds = allTasks.Select(t => t.AccessoryId).Distinct().ToList();
             var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
                 .ToDictionary(a => a.Id, a => a.Name);
 
-            // Apply filters
-            if (filter.TaskType.HasValue)
+            // 4. Build a list of report rows (each row is a line in the final report)
+            var reportRows = new List<ReportRow>();
+            foreach (var wo in orders)
             {
-                var orderIdsWithTask = tasks.Where(kvp => kvp.Value.Any(t => t.TaskType == filter.TaskType.Value))
-                    .Select(kvp => kvp.Key).ToHashSet();
-                orders = orders.Where(o => orderIdsWithTask.Contains(o.Id)).ToList();
-                _logger.LogInfo($"After TaskType filter: {orders.Count} orders");
+                // --- Task rows ---
+                var tasks = allTasks.Where(t => t.WorkOrderId == wo.Id).ToList();
+                if (filter.TaskType.HasValue)
+                    tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
+                if (filter.AccessoryId.HasValue)
+                    tasks = tasks.Where(t => t.AccessoryId == filter.AccessoryId.Value).ToList();
+
+                foreach (var task in tasks)
+                {
+                    decimal amount = (task.Price ?? 0) * task.Quantity;
+                    string desc = accessories.GetValueOrDefault(task.AccessoryId, "?");
+                    reportRows.Add(new ReportRow
+                    {
+                        WorkOrder = wo,
+                        Description = desc,
+                        Amount = amount,
+                        Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
+                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null
+                    });
+                }
+
+                // --- Travel rows – only if TaskType filter is null or equals Travel ---
+                if (!filter.TaskType.HasValue || filter.TaskType.Value == TaskType.Travel)
+                {
+                    var travels = allTravels.Where(t => t.WorkOrderId == wo.Id).ToList();
+                    foreach (var travel in travels)
+                    {
+                        string desc = $"Travel to {travel.Destination} ({travel.DistanceKm} km)";
+                        decimal amount = travel.TravelCost ?? 0;
+                        reportRows.Add(new ReportRow
+                        {
+                            WorkOrder = wo,
+                            Description = desc,
+                            Amount = amount,
+                            Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
+                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null
+                        });
+                    }
+                }
             }
-            if (filter.AccessoryId.HasValue)
+
+            if (!reportRows.Any())
             {
-                var orderIdsWithAccessory = tasks.Where(kvp => kvp.Value.Any(t => t.AccessoryId == filter.AccessoryId.Value))
-                    .Select(kvp => kvp.Key).ToHashSet();
-                orders = orders.Where(o => orderIdsWithAccessory.Contains(o.Id)).ToList();
-                _logger.LogInfo($"After Accessory filter: {orders.Count} orders");
-            }
-            if (filter.WorkStatus.HasValue)
-            {
-                orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
-                _logger.LogInfo($"After Status filter: {orders.Count} orders");
+                using var emptyWorkbook = new XLWorkbook();
+                var ws = emptyWorkbook.Worksheets.Add("No Data");
+                ws.Cell(1, 1).Value = "No records match the selected filters.";
+                using var stream = new MemoryStream();
+                emptyWorkbook.SaveAs(stream);
+                return stream.ToArray();
             }
 
             using var workbook = new XLWorkbook();
-            var ws = workbook.Worksheets.Add("Work Orders");
+            var worksheet = workbook.Worksheets.Add("Work Orders");
 
             // Title
-            ws.Cell(1, 1).Value = "Work Orders Report";
-            ws.Cell(1, 1).Style.Font.Bold = true;
-            ws.Cell(1, 1).Style.Font.FontSize = 16;
-            ws.Cell(2, 1).Value = $"Period: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}";
-            ws.Cell(3, 1).Value = $"Generated: {DateTime.Now:dd/MM/yyyy HH:mm}";
+            worksheet.Cell(1, 1).Value = "Work Orders Report";
+            worksheet.Cell(1, 1).Style.Font.Bold = true;
+            worksheet.Cell(1, 1).Style.Font.FontSize = 16;
+            worksheet.Cell(2, 1).Value = $"Period: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}";
+            worksheet.Cell(3, 1).Value = $"Generated: {DateTime.Now:dd/MM/yyyy HH:mm}";
 
             // Filters summary
             int filterRow = 5;
-            ws.Cell(filterRow, 1).Value = "Applied Filters:";
-            ws.Cell(filterRow, 1).Style.Font.Bold = true;
+            worksheet.Cell(filterRow, 1).Value = "Applied Filters:";
+            worksheet.Cell(filterRow, 1).Style.Font.Bold = true;
             filterRow++;
-            ws.Cell(filterRow++, 1).Value = $"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}";
-            ws.Cell(filterRow++, 1).Value = $"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}";
-            ws.Cell(filterRow++, 1).Value = $"Group by Week: {(filter.GroupByWeek ? "Yes" : "No")}";
-            ws.Cell(filterRow++, 1).Value = $"Summary Only: {(filter.SummaryOnly ? "Yes" : "No")}";
+            worksheet.Cell(filterRow++, 1).Value = $"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}";
+            worksheet.Cell(filterRow++, 1).Value = $"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}";
+            worksheet.Cell(filterRow++, 1).Value = $"Group by Week: {(filter.GroupByWeek ? "Yes" : "No")}";
+            worksheet.Cell(filterRow++, 1).Value = $"Summary Only: {(filter.SummaryOnly ? "Yes" : "No")}";
 
             int dataStartRow = filterRow + 2;
 
             if (filter.SummaryOnly)
             {
                 // Summary table
-                ws.Cell(dataStartRow, 1).Value = "Summary Statistics";
-                ws.Cell(dataStartRow, 1).Style.Font.Bold = true;
+                worksheet.Cell(dataStartRow, 1).Value = "Summary Statistics";
+                worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
                 dataStartRow++;
-                ws.Cell(dataStartRow, 1).Value = "Total Orders:";
-                ws.Cell(dataStartRow, 2).Value = orders.Count;
+                worksheet.Cell(dataStartRow, 1).Value = "Total Rows:";
+                worksheet.Cell(dataStartRow, 2).Value = reportRows.Count;
                 dataStartRow++;
-                ws.Cell(dataStartRow, 1).Value = "Total Tasks:";
-                ws.Cell(dataStartRow, 2).Value = tasks.Sum(kvp => kvp.Value.Count);
+                worksheet.Cell(dataStartRow, 1).Value = "Total Revenue:";
+                worksheet.Cell(dataStartRow, 2).Value = reportRows.Sum(r => r.Amount);
+                worksheet.Cell(dataStartRow, 2).Style.NumberFormat.Format = "€#,##0.00";
                 dataStartRow++;
-                ws.Cell(dataStartRow, 1).Value = "Total Revenue:";
-                ws.Cell(dataStartRow, 2).Value = orders.Sum(o => o.TotalAmount ?? 0);
-                ws.Cell(dataStartRow, 2).Style.NumberFormat.Format = "€#,##0.00";
-                dataStartRow++;
-                _logger.LogInfo("Summary only report generated");
             }
             else
             {
                 if (filter.GroupByWeek)
                 {
-                    var weekGroups = orders.GroupBy(o => GetIsoWeek(o.OrderDate)).OrderBy(g => g.Key);
+                    var weekGroups = reportRows.GroupBy(r => GetIsoWeek(r.WorkOrder.OrderDate)).OrderBy(g => g.Key);
                     foreach (var group in weekGroups)
                     {
                         int week = group.Key;
-                        DateTime weekStart = GetStartOfWeek(group.First().OrderDate);
+                        DateTime weekStart = GetStartOfWeek(group.First().WorkOrder.OrderDate);
                         DateTime weekEnd = weekStart.AddDays(6);
-                        ws.Cell(dataStartRow, 1).Value = $"Week {week} ({weekStart:dd/MM} – {weekEnd:dd/MM})";
-                        ws.Cell(dataStartRow, 1).Style.Font.Bold = true;
-                        ws.Cell(dataStartRow, 1).Style.Font.FontSize = 12;
+                        worksheet.Cell(dataStartRow, 1).Value = $"Week {week} ({weekStart:dd/MM} – {weekEnd:dd/MM})";
+                        worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
+                        worksheet.Cell(dataStartRow, 1).Style.Font.FontSize = 12;
                         dataStartRow++;
-                        WriteWorkOrderTable(ws, ref dataStartRow, group.ToList(), vehicles, clients, tasks, accessories);
-                        decimal weekTotal = group.Sum(o => o.TotalAmount ?? 0);
-                        ws.Cell(dataStartRow, 7).Value = $"Week Total: €{weekTotal:0.00}";
-                        ws.Cell(dataStartRow, 7).Style.Font.Bold = true;
-                        ws.Cell(dataStartRow, 7).Style.NumberFormat.Format = "€#,##0.00";
+                        WriteReportRows(worksheet, ref dataStartRow, group.ToList());
+                        decimal weekTotal = group.Sum(r => r.Amount);
+                        worksheet.Cell(dataStartRow, 7).Value = $"Week Total: €{weekTotal:0.00}";
+                        worksheet.Cell(dataStartRow, 7).Style.Font.Bold = true;
+                        worksheet.Cell(dataStartRow, 7).Style.NumberFormat.Format = "€#,##0.00";
                         dataStartRow += 2;
                     }
-                    _logger.LogInfo($"Generated grouped report with {weekGroups.Count()} weeks");
                 }
                 else
                 {
-                    WriteWorkOrderTable(ws, ref dataStartRow, orders, vehicles, clients, tasks, accessories);
-                    _logger.LogInfo($"Generated flat report with {orders.Count} orders");
+                    WriteReportRows(worksheet, ref dataStartRow, reportRows);
                 }
             }
 
-            decimal grandTotal = orders.Sum(o => o.TotalAmount ?? 0);
-            ws.Cell(dataStartRow, 7).Value = $"GRAND TOTAL: €{grandTotal:0.00}";
-            ws.Cell(dataStartRow, 7).Style.Font.Bold = true;
-            ws.Cell(dataStartRow, 7).Style.NumberFormat.Format = "€#,##0.00";
+            decimal grandTotal = reportRows.Sum(r => r.Amount);
+            worksheet.Cell(dataStartRow, 7).Value = $"GRAND TOTAL: €{grandTotal:0.00}";
+            worksheet.Cell(dataStartRow, 7).Style.Font.Bold = true;
+            worksheet.Cell(dataStartRow, 7).Style.NumberFormat.Format = "€#,##0.00";
 
-            ws.Columns().AdjustToContents();
+            worksheet.Columns().AdjustToContents();
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
             _logger.LogInfo("Work orders report generation completed");
             return ms.ToArray();
         }
 
-        private void WriteWorkOrderTable(IXLWorksheet ws, ref int row, List<WorkOrder> orders,
-            Dictionary<int, Vehicle> vehicles, Dictionary<int, Client> clients,
-            Dictionary<int, List<WorkTask>> tasks, Dictionary<int, string> accessories)
+        private void WriteReportRows(IXLWorksheet ws, ref int row, List<ReportRow> rows)
         {
-            // Added "Travels" column
-            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Tasks", "Travels", "Total" };
+            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Description", "Amount" };
             for (int i = 0; i < headers.Length; i++)
             {
                 ws.Cell(row, i + 1).Value = headers[i];
@@ -395,31 +423,20 @@ namespace SKAuto.Export.Excel
             row++;
 
             bool alternate = false;
-            foreach (var o in orders)
+            foreach (var r in rows)
             {
-                vehicles.TryGetValue(o.VehicleId, out var vehicle);
-                string clientName = vehicle != null && clients.TryGetValue(vehicle.ClientId, out var client) ? client.Name : "";
-                string taskNames = tasks.ContainsKey(o.Id)
-                    ? string.Join(", ", tasks[o.Id].Select(t => accessories.GetValueOrDefault(t.AccessoryId, "?")))
-                    : "";
-                // Build travel summary
-                string travelInfo = "";
-                if (o.Travels != null && o.Travels.Any())
-                    travelInfo = string.Join(", ", o.Travels.Select(t => $"{t.Destination} ({t.TravelCost:C})"));
-
-                ws.Cell(row, 1).Value = o.Id;
-                ws.Cell(row, 2).Value = o.OrderDate.ToString("dd/MM/yyyy");
-                ws.Cell(row, 3).Value = clientName;
-                ws.Cell(row, 4).Value = vehicle?.ChassisNumber ?? "";
-                ws.Cell(row, 5).Value = o.Status.ToString();
-                ws.Cell(row, 6).Value = taskNames;
-                ws.Cell(row, 7).Value = travelInfo;
-                ws.Cell(row, 8).Value = o.TotalAmount ?? 0;
-                ws.Cell(row, 8).Style.NumberFormat.Format = "€#,##0.00";
+                ws.Cell(row, 1).Value = r.WorkOrder.Id;
+                ws.Cell(row, 2).Value = r.WorkOrder.OrderDate.ToString("dd/MM/yyyy");
+                ws.Cell(row, 3).Value = r.Client?.Name ?? "";
+                ws.Cell(row, 4).Value = r.Vehicle?.ChassisNumber ?? "";
+                ws.Cell(row, 5).Value = r.WorkOrder.Status.ToString();
+                ws.Cell(row, 6).Value = r.Description;
+                ws.Cell(row, 7).Value = r.Amount;
+                ws.Cell(row, 7).Style.NumberFormat.Format = "€#,##0.00";
 
                 if (alternate)
                 {
-                    for (int i = 1; i <= 8; i++)
+                    for (int i = 1; i <= 7; i++)
                         ws.Cell(row, i).Style.Fill.BackgroundColor = XLColor.LightGray;
                 }
                 row++;
@@ -428,7 +445,16 @@ namespace SKAuto.Export.Excel
             row++;
         }
 
-        // ---------- CLIENTS REPORT ----------
+        private class ReportRow
+        {
+            public WorkOrder WorkOrder { get; set; }
+            public string Description { get; set; }
+            public decimal Amount { get; set; }
+            public Vehicle Vehicle { get; set; }
+            public Client Client { get; set; }
+        }
+
+        // ========== CLIENTS REPORT ==========
         public async Task<byte[]> GenerateClientsReportAsync()
         {
             _logger.LogInfo("GenerateClientsReportAsync started");
@@ -457,7 +483,7 @@ namespace SKAuto.Export.Excel
             return ms.ToArray();
         }
 
-        // ---------- VEHICLES REPORT ----------
+        // ========== VEHICLES REPORT ==========
         public async Task<byte[]> GenerateVehiclesReportAsync()
         {
             _logger.LogInfo("GenerateVehiclesReportAsync started");
@@ -487,7 +513,7 @@ namespace SKAuto.Export.Excel
             return ms.ToArray();
         }
 
-        // ---------- MONTHLY SUMMARY ----------
+        // ========== MONTHLY SUMMARY ==========
         public async Task<byte[]> GenerateMonthlySummaryAsync(int month, int year)
         {
             _logger.LogInfo($"GenerateMonthlySummaryAsync started for {month}/{year}");
@@ -546,7 +572,7 @@ namespace SKAuto.Export.Excel
             return stream.ToArray();
         }
 
-        // ---------- PSA PERFORMANCE REPORT ----------
+        // ========== PSA PERFORMANCE REPORT ==========
         public async Task<byte[]> GeneratePSAPerformanceReportAsync(DateTime fromDate, DateTime toDate)
         {
             _logger.LogInfo($"GeneratePSAPerformanceReportAsync started from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd}");
@@ -599,7 +625,7 @@ namespace SKAuto.Export.Excel
             return stream.ToArray();
         }
 
-        // ---------- CSV EXPORT ----------
+        // ========== CSV EXPORT ==========
         public async Task<string> ExportToCsvAsync<T>(IEnumerable<T> data)
         {
             _logger.LogInfo($"ExportToCsvAsync started for type {typeof(T).Name}");
@@ -622,12 +648,13 @@ namespace SKAuto.Export.Excel
             return csv.ToString();
         }
 
-        // Helper methods for week calculations
+        // ========== HELPER METHODS ==========
         private int GetIsoWeek(DateTime date)
         {
             return System.Globalization.CultureInfo.CurrentCulture.Calendar
                 .GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         }
+
         private DateTime GetStartOfWeek(DateTime date)
         {
             int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;

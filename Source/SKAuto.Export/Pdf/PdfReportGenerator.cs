@@ -11,6 +11,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,7 @@ namespace SKAuto.Export.Pdf
             _logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
         }
 
+        // ========== HELPERS ==========
         private Color HexToColor(string hex)
         {
             if (string.IsNullOrEmpty(hex) || !hex.StartsWith("#"))
@@ -57,104 +59,34 @@ namespace SKAuto.Export.Pdf
             };
         }
 
-        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
+        private Cell CreateCell(string text, PdfFont font, Color borderColor, TextAlignment alignment = TextAlignment.LEFT)
         {
-            _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
-                $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}");
+            return new Cell()
+                .Add(new Paragraph(text).SetFont(font).SetFontSize(9))
+                .SetTextAlignment(alignment)
+                .SetBorder(new SolidBorder(borderColor, 1))
+                .SetPadding(4);
+        }
 
-            var appConfig = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
-            var colors = appConfig.ReportColors;
-            var fonts = appConfig.ReportFonts;
-
-            var headerBg = HexToColor(colors.HeaderBackground);
-            var headerFg = HexToColor(colors.HeaderForeground);
-            var altRowBg = HexToColor(colors.AlternateRowBackground);
-            var borderColor = HexToColor(colors.Border);
-            var totalBg = HexToColor(colors.TotalBackground);
-
-            var headerFont = GetFont(fonts.FontFamily, true);
-            var normalFont = GetFont(fonts.FontFamily, false);
-
-            var orders = (await _unitOfWork.WorkOrders.FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To)).ToList();
-            _logger.LogInfo($"Loaded {orders.Count} raw orders");
-
-            var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
-            var vehicles = (await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id))).ToDictionary(v => v.Id);
-            var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
-            var clients = (await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id))).ToDictionary(c => c.Id);
-            var orderIds = orders.Select(o => o.Id).ToList();
-            var allTasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
-            var taskLookup = allTasks.ToLookup(t => t.WorkOrderId);
-            var accessoryIds = allTasks.Select(t => t.AccessoryId).Distinct().ToList();
-            var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
-                .ToDictionary(a => a.Id, a => a.Name);
-
-            // Filters
-            if (filter.TaskType.HasValue)
+        private void AddHeader(Document document, string title, PdfFont boldFont, PdfFont normalFont, Color headerBg, Color borderColor)
+        {
+            if (File.Exists(_logoPath))
             {
-                var ordersWithTask = allTasks.Where(t => t.TaskType == filter.TaskType.Value).Select(t => t.WorkOrderId).Distinct().ToHashSet();
-                orders = orders.Where(o => ordersWithTask.Contains(o.Id)).ToList();
-            }
-            if (filter.WorkStatus.HasValue)
-                orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
-            if (filter.AccessoryId.HasValue)
-            {
-                var ordersWithAccessory = allTasks.Where(t => t.AccessoryId == filter.AccessoryId.Value).Select(t => t.WorkOrderId).Distinct().ToHashSet();
-                orders = orders.Where(o => ordersWithAccessory.Contains(o.Id)).ToList();
-            }
-            _logger.LogInfo($"After filters: {orders.Count} orders");
-
-            using var ms = new MemoryStream();
-            using var writer = new PdfWriter(ms);
-            using var pdf = new PdfDocument(writer);
-            using var document = new Document(pdf, PageSize.A4.Rotate());
-            document.SetMargins(36, 36, 36, 36);
-
-            AddHeader(document, "Work Orders Report", headerFont, normalFont, headerBg, borderColor);
-            AddFilterSummary(document, filter, accessories, altRowBg, borderColor, normalFont);
-
-            if (filter.GroupByWeek)
-            {
-                var weekGroups = orders.GroupBy(w => GetIsoWeek(w.OrderDate)).OrderBy(g => g.Key);
-                foreach (var group in weekGroups)
+                try
                 {
-                    int week = group.Key;
-                    DateTime weekStart = GetStartOfWeek(group.First().OrderDate);
-                    DateTime weekEnd = weekStart.AddDays(6);
-                    Paragraph weekHeader = new Paragraph()
-                        .Add($"Week {week} ({weekStart:dd/MM/yyyy} – {weekEnd:dd/MM/yyyy})")
-                        .SetFont(headerFont).SetFontSize(12).SetFontColor(headerBg)
-                        .SetMarginTop(15).SetMarginBottom(5);
-                    document.Add(weekHeader);
-                    if (!filter.SummaryOnly)
-                        WriteWorkOrderTable(document, group.ToList(), vehicles, clients, taskLookup, accessories, headerFont, normalFont, headerBg, headerFg, borderColor, altRowBg);
-                    decimal weekTotal = group.Sum(o => o.TotalAmount ?? 0);
-                    Paragraph weekTotalPara = new Paragraph()
-                        .Add($"Week Total: {weekTotal:C}").SetFont(headerFont).SetFontSize(11)
-                        .SetTextAlignment(TextAlignment.RIGHT).SetMarginTop(5).SetMarginBottom(15)
-                        .SetBackgroundColor(totalBg).SetPadding(5);
-                    document.Add(weekTotalPara);
+                    ImageData imageData = ImageDataFactory.Create(_logoPath);
+                    Image logo = new Image(imageData).ScaleToFit(120, 120);
+                    document.Add(logo);
                 }
+                catch (Exception ex) { _logger.LogWarning($"Could not load logo: {ex.Message}"); }
             }
-            else
-            {
-                if (!filter.SummaryOnly)
-                    WriteWorkOrderTable(document, orders, vehicles, clients, taskLookup, accessories, headerFont, normalFont, headerBg, headerFg, borderColor, altRowBg);
-            }
-
-            if (!filter.SummaryOnly && orders.Any())
-            {
-                decimal grandTotal = orders.Sum(o => o.TotalAmount ?? 0);
-                Paragraph grandTotalPara = new Paragraph()
-                    .Add($"GRAND TOTAL: {grandTotal:C}").SetFont(headerFont).SetFontSize(14)
-                    .SetTextAlignment(TextAlignment.RIGHT).SetMarginTop(20)
-                    .SetBackgroundColor(totalBg).SetPadding(8);
-                document.Add(grandTotalPara);
-            }
-
-            document.Close();
-            _logger.LogInfo("PDF work orders report generation completed");
-            return ms.ToArray();
+            Paragraph titlePara = new Paragraph(title)
+                .SetFont(boldFont).SetFontSize(12).SetFontColor(headerBg).SetMarginBottom(10);
+            document.Add(titlePara);
+            SolidLine line = new SolidLine(1f);
+            line.SetColor(borderColor);
+            document.Add(new LineSeparator(line));
+            document.Add(new Paragraph(" ").SetFont(normalFont));
         }
 
         private void AddFilterSummary(Document document, ReportFilter filter, Dictionary<int, string> accessories,
@@ -176,45 +108,184 @@ namespace SKAuto.Export.Pdf
             document.Add(summary);
         }
 
-        private void WriteWorkOrderTable(Document document, List<WorkOrder> orders,
-            Dictionary<int, Vehicle> vehicleDict, Dictionary<int, Client> clientDict,
-            ILookup<int, WorkTask> taskLookup, Dictionary<int, string> accessories,
-            PdfFont headerFont, PdfFont normalFont, Color headerBg, Color headerFg, Color borderColor, Color altRowBg)
+        // ========== WORK ORDERS SUMMARY REPORT (with correct filtering) ==========
+        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
         {
-            // Expand table to 9 columns: ID, Date, Client, Vehicle, Status, Tasks, Travels, Task Names, Total
-            Table table = new Table(9).UseAllAvailableWidth();
+            _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
+                $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}");
+
+            // Load orders
+            var orders = (await _unitOfWork.WorkOrders
+                .FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To))
+                .ToList();
+
+            if (filter.WorkStatus.HasValue)
+                orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
+
+            if (!orders.Any())
+            {
+                using var emptyMs = new MemoryStream();
+                using var emptyWriter = new PdfWriter(emptyMs);
+                using var emptyPdf = new PdfDocument(emptyWriter);
+                using var emptyDoc = new Document(emptyPdf);
+                emptyDoc.Add(new Paragraph("No work orders match the date and status filters."));
+                return emptyMs.ToArray();
+            }
+
+            // Load related data
+            var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
+            var vehicles = (await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id))).ToDictionary(v => v.Id);
+            var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
+            var clients = (await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id))).ToDictionary(c => c.Id);
+            var orderIds = orders.Select(o => o.Id).ToList();
+            var allTasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
+            var allTravels = (await _unitOfWork.Travels.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
+            var accessoryIds = allTasks.Select(t => t.AccessoryId).Distinct().ToList();
+            var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
+                .ToDictionary(a => a.Id, a => a.Name);
+
+            // Build report rows
+            var reportRows = new List<ReportRow>();
+            foreach (var wo in orders)
+            {
+                // Tasks
+                var tasks = allTasks.Where(t => t.WorkOrderId == wo.Id).ToList();
+                if (filter.TaskType.HasValue)
+                    tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
+                if (filter.AccessoryId.HasValue)
+                    tasks = tasks.Where(t => t.AccessoryId == filter.AccessoryId.Value).ToList();
+
+                foreach (var task in tasks)
+                {
+                    decimal amount = (task.Price ?? 0) * task.Quantity;
+                    string desc = accessories.GetValueOrDefault(task.AccessoryId, "?");
+                    reportRows.Add(new ReportRow
+                    {
+                        WorkOrder = wo,
+                        Description = desc,
+                        Amount = amount,
+                        Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
+                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null
+                    });
+                }
+
+                // Travels – only if TaskType filter is null or equals Travel
+                if (!filter.TaskType.HasValue || filter.TaskType.Value == TaskType.Travel)
+                {
+                    var travels = allTravels.Where(t => t.WorkOrderId == wo.Id).ToList();
+                    foreach (var travel in travels)
+                    {
+                        string desc = $"Travel to {travel.Destination} ({travel.DistanceKm} km)";
+                        decimal amount = travel.TravelCost ?? 0;
+                        reportRows.Add(new ReportRow
+                        {
+                            WorkOrder = wo,
+                            Description = desc,
+                            Amount = amount,
+                            Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
+                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null
+                        });
+                    }
+                }
+            }
+
+            if (!reportRows.Any())
+            {
+                using var emptyMs = new MemoryStream();
+                using var emptyWriter = new PdfWriter(emptyMs);
+                using var emptyPdf = new PdfDocument(emptyWriter);
+                using var emptyDoc = new Document(emptyPdf);
+                emptyDoc.Add(new Paragraph("No records match the selected filters."));
+                return emptyMs.ToArray();
+            }
+
+            var appConfig = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+            var colors = appConfig.ReportColors;
+            var fonts = appConfig.ReportFonts;
+            var headerBg = HexToColor(colors.HeaderBackground);
+            var headerFg = HexToColor(colors.HeaderForeground);
+            var altRowBg = HexToColor(colors.AlternateRowBackground);
+            var borderColor = HexToColor(colors.Border);
+            var totalBg = HexToColor(colors.TotalBackground);
+            var headerFont = GetFont(fonts.FontFamily, true);
+            var normalFont = GetFont(fonts.FontFamily, false);
+
+            using var ms = new MemoryStream();
+            using var writer = new PdfWriter(ms);
+            using var pdf = new PdfDocument(writer);
+            using var document = new Document(pdf, PageSize.A4.Rotate());
+            document.SetMargins(36, 36, 36, 36);
+
+            AddHeader(document, "Work Orders Report", headerFont, normalFont, headerBg, borderColor);
+            AddFilterSummary(document, filter, accessories, altRowBg, borderColor, normalFont);
+
+            if (filter.GroupByWeek)
+            {
+                var weekGroups = reportRows.GroupBy(r => GetIsoWeek(r.WorkOrder.OrderDate)).OrderBy(g => g.Key);
+                foreach (var group in weekGroups)
+                {
+                    int week = group.Key;
+                    DateTime weekStart = GetStartOfWeek(group.First().WorkOrder.OrderDate);
+                    DateTime weekEnd = weekStart.AddDays(6);
+                    Paragraph weekHeader = new Paragraph()
+                        .Add($"Week {week} ({weekStart:dd/MM/yyyy} – {weekEnd:dd/MM/yyyy})")
+                        .SetFont(headerFont).SetFontSize(12).SetFontColor(headerBg)
+                        .SetMarginTop(15).SetMarginBottom(5);
+                    document.Add(weekHeader);
+                    WriteReportRows(document, group.ToList(), normalFont, headerBg, headerFg, borderColor, altRowBg);
+                    decimal weekTotal = group.Sum(r => r.Amount);
+                    Paragraph weekTotalPara = new Paragraph()
+                        .Add($"Week Total: {weekTotal:C}").SetFont(headerFont).SetFontSize(11)
+                        .SetTextAlignment(TextAlignment.RIGHT).SetMarginTop(5).SetMarginBottom(15)
+                        .SetBackgroundColor(totalBg).SetPadding(5);
+                    document.Add(weekTotalPara);
+                }
+            }
+            else
+            {
+                WriteReportRows(document, reportRows, normalFont, headerBg, headerFg, borderColor, altRowBg);
+            }
+
+            if (!filter.SummaryOnly && reportRows.Any())
+            {
+                decimal grandTotal = reportRows.Sum(r => r.Amount);
+                Paragraph grandTotalPara = new Paragraph()
+                    .Add($"GRAND TOTAL: {grandTotal:C}").SetFont(headerFont).SetFontSize(14)
+                    .SetTextAlignment(TextAlignment.RIGHT).SetMarginTop(20)
+                    .SetBackgroundColor(totalBg).SetPadding(8);
+                document.Add(grandTotalPara);
+            }
+
+            document.Close();
+            _logger.LogInfo("PDF work orders report generation completed");
+            return ms.ToArray();
+        }
+
+        private void WriteReportRows(Document document, List<ReportRow> rows, PdfFont normalFont,
+            Color headerBg, Color headerFg, Color borderColor, Color altRowBg)
+        {
+            Table table = new Table(7).UseAllAvailableWidth();
             table.SetMarginTop(10).SetMarginBottom(10);
-            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Tasks", "Travels", "Task Names", "Total" };
+            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Description", "Amount" };
             foreach (string h in headers)
             {
                 Cell headerCell = new Cell()
-                    .Add(new Paragraph(h).SetFont(headerFont).SetFontSize(10).SetFontColor(headerFg))
+                    .Add(new Paragraph(h).SetFont(normalFont).SetFontSize(10).SetFontColor(headerFg))
                     .SetBackgroundColor(headerBg).SetTextAlignment(TextAlignment.CENTER)
                     .SetBorder(new SolidBorder(borderColor, 1)).SetPadding(6);
                 table.AddCell(headerCell);
             }
 
             bool alternate = false;
-            foreach (var o in orders)
+            foreach (var r in rows)
             {
-                vehicleDict.TryGetValue(o.VehicleId, out var vehicle);
-                string clientName = vehicle != null && clientDict.TryGetValue(vehicle.ClientId, out var client) ? client.Name : "";
-                var tasks = taskLookup[o.Id].ToList();
-                int taskCount = tasks.Count;
-                string taskNames = string.Join(", ", tasks.Select(t => accessories.GetValueOrDefault(t.AccessoryId, "?")));
-                string travelInfo = "";
-                if (o.Travels != null && o.Travels.Any())
-                    travelInfo = string.Join(", ", o.Travels.Select(t => $"{t.Destination} ({t.TravelCost:C})"));
-
-                Cell idCell = CreateCell(o.Id.ToString(), normalFont, borderColor);
-                Cell dateCell = CreateCell(o.OrderDate.ToString("dd/MM/yyyy"), normalFont, borderColor);
-                Cell clientCell = CreateCell(clientName, normalFont, borderColor);
-                Cell vehicleCell = CreateCell(vehicle?.ChassisNumber ?? "", normalFont, borderColor);
-                Cell statusCell = CreateCell(o.Status.ToString(), normalFont, borderColor);
-                Cell tasksCountCell = CreateCell(taskCount.ToString(), normalFont, borderColor);
-                Cell travelCell = CreateCell(travelInfo, normalFont, borderColor);
-                Cell tasksNameCell = CreateCell(taskNames, normalFont, borderColor);
-                Cell totalCell = CreateCell($"{o.TotalAmount ?? 0:C}", normalFont, borderColor, TextAlignment.RIGHT);
+                Cell idCell = CreateCell(r.WorkOrder.Id.ToString(), normalFont, borderColor);
+                Cell dateCell = CreateCell(r.WorkOrder.OrderDate.ToString("dd/MM/yyyy"), normalFont, borderColor);
+                Cell clientCell = CreateCell(r.Client?.Name ?? "", normalFont, borderColor);
+                Cell vehicleCell = CreateCell(r.Vehicle?.ChassisNumber ?? "", normalFont, borderColor);
+                Cell statusCell = CreateCell(r.WorkOrder.Status.ToString(), normalFont, borderColor);
+                Cell descCell = CreateCell(r.Description, normalFont, borderColor);
+                Cell amountCell = CreateCell($"{r.Amount:C}", normalFont, borderColor, TextAlignment.RIGHT);
 
                 if (alternate)
                 {
@@ -223,10 +294,8 @@ namespace SKAuto.Export.Pdf
                     clientCell.SetBackgroundColor(altRowBg);
                     vehicleCell.SetBackgroundColor(altRowBg);
                     statusCell.SetBackgroundColor(altRowBg);
-                    tasksCountCell.SetBackgroundColor(altRowBg);
-                    travelCell.SetBackgroundColor(altRowBg);
-                    tasksNameCell.SetBackgroundColor(altRowBg);
-                    totalCell.SetBackgroundColor(altRowBg);
+                    descCell.SetBackgroundColor(altRowBg);
+                    amountCell.SetBackgroundColor(altRowBg);
                 }
 
                 table.AddCell(idCell);
@@ -234,25 +303,24 @@ namespace SKAuto.Export.Pdf
                 table.AddCell(clientCell);
                 table.AddCell(vehicleCell);
                 table.AddCell(statusCell);
-                table.AddCell(tasksCountCell);
-                table.AddCell(travelCell);
-                table.AddCell(tasksNameCell);
-                table.AddCell(totalCell);
+                table.AddCell(descCell);
+                table.AddCell(amountCell);
 
                 alternate = !alternate;
             }
             document.Add(table);
         }
 
-        private Cell CreateCell(string text, PdfFont font, Color borderColor, TextAlignment alignment = TextAlignment.LEFT)
+        private class ReportRow
         {
-            return new Cell()
-                .Add(new Paragraph(text).SetFont(font).SetFontSize(9))
-                .SetTextAlignment(alignment)
-                .SetBorder(new SolidBorder(borderColor, 1))
-                .SetPadding(4);
+            public WorkOrder WorkOrder { get; set; }
+            public string Description { get; set; }
+            public decimal Amount { get; set; }
+            public Vehicle Vehicle { get; set; }
+            public Client Client { get; set; }
         }
 
+        // ========== CLIENTS REPORT ==========
         public async Task<byte[]> GenerateClientsReportAsync()
         {
             _logger.LogInfo("GenerateClientsReportAsync started");
@@ -318,6 +386,7 @@ namespace SKAuto.Export.Pdf
             return ms.ToArray();
         }
 
+        // ========== VEHICLES REPORT ==========
         public async Task<byte[]> GenerateVehiclesReportAsync()
         {
             _logger.LogInfo("GenerateVehiclesReportAsync started");
@@ -383,27 +452,7 @@ namespace SKAuto.Export.Pdf
             return ms.ToArray();
         }
 
-        private void AddHeader(Document document, string title, PdfFont boldFont, PdfFont normalFont, Color headerBg, Color borderColor)
-        {
-            if (File.Exists(_logoPath))
-            {
-                try
-                {
-                    ImageData imageData = ImageDataFactory.Create(_logoPath);
-                    Image logo = new Image(imageData).ScaleToFit(120, 120);
-                    document.Add(logo);
-                }
-                catch (Exception ex) { _logger.LogWarning($"Could not load logo: {ex.Message}"); }
-            }
-            Paragraph titlePara = new Paragraph(title)
-                .SetFont(boldFont).SetFontSize(12).SetFontColor(headerBg).SetMarginBottom(10);
-            document.Add(titlePara);
-            SolidLine line = new SolidLine(1f);
-            line.SetColor(borderColor);
-            document.Add(new LineSeparator(line));
-            document.Add(new Paragraph(" ").SetFont(normalFont));
-        }
-
+        // ========== HELPER METHODS ==========
         private int GetIsoWeek(DateTime date) =>
             CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
 
