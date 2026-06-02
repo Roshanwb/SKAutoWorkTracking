@@ -40,6 +40,13 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<Accessory> _availableAccessories = new();
 
+        // Search properties
+        [ObservableProperty]
+        private ObservableCollection<Accessory> _filteredAccessories = new();
+
+        [ObservableProperty]
+        private string _accessorySearchText = string.Empty;
+
         [ObservableProperty]
         private Accessory? _selectedAccessory;
 
@@ -49,7 +56,6 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<WorkTask> _tasks = new();
 
-        // NEW: Travels collection
         [ObservableProperty]
         private ObservableCollection<Travel> _travels = new();
 
@@ -89,10 +95,44 @@ namespace SKAuto.UI.ViewModels
             _ = InitializeAsync(workOrderId);
         }
 
+        // Called when search text changes
+        partial void OnAccessorySearchTextChanged(string value)
+        {
+            _logger.LogInfo($"Accessory search text changed: '{value}'");
+            FilterAccessories(value);
+        }
+
+        private void FilterAccessories(string searchText)
+        {
+            _logger.LogInfo($"Filtering accessories with search: '{searchText}'");
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                FilteredAccessories = new ObservableCollection<Accessory>(AvailableAccessories);
+                _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories (no filter)");
+                return;
+            }
+
+            var lowerSearch = searchText.ToLowerInvariant();
+            var filtered = AvailableAccessories
+                .Where(a => a.Name?.ToLowerInvariant().Contains(lowerSearch) == true ||
+                            a.PartNumber?.ToLowerInvariant().Contains(lowerSearch) == true)
+                .ToList();
+
+            FilteredAccessories = new ObservableCollection<Accessory>(filtered);
+            _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories matched");
+        }
+
+        
+
+        // ========== ADD TRAVEL ==========
         private void AddTravel()
         {
             _logger.LogInfo("AddTravel called");
             var dialog = new TravelDialog();
+            // ✅ Set the owner to the current MainWindow
+            dialog.Owner = Application.Current.MainWindow;
+            // ✅ Set startup location (already in XAML, but ensure it's set)
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (dialog.ShowDialog() == true)
             {
                 try
@@ -122,7 +162,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // NEW: Remove travel
+        // ========== REMOVE TRAVEL ==========
         private void RemoveTravel(Travel? travel)
         {
             if (travel == null) return;
@@ -131,10 +171,8 @@ namespace SKAuto.UI.ViewModels
             WorkOrder.Travels.Remove(travel);
         }
 
-
-
-
-        private void OpenAddTask()
+        // ========== OPEN ADD TASK (MANAGE TASKS) ==========
+        private async void OpenAddTask()
         {
             try
             {
@@ -142,7 +180,6 @@ namespace SKAuto.UI.ViewModels
                 var vm = new AccessoryManagementViewModel(_unitOfWork, logger);
                 var view = new AccessoryManagementView { DataContext = vm };
 
-                // Create a window to host the view
                 var window = new Window
                 {
                     Title = "Manage Tasks",
@@ -155,7 +192,13 @@ namespace SKAuto.UI.ViewModels
 
                 if (window.ShowDialog() == true)
                 {
-                    _ = RefreshAccessoriesAsync();
+                    // Clear search text so the newly added accessory appears
+                    AccessorySearchText = "";
+                    // Ensure the refresh happens on the UI thread
+                    await Application.Current.Dispatcher.InvokeAsync(async () =>
+                    {
+                        await RefreshAccessoriesAsync();
+                    });
                 }
             }
             catch (Exception ex)
@@ -168,15 +211,22 @@ namespace SKAuto.UI.ViewModels
 
         private async Task RefreshAccessoriesAsync()
         {
-            var accessories = await _unitOfWork.Accessories.GetAllAsync();
-            AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+            _logger.LogInfo("Refreshing accessories list");
+            // Run on the UI thread to avoid cross-thread collection issues
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                var accessories = await _unitOfWork.Accessories.GetAllAsync();
+                AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+                FilterAccessories(AccessorySearchText);
+                _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories, filtered to {FilteredAccessories.Count}");
+            });
         }
-
-
+        // ========== OPEN VEHICLE EDIT ==========
         private async void OpenVehicleEdit()
         {
             if (SelectedVehicle == null) return;
 
+            _logger.LogInfo($"Opening vehicle edit for chassis {SelectedVehicle.ChassisNumber}");
             var editWindow = new VehicleEditWindow();
             var viewModel = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
             editWindow.DataContext = viewModel;
@@ -184,12 +234,10 @@ namespace SKAuto.UI.ViewModels
 
             if (editWindow.ShowDialog() == true)
             {
-                // Refresh the selected vehicle with updated data from database
                 var refreshedVehicle = await _unitOfWork.Vehicles.GetByIdAsync(SelectedVehicle.Id);
                 if (refreshedVehicle != null)
                 {
                     SelectedVehicle = refreshedVehicle;
-                    // Also refresh the vehicle's client reference
                     if (refreshedVehicle.Client != null)
                     {
                         SelectedClient = refreshedVehicle.Client;
@@ -202,6 +250,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
+        // ========== INITIALIZE ==========
         private async Task InitializeAsync(int workOrderId)
         {
             try
@@ -217,7 +266,8 @@ namespace SKAuto.UI.ViewModels
                 _logger.LogInfo($"Loaded {Vehicles.Count} vehicles");
 
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
-                AvailableAccessories = new ObservableCollection<Accessory>(accessories);
+                AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+                FilterAccessories(""); // initialize filtered list with all items
                 _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories");
 
                 if (!_isNew)
@@ -240,7 +290,7 @@ namespace SKAuto.UI.ViewModels
                         _logger.LogInfo($"Loaded existing work order #{WorkOrder.Id}, Vehicle: {SelectedVehicle.ChassisNumber}, Client: {SelectedClient?.Name ?? "None"}");
                     }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
-                    Travels = new ObservableCollection<Travel>(WorkOrder.Travels); // NEW
+                    Travels = new ObservableCollection<Travel>(WorkOrder.Travels);
                     _logger.LogInfo($"Loaded {Tasks.Count} tasks and {Travels.Count} travels for work order");
                 }
                 else
@@ -252,7 +302,7 @@ namespace SKAuto.UI.ViewModels
                         OrderType = OrderType.PSA_Contract
                     };
                     Tasks = new ObservableCollection<WorkTask>();
-                    Travels = new ObservableCollection<Travel>(); // NEW
+                    Travels = new ObservableCollection<Travel>();
                     _logger.LogInfo("Created new work order");
                 }
             }
@@ -264,6 +314,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
+        // ========== SEARCH VEHICLE ==========
         private async Task SearchVehicleAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;
@@ -286,10 +337,8 @@ namespace SKAuto.UI.ViewModels
                     "Create Vehicle", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
 
-                // ---- VALIDATE CLIENT ----
                 if (SelectedClient == null)
                 {
-                    // Try to auto-select first client
                     if (Clients.Any())
                     {
                         SelectedClient = Clients.First();
@@ -303,15 +352,13 @@ namespace SKAuto.UI.ViewModels
                     }
                 }
 
-                // Ensure the client has a valid ID (already persisted)
                 if (SelectedClient.Id <= 0)
                 {
-                    _logger.LogError($"Selected client has invalid ID {SelectedClient.Id}. Client must be saved before creating a vehicle.");
+                    _logger.LogError($"Selected client has invalid ID {SelectedClient.Id}");
                     MessageBox.Show("The selected client is not saved yet. Please save the client first, then try again.", "Invalid Client", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                // Optional: double-check that the client really exists in the database
                 var existingClient = await _unitOfWork.Clients.GetByIdAsync(SelectedClient.Id);
                 if (existingClient == null)
                 {
@@ -334,7 +381,7 @@ namespace SKAuto.UI.ViewModels
                 await _unitOfWork.CompleteAsync();
 
                 SelectedVehicle = vehicle;
-                await RefreshVehiclesList(); // refresh local collection
+                await RefreshVehiclesList();
                 _logger.LogInfo($"Created new vehicle: {vehicle.ChassisNumber} for client {existingClient.Name}");
             }
             catch (Exception ex)
@@ -369,7 +416,6 @@ namespace SKAuto.UI.ViewModels
         {
             if (value != null && SelectedVehicle != null)
             {
-                // Update the vehicle's client when client is manually changed
                 SelectedVehicle.ClientId = value.Id;
                 SelectedVehicle.Client = value;
                 _logger.LogInfo($"Updated vehicle client to {value.Name} (ID {value.Id})");
@@ -378,9 +424,14 @@ namespace SKAuto.UI.ViewModels
                 _logger.LogInfo($"Selected client changed to {value.Name} (ID {value.Id})");
         }
 
+        // ========== ADD TASK ==========
         private void AddTask()
         {
-            if (SelectedAccessory == null) return;
+            if (SelectedAccessory == null)
+            {
+                _logger.LogWarning("AddTask called with no accessory selected");
+                return;
+            }
 
             var task = new WorkTask
             {
@@ -388,7 +439,7 @@ namespace SKAuto.UI.ViewModels
                 AccessoryId = SelectedAccessory.Id,
                 Accessory = SelectedAccessory,
                 Quantity = Quantity,
-                TaskType = SelectedAccessory.TaskType,   
+                TaskType = SelectedAccessory.TaskType,
                 TaskStatus = WorkStatus.Planned,
                 Price = SelectedAccessory.Price,
                 EstimatedMinutes = SelectedAccessory.Time
@@ -398,6 +449,7 @@ namespace SKAuto.UI.ViewModels
             _logger.LogInfo($"Added task: Accessory '{SelectedAccessory.Name}', Type '{SelectedAccessory.TaskType}', Quantity {Quantity}, Price {SelectedAccessory.Price}");
         }
 
+        // ========== REMOVE TASK ==========
         private void RemoveTask(WorkTask? task)
         {
             if (task != null)
@@ -409,6 +461,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
+        // ========== SAVE ==========
         private async Task SaveAsync()
         {
             try
@@ -422,10 +475,8 @@ namespace SKAuto.UI.ViewModels
                     return;
                 }
 
-                // Ensure WorkOrder has the correct VehicleId
                 WorkOrder.VehicleId = SelectedVehicle.Id;
 
-                // If client was manually changed, update the vehicle's client
                 if (SelectedClient != null && SelectedVehicle.ClientId != SelectedClient.Id)
                 {
                     _logger.LogInfo($"Updating vehicle client from {SelectedVehicle.ClientId} to {SelectedClient.Id}");
@@ -458,6 +509,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
+        // ========== DELETE ==========
         private async Task DeleteAsync()
         {
             if (_isNew) return;
@@ -481,6 +533,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
+        // ========== CLOSE WINDOW ==========
         private void CloseWindow(bool success = false)
         {
             _logger.LogInfo($"Closing window, success={success}");

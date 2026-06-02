@@ -18,10 +18,8 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Title -->
         <TextBlock Text="Tasks" Style="{StaticResource SectionHeader}" FontSize="18" Margin="0,0,0,10"/>
 
-        <!-- Search and Add Bar -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                      Width="300" Margin="0,0,10,0" BorderBrush="#dee2e6"
@@ -31,7 +29,6 @@
                     Style="{StaticResource ActionButton}" Background="#4CAF50" Height="28" Width="120"/>
         </StackPanel>
 
-        <!-- Data Grid -->
         <DataGrid Grid.Row="2" 
                   ItemsSource="{Binding Accessories}"
                   SelectedItem="{Binding SelectedAccessory}"
@@ -48,7 +45,6 @@
                 <DataGridTextColumn Header="Part #" Binding="{Binding PartNumber}" Width="70"/>
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="100"/>
                 <DataGridTextColumn Header="Time (min)" Binding="{Binding Time}" Width="70"/>
-                <!-- Single price column -->
                 <DataGridTextColumn Header="Price (€)" Binding="{Binding Price, StringFormat={}{0:F2}}" Width="70"/>
                 <DataGridCheckBoxColumn Header="Password" Binding="{Binding RequiresPassword}" Width="70"/>
                 <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}" Width="70"/>
@@ -101,45 +97,43 @@
                     <!-- Row 1 -->
                     <Label Grid.Row="0" Grid.Column="0" Content="Name:*" Margin="5"/>
                     <TextBox Grid.Row="0" Grid.Column="1" Margin="5" BorderBrush="#dee2e6"
-                             Text="{Binding CurrentEditAccessory.Name}"/>
+                             Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <Label Grid.Row="0" Grid.Column="2" Content="Part #:" Margin="5"/>
                     <TextBox Grid.Row="0" Grid.Column="3" Margin="5" BorderBrush="#dee2e6"
-                             Text="{Binding CurrentEditAccessory.PartNumber}"/>
+                             Text="{Binding EditPartNumber}"/>
 
                     <!-- Row 2 -->
                     <Label Grid.Row="1" Grid.Column="0" Content="Description:" Margin="5"/>
                     <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" BorderBrush="#dee2e6"
-                             Text="{Binding CurrentEditAccessory.Description}"/>
+                             Text="{Binding EditDescription}"/>
 
                     <!-- Row 3 -->
                     <Label Grid.Row="2" Grid.Column="0" Content="Time (min):" Margin="5"/>
                     <TextBox Grid.Row="2" Grid.Column="1" Margin="5" BorderBrush="#dee2e6"
-                             Text="{Binding CurrentEditAccessory.Time}"/>
+                             Text="{Binding EditTime}"/>
 
                     <Label Grid.Row="2" Grid.Column="2" Content="Price (€):" Margin="5"/>
-                    <!-- changed label -->
                     <TextBox Grid.Row="2" Grid.Column="3" Margin="5" BorderBrush="#dee2e6"
-                             Text="{Binding CurrentEditAccessory.Price}"/>
-                    <!-- bound to Price -->
+                             Text="{Binding EditPrice}"/>
 
                     <!-- Row 4 -->
-                    <Label Content="Task Type:" Grid.Row="3" Grid.Column="0"  Margin="5"/>
+                    <Label Content="Task Type:" Grid.Row="3" Grid.Column="0" Margin="5"/>
                     <ComboBox ItemsSource="{Binding TaskTypeValues}" Grid.Row="3" Grid.Column="1" 
-                              SelectedItem="{Binding CurrentEditAccessory.TaskType, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"
+                              SelectedItem="{Binding EditTaskType}" VerticalAlignment="Center"
                               Margin="5" Height="30"/>
-                    <CheckBox Content="Is Active"  Margin="5" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center"
-                          IsChecked="{Binding CurrentEditAccessory.IsActive}"/>
+                    <CheckBox Content="Is Active" Margin="5" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center"
+                              IsChecked="{Binding EditIsActive}"/>
                     <CheckBox Grid.Row="3" Grid.Column="3" 
                               Content="Requires Password Protection" 
                               Margin="5" VerticalAlignment="Center"
-                              IsChecked="{Binding CurrentEditAccessory.RequiresPassword}"/>
+                              IsChecked="{Binding EditRequiresPassword}"/>
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
                     <Button Content="Save" Padding="15,5" Margin="5"
                             Command="{Binding SaveAccessoryCommand}"
-                            Style="{StaticResource ActionButton}" Background="#4CAF50" Width="70" />
+                            Style="{StaticResource ActionButton}" Background="#4CAF50" Width="70"/>
                     <Button Content="Cancel" Padding="15,5" Margin="5"
                             Command="{Binding CancelEditCommand}"
                             Style="{StaticResource ActionButton}" Background="#6c757d" Width="70"/>
