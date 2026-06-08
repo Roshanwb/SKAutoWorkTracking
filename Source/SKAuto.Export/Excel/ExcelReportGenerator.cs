@@ -21,6 +21,7 @@ namespace SKAuto.Export.Excel
             _logger = logger;
         }
 
+
         // ========== DAILY REPORT ==========
         public async Task<byte[]> GenerateDailyReportAsync(DateTime date)
         {
@@ -659,6 +660,108 @@ namespace SKAuto.Export.Excel
         {
             int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
             return date.AddDays(-diff).Date;
+        }
+        // ========== TASKS REPORT (Accessories) ==========
+        public async Task<byte[]> GenerateTasksReportAsync(ReportFilter filter)
+        {
+            _logger.LogInfo("GenerateTasksReportAsync started");
+
+            var accessories = await _unitOfWork.Accessories.GetAllAsync();
+            var list = accessories.OrderBy(a => a.Name).ToList();
+
+            if (!list.Any())
+            {
+                using var emptyWorkbook = new XLWorkbook();
+                var ws = emptyWorkbook.Worksheets.Add("No Data");
+                ws.Cell(1, 1).Value = "No tasks (accessories) found.";
+                using var stream = new MemoryStream();
+                emptyWorkbook.SaveAs(stream);
+                return stream.ToArray();
+            }
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Tasks");
+
+            // Title
+            worksheet.Cell(1, 1).Value = "Tasks Report";
+            worksheet.Cell(1, 1).Style.Font.Bold = true;
+            worksheet.Cell(1, 1).Style.Font.FontSize = 16;
+            worksheet.Cell(2, 1).Value = $"Generated: {DateTime.Now:dd/MM/yyyy HH:mm}";
+
+            int dataStartRow = 4;
+
+            if (filter.SummaryOnly)
+            {
+                // Summary table
+                worksheet.Cell(dataStartRow, 1).Value = "Summary Statistics";
+                worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
+                dataStartRow++;
+                worksheet.Cell(dataStartRow, 1).Value = "Total Tasks:";
+                worksheet.Cell(dataStartRow, 2).Value = list.Count;
+                dataStartRow++;
+                worksheet.Cell(dataStartRow, 1).Value = "Total Active Tasks:";
+                worksheet.Cell(dataStartRow, 2).Value = list.Count(a => a.IsActive);
+                dataStartRow++;
+                worksheet.Cell(dataStartRow, 1).Value = "Total Inactive Tasks:";
+                worksheet.Cell(dataStartRow, 2).Value = list.Count(a => !a.IsActive);
+                dataStartRow++;
+                worksheet.Cell(dataStartRow, 1).Value = "Average Price:";
+                worksheet.Cell(dataStartRow, 2).Value = list.Average(a => a.Price ?? 0);
+                worksheet.Cell(dataStartRow, 2).Style.NumberFormat.Format = "€#,##0.00";
+                dataStartRow++;
+            }
+            else
+            {
+                if (filter.GroupByTaskType)
+                {
+                    var groups = list.GroupBy(a => a.TaskType).OrderBy(g => g.Key);
+                    foreach (var group in groups)
+                    {
+                        worksheet.Cell(dataStartRow, 1).Value = group.Key.ToString();
+                        worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
+                        worksheet.Cell(dataStartRow, 1).Style.Font.FontSize = 12;
+                        dataStartRow++;
+                        WriteTaskTable(worksheet, ref dataStartRow, group.ToList());
+                        dataStartRow++;
+                    }
+                }
+                else
+                {
+                    WriteTaskTable(worksheet, ref dataStartRow, list);
+                }
+            }
+
+            worksheet.Columns().AdjustToContents();
+            using var ms = new MemoryStream();
+            workbook.SaveAs(ms);
+            _logger.LogInfo("Tasks report generation completed");
+            return ms.ToArray();
+        }
+
+        private void WriteTaskTable(IXLWorksheet ws, ref int row, List<Accessory> tasks)
+        {
+            string[] headers = { "Name", "Part Number", "Description", "Time (min)", "Price (€)", "Task Type", "Requires Password", "Active" };
+            for (int i = 0; i < headers.Length; i++)
+            {
+                ws.Cell(row, i + 1).Value = headers[i];
+                ws.Cell(row, i + 1).Style.Font.Bold = true;
+                ws.Cell(row, i + 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            }
+            row++;
+
+            foreach (var t in tasks)
+            {
+                ws.Cell(row, 1).Value = t.Name;
+                ws.Cell(row, 2).Value = t.PartNumber;
+                ws.Cell(row, 3).Value = t.Description;
+                ws.Cell(row, 4).Value = t.Time;
+                ws.Cell(row, 5).Value = t.Price ?? 0;
+                ws.Cell(row, 5).Style.NumberFormat.Format = "€#,##0.00";
+                ws.Cell(row, 6).Value = t.TaskType.ToString();
+                ws.Cell(row, 7).Value = t.RequiresPassword ? "Yes" : "No";
+                ws.Cell(row, 8).Value = t.IsActive ? "Yes" : "No";
+                row++;
+            }
         }
     }
 }

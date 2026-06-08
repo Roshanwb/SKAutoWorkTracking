@@ -12,5 +12,6 @@ namespace SKAuto.Core.DTOs
         public int? AccessoryId { get; set; }
         public bool GroupByWeek { get; set; }
         public bool SummaryOnly { get; set; }
+        public bool GroupByTaskType { get; set; }   // NEW
     }
 }

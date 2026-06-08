@@ -19,7 +19,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Path = System.IO.Path;
 
 namespace SKAuto.Export.Pdf
 {
@@ -35,7 +34,7 @@ namespace SKAuto.Export.Pdf
             _unitOfWork = unitOfWork;
             _configService = configService;
             _logger = logger;
-            _logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
+            _logoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
         }
 
         // ========== HELPERS ==========
@@ -61,11 +60,21 @@ namespace SKAuto.Export.Pdf
 
         private Cell CreateCell(string text, PdfFont font, Color borderColor, TextAlignment alignment = TextAlignment.LEFT)
         {
+            // FIX: convert null to empty string to avoid "Text content cannot be null"
+            string safeText = text ?? "";
             return new Cell()
-                .Add(new Paragraph(text).SetFont(font).SetFontSize(9))
+                .Add(new Paragraph(safeText).SetFont(font).SetFontSize(9))
                 .SetTextAlignment(alignment)
                 .SetBorder(new SolidBorder(borderColor, 1))
                 .SetPadding(4);
+        }
+
+        private Cell CreateHeaderCell(string text, PdfFont font, Color bg, Color fg)
+        {
+            return new Cell()
+                .Add(new Paragraph(text).SetFont(font).SetFontSize(10).SetFontColor(fg))
+                .SetBackgroundColor(bg).SetTextAlignment(TextAlignment.CENTER)
+                .SetBorder(new SolidBorder(ColorConstants.BLACK, 1)).SetPadding(5);
         }
 
         private void AddHeader(Document document, string title, PdfFont boldFont, PdfFont normalFont, Color headerBg, Color borderColor)
@@ -88,6 +97,7 @@ namespace SKAuto.Export.Pdf
             document.Add(new LineSeparator(line));
             document.Add(new Paragraph(" ").SetFont(normalFont));
         }
+
 
         private void AddFilterSummary(Document document, ReportFilter filter, Dictionary<int, string> accessories,
             Color bg, Color border, PdfFont font)
@@ -461,5 +471,137 @@ namespace SKAuto.Export.Pdf
             int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
             return date.AddDays(-diff).Date;
         }
+        // ========== TASKS REPORT (Accessories) ==========
+        public async Task<byte[]> GenerateTasksReportAsync(ReportFilter filter)
+        {
+            _logger.LogInfo("GenerateTasksReportAsync started");
+
+            var appConfig = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+            var colors = appConfig.ReportColors;
+            var fonts = appConfig.ReportFonts;
+            var headerBg = HexToColor(colors.HeaderBackground);
+            var headerFg = HexToColor(colors.HeaderForeground);
+            var altRowBg = HexToColor(colors.AlternateRowBackground);
+            var borderColor = HexToColor(colors.Border);
+            var headerFont = GetFont(fonts.FontFamily, true);
+            var normalFont = GetFont(fonts.FontFamily, false);
+
+            var accessories = await _unitOfWork.Accessories.GetAllAsync();
+            var list = accessories.OrderBy(a => a.Name).ToList();
+
+            using var ms = new MemoryStream();
+            using var writer = new PdfWriter(ms);
+            using var pdf = new PdfDocument(writer);
+            using var document = new Document(pdf, PageSize.A4.Rotate());
+            document.SetMargins(36, 36, 36, 36);
+
+            AddHeader(document, "Tasks Report", headerFont, normalFont, headerBg, borderColor);
+            document.Add(new Paragraph($"Generated: {DateTime.Now:dd/MM/yyyy HH:mm}").SetFont(normalFont));
+            document.Add(new Paragraph(" "));
+
+            if (filter.SummaryOnly)
+            {
+                Table summaryTable = new Table(2).UseAllAvailableWidth();
+                summaryTable.AddCell(CreateHeaderCell("Summary", headerFont, headerBg, headerFg));
+                summaryTable.AddCell(CreateHeaderCell("Value", headerFont, headerBg, headerFg));
+                summaryTable.AddCell(CreateCell("Total Tasks:", normalFont, borderColor));
+                summaryTable.AddCell(CreateCell(list.Count.ToString(), normalFont, borderColor));
+                summaryTable.AddCell(CreateCell("Active Tasks:", normalFont, borderColor));
+                summaryTable.AddCell(CreateCell(list.Count(a => a.IsActive).ToString(), normalFont, borderColor));
+                summaryTable.AddCell(CreateCell("Inactive Tasks:", normalFont, borderColor));
+                summaryTable.AddCell(CreateCell(list.Count(a => !a.IsActive).ToString(), normalFont, borderColor));
+                summaryTable.AddCell(CreateCell("Average Price:", normalFont, borderColor));
+                summaryTable.AddCell(CreateCell($"{list.Average(a => a.Price ?? 0):C}", normalFont, borderColor, TextAlignment.RIGHT));
+                document.Add(summaryTable);
+            }
+            else
+            {
+                if (filter.GroupByTaskType)
+                {
+                    var groups = list.GroupBy(a => a.TaskType).OrderBy(g => g.Key);
+                    foreach (var group in groups)
+                    {
+                        Paragraph groupTitle = new Paragraph(group.Key.ToString())
+                            .SetFont(headerFont).SetFontSize(11).SetFontColor(headerBg).SetMarginTop(10);
+                        document.Add(groupTitle);
+                        WriteTaskTable(document, group.ToList(), normalFont, headerBg, headerFg, borderColor, altRowBg);
+                    }
+                }
+                else
+                {
+                    WriteTaskTable(document, list, normalFont, headerBg, headerFg, borderColor, altRowBg);
+                }
+            }
+
+            document.Close();
+            _logger.LogInfo("Tasks report generation completed");
+            return ms.ToArray();
+        }
+
+        private void WriteTaskTable(Document document, List<Accessory> tasks, PdfFont normalFont,
+            Color headerBg, Color headerFg, Color borderColor, Color altRowBg)
+        {
+            Table table = new Table(8).UseAllAvailableWidth();
+            table.SetMarginTop(5).SetMarginBottom(5);
+            string[] headers = { "Name", "Part #", "Description", "Time", "Price", "Type", "Password", "Active" };
+            foreach (string h in headers)
+            {
+                Cell headerCell = new Cell()
+                    .Add(new Paragraph(h).SetFont(normalFont).SetFontSize(10).SetFontColor(headerFg))
+                    .SetBackgroundColor(headerBg).SetTextAlignment(TextAlignment.CENTER)
+                    .SetBorder(new SolidBorder(borderColor, 1)).SetPadding(5);
+                table.AddCell(headerCell);
+            }
+
+            bool alternate = false;
+            foreach (var t in tasks)
+            {
+                // Safe conversion: replace null with empty string
+                string name = t.Name ?? "";
+                string partNumber = t.PartNumber ?? "";
+                string description = t.Description ?? "";
+                string time = t.Time?.ToString() ?? "";
+                string price = t.Price.HasValue ? t.Price.Value.ToString("C") : "€0.00";
+                string taskType = t.TaskType.ToString();
+                string requiresPassword = t.RequiresPassword ? "Yes" : "No";
+                string isActive = t.IsActive ? "Yes" : "No";
+
+                Cell nameCell = CreateCell(name, normalFont, borderColor);
+                Cell partCell = CreateCell(partNumber, normalFont, borderColor);
+                Cell descCell = CreateCell(description, normalFont, borderColor);
+                Cell timeCell = CreateCell(time, normalFont, borderColor);
+                Cell priceCell = CreateCell(price, normalFont, borderColor, TextAlignment.RIGHT);
+                Cell typeCell = CreateCell(taskType, normalFont, borderColor);
+                Cell passwordCell = CreateCell(requiresPassword, normalFont, borderColor);
+                Cell activeCell = CreateCell(isActive, normalFont, borderColor);
+
+                if (alternate)
+                {
+                    nameCell.SetBackgroundColor(altRowBg);
+                    partCell.SetBackgroundColor(altRowBg);
+                    descCell.SetBackgroundColor(altRowBg);
+                    timeCell.SetBackgroundColor(altRowBg);
+                    priceCell.SetBackgroundColor(altRowBg);
+                    typeCell.SetBackgroundColor(altRowBg);
+                    passwordCell.SetBackgroundColor(altRowBg);
+                    activeCell.SetBackgroundColor(altRowBg);
+                }
+
+                table.AddCell(nameCell);
+                table.AddCell(partCell);
+                table.AddCell(descCell);
+                table.AddCell(timeCell);
+                table.AddCell(priceCell);
+                table.AddCell(typeCell);
+                table.AddCell(passwordCell);
+                table.AddCell(activeCell);
+
+                alternate = !alternate;
+            }
+            document.Add(table);
+        }
+
+        // ... (keep existing GenerateClientsReportAsync, GenerateVehiclesReportAsync, GenerateWorkOrdersReportAsync, helpers)
+        // The existing methods are unchanged – only the Tasks report is added.
     }
 }

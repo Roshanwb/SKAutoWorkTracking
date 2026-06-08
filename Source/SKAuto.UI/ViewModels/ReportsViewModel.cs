@@ -24,7 +24,8 @@ namespace SKAuto.UI.ViewModels
     {
         WorkOrders,
         Clients,
-        Vehicles
+        Vehicles,
+        Tasks   // NEW
     }
 
     public partial class ReportsViewModel : ObservableObject
@@ -57,6 +58,9 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private bool _summaryOnly;
+
+        [ObservableProperty]
+        private bool _groupByTaskType;   // NEW: only for Tasks report
 
         [ObservableProperty]
         private string _statusMessage;
@@ -133,15 +137,13 @@ namespace SKAuto.UI.ViewModels
                 WorkStatusOptions.Add(new SelectableOption<WorkStatus?> { Value = value, Display = value.ToString() });
             }
 
-            // Initialize accessory options with "All" immediately (prevents null binding)
+            // Initialize accessory options with "All"
             AccessoryOptions = new List<SelectableOption<int?>>
             {
                 new SelectableOption<int?> { Value = null, Display = "All" }
             };
-            // Set default selected to "All"
             SelectedAccessoryOption = AccessoryOptions.First();
 
-            // Load actual accessories in background
             _ = LoadAccessoriesAsync();
 
             GenerateExcelCommand = new AsyncRelayCommand(GenerateExcelAsync);
@@ -165,16 +167,12 @@ namespace SKAuto.UI.ViewModels
                 AccessoryOptions = newList;
                 OnPropertyChanged(nameof(AccessoryOptions));
 
-                // Ensure selected item is still "All" (or preserve previous selection if it existed)
                 if (SelectedAccessoryId == null)
                     SelectedAccessoryOption = AccessoryOptions.First();
                 else
                 {
                     var match = AccessoryOptions.FirstOrDefault(o => o.Value == SelectedAccessoryId);
-                    if (match != null)
-                        SelectedAccessoryOption = match;
-                    else
-                        SelectedAccessoryOption = AccessoryOptions.First();
+                    SelectedAccessoryOption = match ?? AccessoryOptions.First();
                 }
             }
             catch (Exception ex)
@@ -208,6 +206,11 @@ namespace SKAuto.UI.ViewModels
                             AccessoryId = SelectedAccessoryId,
                             GroupByWeek = GroupByWeek,
                             SummaryOnly = SummaryOnly
+                        }),
+                        ReportType.Tasks => await _excelExport.GenerateTasksReportAsync(new ReportFilter
+                        {
+                            GroupByTaskType = GroupByTaskType,
+                            SummaryOnly = SummaryOnly   // optional: if true, show only statistics
                         }),
                         ReportType.Clients => await _excelExport.GenerateClientsReportAsync(),
                         ReportType.Vehicles => await _excelExport.GenerateVehiclesReportAsync(),
@@ -250,6 +253,11 @@ namespace SKAuto.UI.ViewModels
                             WorkStatus = SelectedWorkStatus,
                             AccessoryId = SelectedAccessoryId,
                             GroupByWeek = GroupByWeek,
+                            SummaryOnly = SummaryOnly
+                        }),
+                        ReportType.Tasks => await _pdfExport.GenerateTasksReportAsync(new ReportFilter
+                        {
+                            GroupByTaskType = GroupByTaskType,
                             SummaryOnly = SummaryOnly
                         }),
                         ReportType.Clients => await _pdfExport.GenerateClientsReportAsync(),
