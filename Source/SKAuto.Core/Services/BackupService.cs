@@ -14,24 +14,22 @@ using System.Threading.Tasks;
 
 namespace SKAuto.Core.Services
 {
-    /// <summary>
-    /// Handles database backup, CSV export/import, and ZIP packaging.
-    /// All operations are logged and support dry-run transactions.
-    /// </summary>
     public class BackupService : IBackupService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly string _dbPath;
         private readonly ILoggingService _logger;
+        private readonly IConfigurationService _configService;
 
-        public BackupService(IUnitOfWork unitOfWork, ILoggingService logger, string dbPath)
+        public BackupService(IUnitOfWork unitOfWork, ILoggingService logger, string dbPath, IConfigurationService configService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _dbPath = dbPath;
+            _configService = configService;
         }
 
-        // ---------- Backup (copy .db file) ----------
+        // ========== BACKUP (with cleanup) ==========
         public async Task<string> BackupDatabaseAsync(string backupFolder)
         {
             _logger.LogInfo($"BackupDatabaseAsync started. Target folder: {backupFolder}");
@@ -40,11 +38,93 @@ namespace SKAuto.Core.Services
             Directory.CreateDirectory(backupFolder);
             File.Copy(_dbPath, destPath, true);
             _logger.LogInfo($"Backup created: {destPath}");
-            await Task.CompletedTask;
+
+            await CleanupOldBackupsAsync(backupFolder);
+
             return destPath;
         }
 
-        // ---------- Export all tables to CSV and zip ----------
+        private async Task CleanupOldBackupsAsync(string backupFolder)
+        {
+            try
+            {
+                var appConfig = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+                int maxBackups = appConfig.MaxBackupsToKeep;
+
+                var files = Directory.GetFiles(backupFolder, "SKAuto_*.db")
+                    .Select(f => new FileInfo(f))
+                    .OrderByDescending(f => f.CreationTime)
+                    .Skip(maxBackups)
+                    .ToList();
+
+                if (files.Any())
+                {
+                    _logger.LogInfo($"Deleting {files.Count} old backup files (keeping latest {maxBackups})");
+                    foreach (var file in files)
+                    {
+                        file.Delete();
+                        _logger.LogInfo($"Deleted old backup: {file.FullName}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to cleanup old backups", ex);
+            }
+            await Task.CompletedTask;
+        }
+
+        // ========== LIST BACKUP FILES ==========
+        public async Task<List<BackupFileInfo>> GetBackupFilesAsync(string backupFolder)
+        {
+            _logger.LogInfo($"GetBackupFilesAsync started. Folder: {backupFolder}");
+            var result = new List<BackupFileInfo>();
+            if (!Directory.Exists(backupFolder))
+                return result;
+
+            var files = Directory.GetFiles(backupFolder, "SKAuto_*.db");
+            foreach (var file in files)
+            {
+                var info = new FileInfo(file);
+                var fileName = Path.GetFileName(file);
+                DateTime createdAt;
+                try
+                {
+                    var datePart = fileName.Replace("SKAuto_", "").Replace(".db", "");
+                    createdAt = DateTime.ParseExact(datePart, "yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+                }
+                catch
+                {
+                    createdAt = info.CreationTime;
+                }
+                result.Add(new BackupFileInfo
+                {
+                    FilePath = file,
+                    FileName = fileName,
+                    CreatedAt = createdAt,
+                    SizeInBytes = info.Length
+                });
+            }
+            result = result.OrderByDescending(f => f.CreatedAt).ToList();
+            _logger.LogInfo($"Found {result.Count} backup files");
+            return result;
+        }
+
+        // ========== RESTORE DATABASE ==========
+        public async Task<string> RestoreDatabaseAsync(string backupFilePath)
+        {
+            _logger.LogInfo($"RestoreDatabaseAsync started. File: {backupFilePath}");
+            if (!File.Exists(backupFilePath))
+                throw new FileNotFoundException($"Backup file not found: {backupFilePath}");
+
+            var currentBackup = await BackupDatabaseAsync(Path.GetDirectoryName(backupFilePath));
+
+            File.Copy(backupFilePath, _dbPath, true);
+            _logger.LogInfo($"Database restored from {backupFilePath}");
+            return currentBackup;
+        }
+
+        // ========== EXPORT ==========
         public async Task<string> ExportDataAsync(string exportFolder)
         {
             _logger.LogInfo($"ExportDataAsync started. Export folder: {exportFolder}");
@@ -78,7 +158,7 @@ namespace SKAuto.Core.Services
             _logger.LogInfo($"Exported {records.Count()} records to {filename}");
         }
 
-        // ---------- Main Import (orchestrates all tables with transaction) ----------
+        // ========== IMPORT ==========
         public async Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options)
         {
             _logger.LogInfo($"ImportDataAsync started. ZIP: {zipPath}, DryRun: {options.DryRun}, Conflict: {options.Conflict}");
@@ -90,31 +170,14 @@ namespace SKAuto.Core.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // 1. Clients (natural key: Name)
                 var clients = await ImportClientsAsync(extractDir, options, result);
-
-                // 2. Accessories (natural key: Name) – no client relation, includes TaskType
                 var accessories = await ImportAccessoriesAsync(extractDir, options, result);
-
-                // 3. Vehicles (requires ClientId)
                 var vehicles = await ImportVehiclesAsync(extractDir, options, clients, result);
-
-                // 4. WorkOrders (requires VehicleId)
                 var workOrders = await ImportWorkOrdersAsync(extractDir, options, vehicles, result);
-
-                // 5. WorkTasks (requires WorkOrderId, AccessoryId)
                 await ImportWorkTasksAsync(extractDir, options, workOrders, accessories, result);
-
-                // 6. Travels (requires WorkOrderId)
                 await ImportTravelsAsync(extractDir, options, workOrders, result);
-
-                // 7. ProtectedRates (requires AccessoryId)
                 await ImportProtectedRatesAsync(extractDir, options, accessories, result);
-
-                // 8. Users (natural key: Username)
                 await ImportUsersAsync(extractDir, options, result);
-
-                // 9. SourceDocuments (requires WorkOrderId)
                 await ImportSourceDocumentsAsync(extractDir, options, workOrders, result);
 
                 if (!options.DryRun)
@@ -144,7 +207,7 @@ namespace SKAuto.Core.Services
             return result;
         }
 
-        // ========== Helper: Read CSV into list of dictionaries (manual mapping) ==========
+        // ========== CSV HELPER ==========
         private List<Dictionary<string, string>> ReadCsvRows(string filePath)
         {
             _logger.LogInfo($"Reading CSV file: {filePath}");
@@ -173,7 +236,7 @@ namespace SKAuto.Core.Services
             return rows;
         }
 
-        // ========== 1. CLIENTS ==========
+        // ========== CLIENTS ==========
         private async Task<Dictionary<string, Client>> ImportClientsAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             _logger.LogInfo("ImportClientsAsync started");
@@ -229,7 +292,7 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== 2. ACCESSORIES (with TaskType) ==========
+        // ========== ACCESSORIES ==========
         private async Task<Dictionary<string, Accessory>> ImportAccessoriesAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             _logger.LogInfo("ImportAccessoriesAsync started");
@@ -246,7 +309,6 @@ namespace SKAuto.Core.Services
                 var name = row.GetValueOrDefault("Name")?.Trim();
                 if (string.IsNullOrEmpty(name)) continue;
 
-                // Read TaskType (new column)
                 var taskTypeStr = row.GetValueOrDefault("TaskType");
                 var taskType = Enum.TryParse<TaskType>(taskTypeStr, true, out var tt) ? tt : TaskType.Fit;
 
@@ -261,7 +323,7 @@ namespace SKAuto.Core.Services
                         existing.Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0;
                         existing.RequiresPassword = row.GetValueOrDefault("RequiresPassword") == "True" || row.GetValueOrDefault("RequiresPassword") == "true" || row.GetValueOrDefault("RequiresPassword") == "1";
                         existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
-                        existing.TaskType = taskType;   // ← new
+                        existing.TaskType = taskType;
                         if (!options.DryRun) await _unitOfWork.Accessories.UpdateAsync(existing);
                         result.RowsUpdated++;
                         _logger.LogInfo($"Updated accessory: {name}, TaskType={taskType}");
@@ -280,7 +342,7 @@ namespace SKAuto.Core.Services
                         Price = decimal.TryParse(row.GetValueOrDefault("Price"), out var p) ? p : 0,
                         RequiresPassword = row.GetValueOrDefault("RequiresPassword") == "True" || row.GetValueOrDefault("RequiresPassword") == "true" || row.GetValueOrDefault("RequiresPassword") == "1",
                         IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1",
-                        TaskType = taskType   // ← new
+                        TaskType = taskType
                     };
                     if (!options.DryRun) await _unitOfWork.Accessories.AddAsync(newAcc);
                     result.RowsInserted++;
@@ -293,7 +355,7 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== 3. VEHICLES ==========
+        // ========== VEHICLES ==========
         private async Task<Dictionary<string, Vehicle>> ImportVehiclesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Client> clients, BackupImportResult result)
         {
@@ -368,7 +430,7 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== 4. WORK ORDERS ==========
+        // ========== WORK ORDERS ==========
         private async Task<Dictionary<int, WorkOrder>> ImportWorkOrdersAsync(string folder, BackupImportOptions options,
             Dictionary<string, Vehicle> vehicles, BackupImportResult result)
         {
@@ -443,7 +505,7 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== 5. WORK TASKS ==========
+        // ========== WORK TASKS ==========
         private async Task ImportWorkTasksAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
@@ -527,7 +589,7 @@ namespace SKAuto.Core.Services
             _logger.LogInfo($"ImportWorkTasksAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
-        // ========== 6. TRAVELS ==========
+        // ========== TRAVELS ==========
         private async Task ImportTravelsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
@@ -589,7 +651,7 @@ namespace SKAuto.Core.Services
             _logger.LogInfo($"ImportTravelsAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
-        // ========== 7. PROTECTED RATES ==========
+        // ========== PROTECTED RATES ==========
         private async Task ImportProtectedRatesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
@@ -656,7 +718,7 @@ namespace SKAuto.Core.Services
             _logger.LogInfo($"ImportProtectedRatesAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
-        // ========== 8. USERS ==========
+        // ========== USERS ==========
         private async Task ImportUsersAsync(string folder, BackupImportOptions options, BackupImportResult result)
         {
             _logger.LogInfo("ImportUsersAsync started");
@@ -704,7 +766,7 @@ namespace SKAuto.Core.Services
             _logger.LogInfo($"ImportUsersAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
-        // ========== 9. SOURCE DOCUMENTS ==========
+        // ========== SOURCE DOCUMENTS ==========
         private async Task ImportSourceDocumentsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {

@@ -1,6 +1,6 @@
 #define MyAppName "SKAuto Work Tracking"
 #define MyAppVersion "1.0.0.0"
-#define MyAppPublisher "SK Auto"
+#define MyAppPublisher "Insights"
 #define MyAppExeName "SKAuto.UI.exe"
 
 [Setup]

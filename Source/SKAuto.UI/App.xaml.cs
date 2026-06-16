@@ -59,7 +59,6 @@ namespace SKAuto.UI
 
         protected override async void OnStartup(StartupEventArgs e)
         {
-            // CRITICAL: Set shutdown mode before any windows are created
             ShutdownMode = ShutdownMode.OnMainWindowClose;
 
             await _host.StartAsync();
@@ -85,21 +84,14 @@ namespace SKAuto.UI
                         }
                         CurrentConfig = appConfig;
 
-                        // Fix culture if it contains description like "Français (fr-FR)"
                         string fixedLanguage = appConfig.Language;
-                        if (!string.IsNullOrEmpty(fixedLanguage) && fixedLanguage.Contains("(") && fixedLanguage.Contains(")"))
+                        if (!string.IsNullOrEmpty(fixedLanguage) && fixedLanguage.Contains("("))
                         {
                             int start = fixedLanguage.IndexOf('(') + 1;
                             int end = fixedLanguage.IndexOf(')');
                             if (start > 0 && end > start)
-                            {
                                 fixedLanguage = fixedLanguage.Substring(start, end - start);
-                                appConfig.Language = fixedLanguage;
-                                configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
-                                _logger.LogInfo($"Fixed culture from '{appConfig.Language}' to '{fixedLanguage}'");
-                            }
                         }
-
                         try
                         {
                             var culture = new CultureInfo(fixedLanguage);
@@ -107,18 +99,16 @@ namespace SKAuto.UI
                             CultureInfo.DefaultThreadCurrentUICulture = culture;
                             _logger.LogInfo($"Culture set to {fixedLanguage}");
                         }
-                        catch (CultureNotFoundException)
+                        catch
                         {
-                            _logger.LogWarning($"Invalid culture '{fixedLanguage}', falling back to fr-FR");
+                            _logger.LogWarning($"Invalid culture, falling back to fr-FR");
                             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
                             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
-                            appConfig.Language = "fr-FR";
-                            configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Initialization failed", ex);
+                        _logger.LogError("Resource loading failed", ex);
                         throw;
                     }
                 },
@@ -127,19 +117,14 @@ namespace SKAuto.UI
                     try
                     {
                         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-                        // Assign as the main window so ShutdownMode works correctly
                         Current.MainWindow = mainWindow;
                         mainWindow.Show();
-                        mainWindow.Activate();
-                        mainWindow.Focus();
-                        _logger.LogInfo("Main window shown and activated.");
-                        Application.Current.MainWindow.WindowState = WindowState.Maximized;
+                        _logger.LogInfo("Main window shown.");
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError("Failed to show main window", ex);
-                        MessageBox.Show($"Fatal error:\n{ex.Message}\n\nCheck log at %APPDATA%\\SKAuto\\Logs",
-                                        "Startup Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Fatal error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         Environment.Exit(1);
                     }
                 },
@@ -153,6 +138,23 @@ namespace SKAuto.UI
         protected override async void OnExit(ExitEventArgs e)
         {
             _logger?.LogInfo("Application exiting.");
+
+            // Automatic backup on exit
+            try
+            {
+                var backupService = _host.Services.GetRequiredService<IBackupService>();
+                var backupFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "SKAuto",
+                    "Backups");
+                var backupPath = await backupService.BackupDatabaseAsync(backupFolder);
+                _logger.LogInfo($"Automatic backup created on exit: {backupPath}");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError("Automatic backup failed on exit", ex);
+            }
+
             await _host.StopAsync();
             _host.Dispose();
             base.OnExit(e);

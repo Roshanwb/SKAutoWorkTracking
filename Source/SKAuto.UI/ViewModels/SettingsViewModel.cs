@@ -41,6 +41,8 @@ namespace SKAuto.UI.ViewModels
         private int _normalFontSize;
         [ObservableProperty]
         private int _titleFontSize;
+        [ObservableProperty]
+        private int _maxBackupsToKeep = 30;
 
         // Available font families (for combo box)
         public List<string> FontFamilies { get; } = new()

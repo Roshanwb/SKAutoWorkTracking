@@ -4,6 +4,8 @@ using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
 using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace SKAuto.UI.ViewModels
@@ -30,8 +32,18 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private string _statusMessage;
+
         [ObservableProperty]
         private BackupImportResult _lastImportResult;
+
+        [ObservableProperty]
+        private ObservableCollection<BackupFileInfo> _backupFiles = new();
+
+        [ObservableProperty]
+        private BackupFileInfo _selectedBackupFile;
+
+        [ObservableProperty]
+        private bool _isRefreshingBackups;
 
         public IAsyncRelayCommand SelectBackupFolderCommand { get; }
         public IAsyncRelayCommand SelectExportFolderCommand { get; }
@@ -41,10 +53,20 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand ImportCommand { get; }
         public IRelayCommand CloseCommand { get; }
 
+        public IAsyncRelayCommand RefreshBackupsCommand { get; }
+        public IAsyncRelayCommand RestoreSelectedBackupCommand { get; }
+
+        private string _backupsListFolder;
+
         public BackupViewModel(IBackupService backupService, ILoggingService loggingService)
         {
             _backupService = backupService;
             _loggingService = loggingService;
+
+            _backupsListFolder = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "SKAuto",
+                "Backups");
 
             SelectBackupFolderCommand = new AsyncRelayCommand(SelectBackupFolderAsync);
             SelectExportFolderCommand = new AsyncRelayCommand(SelectExportFolderAsync);
@@ -53,6 +75,11 @@ namespace SKAuto.UI.ViewModels
             ExportCommand = new AsyncRelayCommand(ExportAsync);
             ImportCommand = new AsyncRelayCommand(ImportAsync);
             CloseCommand = new RelayCommand(() => CloseWindow());
+
+            RefreshBackupsCommand = new AsyncRelayCommand(RefreshBackupsAsync);
+            RestoreSelectedBackupCommand = new AsyncRelayCommand(RestoreSelectedBackupAsync, () => SelectedBackupFile != null);
+
+            _ = RefreshBackupsAsync();
         }
 
         private async Task SelectBackupFolderAsync()
@@ -91,6 +118,7 @@ namespace SKAuto.UI.ViewModels
                 StatusMessage = $"Backup created: {path}";
                 _loggingService.LogInfo($"Database backup created at {path}");
                 MessageBox.Show($"Backup saved to:\n{path}", "Backup Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                await RefreshBackupsAsync();
             }
             catch (Exception ex)
             {
@@ -169,6 +197,69 @@ namespace SKAuto.UI.ViewModels
                     w.Close();
                     break;
                 }
+        }
+
+        private async Task RefreshBackupsAsync()
+        {
+            if (IsRefreshingBackups) return;
+            IsRefreshingBackups = true;
+            try
+            {
+                var files = await _backupService.GetBackupFilesAsync(_backupsListFolder);
+                BackupFiles = new ObservableCollection<BackupFileInfo>(files);
+                if (BackupFiles.Count > 0)
+                    SelectedBackupFile = BackupFiles[0];
+                StatusMessage = $"Found {BackupFiles.Count} backup files in {_backupsListFolder}";
+                _loggingService.LogInfo(StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Failed to list backup files", ex);
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show($"Error listing backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsRefreshingBackups = false;
+                RestoreSelectedBackupCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        private async Task RestoreSelectedBackupAsync()
+        {
+            if (SelectedBackupFile == null)
+            {
+                MessageBox.Show("Please select a backup file to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Restore database from backup '{SelectedBackupFile.FileName}' (created {SelectedBackupFile.CreatedAt:dd/MM/yyyy HH:mm})?\n\nThis will replace the current database. A backup of the current database will be created automatically before restore.",
+                "Confirm Restore",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                StatusMessage = "Restoring database...";
+                var currentBackupPath = await _backupService.RestoreDatabaseAsync(SelectedBackupFile.FilePath);
+                StatusMessage = $"Database restored from {SelectedBackupFile.FileName}. Previous database backed up to {currentBackupPath}";
+                _loggingService.LogInfo(StatusMessage);
+                MessageBox.Show($"Restore successful.\n\nCurrent database before restore was backed up to:\n{currentBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                await RefreshBackupsAsync();
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Restore failed", ex);
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show($"Restore failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        partial void OnSelectedBackupFileChanged(BackupFileInfo value)
+        {
+            RestoreSelectedBackupCommand.NotifyCanExecuteChanged();
         }
     }
 }
