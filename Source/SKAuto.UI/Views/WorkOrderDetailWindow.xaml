@@ -1,25 +1,81 @@
 ﻿<Window x:Class="SKAuto.UI.Views.WorkOrderDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
-        Title="Work Order Details" Height="700" Width="900"
-        WindowStartupLocation="CenterOwner">
+        Title="Work Order Details" Height="750" Width="950"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
 
     <Window.Resources>
         <converters:VehicleDisplayConverter x:Key="VehicleDisplayConverter"/>
+        <CollectionViewSource x:Key="SortedAccessoriesViewSource" Source="{Binding AvailableAccessories}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Name" Direction="Ascending"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <!-- Modern button styles -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#3498DB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#2ECC71"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#E74C3C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style x:Key="InfoButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#17A2B8"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style x:Key="LinkButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#3498DB"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter Content="{TemplateBinding Content}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#2980B9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern GroupBox style -->
+        <Style TargetType="GroupBox">
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
     </Window.Resources>
 
-    <Grid Margin="10">
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Work Order Info -->
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <!-- Add Items toolbar -->
             <RowDefinition Height="*"/>
+            <!-- Tasks + Travels (split) -->
             <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
         </Grid.RowDefinitions>
 
-        <!-- Work Order Info GroupBox -->
-        <GroupBox Grid.Row="0" Header="Work Order Info" Margin="0,0,0,10" Padding="10">
+        <!-- ========== 1. WORK ORDER INFO ========== -->
+        <GroupBox Grid.Row="0" Header="WORK ORDER INFO">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -33,119 +89,155 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Label Grid.Row="0" Grid.Column="0" Content="Client:" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="0" Grid.Column="1" 
-                          ItemsSource="{Binding Clients}"
-                          SelectedItem="{Binding SelectedClient}"
-                          DisplayMemberPath="Name"
-                          Margin="5,5,0,5" Height="30" MinWidth="300"
-                          IsEditable="True"
-                          HorizontalAlignment="Left"/>
+                <!-- Row 0 -->
+                <Label Grid.Row="0" Grid.Column="0" Content="Client" Target="{Binding ElementName=ClientCombo}" 
+                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="ClientCombo" Grid.Row="0" Grid.Column="1"
+                          ItemsSource="{Binding Clients}" SelectedItem="{Binding SelectedClient}"
+                          DisplayMemberPath="Name" IsEditable="True"
+                          Height="30" Margin="0,4,12,4" TabIndex="5"/>
 
-                <Label Grid.Row="0" Grid.Column="2" Content="Order Date:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                <DatePicker Grid.Row="0" Grid.Column="3" 
+                <Label Grid.Row="0" Grid.Column="2" Content="Order Date" Target="{Binding ElementName=OrderDatePicker}"
+                       Margin="12,0,8,0" VerticalAlignment="Center"/>
+                <DatePicker x:Name="OrderDatePicker" Grid.Row="0" Grid.Column="3"
                             SelectedDate="{Binding WorkOrder.OrderDate}"
-                            Margin="5" Height="30" MinWidth="300"
-                            HorizontalAlignment="Left"/>
+                            Height="30" Margin="0,4,0,4" TabIndex="2"/>
 
-                <Label Grid.Row="1" Grid.Column="0" Content="Chassis:" VerticalAlignment="Center"/>
-                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-                    <TextBox Text="{Binding ChassisSearch, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="5" Height="30" BorderBrush="#dee2e6"/>
-                    <Button Content="Search" Command="{Binding SearchVehicleCommand}" 
-                            Style="{StaticResource ActionButton}" Background="#3498db"
-                            Width="70" Height="30" Margin="5"/>
+                <!-- Row 1 -->
+                <Label Grid.Row="1" Grid.Column="0" Content="Chassis" Target="{Binding ElementName=ChassisTextBox}"
+                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4,12,4">
+                    <TextBox x:Name="ChassisTextBox" Text="{Binding ChassisSearch, UpdateSourceTrigger=PropertyChanged}"
+                             Width="180" Height="30" CharacterCasing="Upper"
+                             KeyDown="ChassisTextBox_KeyDown" TabIndex="0"/>
+                    <Button Content="Search" Command="{Binding SearchVehicleCommand}"
+                            Style="{StaticResource PrimaryButton}" Width="70" Height="30" Margin="8,0,0,0" TabIndex="1"/>
                 </StackPanel>
 
-                <Label Grid.Row="1" Grid.Column="2" Content="Selected Vehicle:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                <TextBlock Grid.Row="1" Grid.Column="3" 
-                           Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}" 
-                           VerticalAlignment="Center" Margin="5"/>
+                <Label Grid.Row="1" Grid.Column="2" Content="Selected Vehicle" Target="{Binding ElementName=VehicleLink}"
+                       Margin="12,0,8,0" VerticalAlignment="Center"/>
+                <Button x:Name="VehicleLink" Grid.Row="1" Grid.Column="3"
+                        Command="{Binding OpenVehicleEditCommand}" Style="{StaticResource LinkButton}"
+                        HorizontalAlignment="Left" Margin="0,4,0,4" TabIndex="6">
+                    <TextBlock Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}"/>
+                </Button>
 
-                <Label Grid.Row="2" Grid.Column="0" Content="Order Type:" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="2" Grid.Column="1" 
-                          ItemsSource="{Binding OrderTypeValues}"
-                          SelectedItem="{Binding WorkOrder.OrderType}"                          
-                          Margin="5" Height="30" MinWidth="300"
-                          IsEditable="True"
-                          HorizontalAlignment="Left"/>
+                <!-- Row 2 -->
+                <Label Grid.Row="2" Grid.Column="0" Content="Order Type" Target="{Binding ElementName=OrderTypeCombo}"
+                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="OrderTypeCombo" Grid.Row="2" Grid.Column="1"
+                          ItemsSource="{Binding OrderTypeValues}" SelectedItem="{Binding WorkOrder.OrderType}"
+                          Height="30" Margin="0,4,12,4" TabIndex="7"/>
 
-                <Label Grid.Row="2" Grid.Column="2" Content="Status:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                <ComboBox Grid.Row="2" Grid.Column="3" 
-                          ItemsSource="{Binding WorkStatusValues}"
-                          SelectedItem="{Binding WorkOrder.Status}"                          
-                          Margin="5" Height="30" MinWidth="200"
-                          IsEditable="True"
-                          HorizontalAlignment="Left"/>
+                <Label Grid.Row="2" Grid.Column="2" Content="Status" Target="{Binding ElementName=StatusCombo}"
+                       Margin="12,0,8,0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="StatusCombo" Grid.Row="2" Grid.Column="3"
+                          ItemsSource="{Binding WorkStatusValues}" SelectedItem="{Binding WorkOrder.Status}"
+                          Height="30" Margin="0,4,0,4" TabIndex="8"/>
             </Grid>
         </GroupBox>
 
-        <!-- Add Task GroupBox -->
-        <GroupBox Grid.Row="1" Header="Add Task" Margin="0,0,0,10" Padding="10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Label Grid.Column="0" Content="Task:" VerticalAlignment="Center"/>
-                <ComboBox Grid.Column="1" 
-                          ItemsSource="{Binding AvailableAccessories}"
+        <!-- ========== 2. ADD ITEMS TOOLBAR ========== -->
+        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="4" Padding="8" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Task:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <!-- ComboBox with search‑as‑you‑type -->
+                <ComboBox x:Name="TaskCombo" Width="250" Height="30"
+                          ItemsSource="{Binding FilteredAccessories}"
+                          Text="{Binding AccessorySearchText, UpdateSourceTrigger=PropertyChanged}"
+                          IsEditable="True"
+                          IsTextSearchEnabled="False"
+                          StaysOpenOnEdit="True"
                           SelectedItem="{Binding SelectedAccessory}"
                           DisplayMemberPath="Name"
-                          Margin="5" Height="30" MinWidth="300"
-                          HorizontalAlignment="Left"
-                          IsEditable="True"/>
+                          TabIndex="3"/>
+                <Button Content="Add Task" Command="{Binding AddTaskCommand}" 
+                        Style="{StaticResource PrimaryButton}" Width="80" Height="30" Margin="8,0,0,0" TabIndex="4"/>
+                <Button Content="New Task" Command="{Binding OpenAddTaskCommand}"
+                        Style="{StaticResource SuccessButton}" Width="80" Height="30" Margin="8,0,0,0" TabIndex="9"/>
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,0"/>
+                <Button Content="Add Travel" Command="{Binding AddTravelCommand}"
+                        Style="{StaticResource InfoButton}" Width="80" Height="30" TabIndex="10"/>
+            </StackPanel>
+        </Border>
 
-                <Label Grid.Column="2" Content="Qty:" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                <TextBox Grid.Column="3" Text="{Binding Quantity}" Width="50" Margin="5" Height="30" VerticalContentAlignment="Center" BorderBrush="#dee2e6"/>
+        <!-- ========== 3. TASKS & TRAVELS (split view) ========== -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <Button Grid.Column="4" Content="Add" Command="{Binding AddTaskCommand}" 
-                        Style="{StaticResource ActionButton}" Background="#2196F3"
-                        Width="60" Height="30" Margin="5"/>
-            </Grid>
-        </GroupBox>
+            <!-- Tasks DataGrid (expands) -->
+            <GroupBox Grid.Row="0" Header="TASKS">
+                <DataGrid ItemsSource="{Binding Tasks}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                          BorderBrush="#E0E0E0" BorderThickness="1"
+                          RowBackground="White" AlternatingRowBackground="#F9F9F9"
+                          GridLinesVisibility="Horizontal" VerticalAlignment="Stretch">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Accessory" Binding="{Binding Accessory.Name}" Width="*" SortDirection="Ascending"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding TaskType}" Width="70"/>
+                        <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
+                        <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
+                        <DataGridTextColumn Header="Est. Min" Binding="{Binding EstimatedMinutes}" Width="70"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding TaskStatus}" Width="80"/>
+                        <DataGridTemplateColumn Header="" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✖" 
+                                            Command="{Binding DataContext.RemoveTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0" Foreground="#E74C3C"
+                                            FontSize="14" Cursor="Hand" ToolTip="Remove"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
 
-        <!-- Tasks GroupBox -->
-        <GroupBox Grid.Row="2" Header="Tasks" Margin="0,0,0,10" Padding="10">
-            <DataGrid ItemsSource="{Binding Tasks}" AutoGenerateColumns="False" CanUserAddRows="False" Height="200"
-                      ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
-                      BorderBrush="#dee2e6" BorderThickness="1"
-                      RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Accessory" Binding="{Binding Accessory.Name}" Width="*" SortDirection="Ascending"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding TaskType}" Width="80"/>
-                    <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
-                    <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
-                    <DataGridTextColumn Header="Est. Minutes" Binding="{Binding EstimatedMinutes}" Width="80"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding TaskStatus}" Width="80"/>
-                    <DataGridTemplateColumn Header="Action" Width="60">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Content="Remove" 
-                                        Command="{Binding DataContext.RemoveTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Style="{StaticResource StatusButton}" Background="#F44336"
-                                        FontSize="10" Padding="2"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </GroupBox>
+            <!-- Grid splitter (optional, for resizing) -->
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="#E0E0E0"/>
 
-        <!-- Buttons -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-            <Button Content="Delete" Command="{Binding DeleteCommand}" 
-                    Style="{StaticResource ActionButton}" Background="#F44336"
-                    Width="80" Height="35" Margin="5"/>
-            <Button Content="Save" Command="{Binding SaveCommand}" 
-                    Style="{StaticResource ActionButton}" Background="#4CAF50"
-                    Width="80" Height="35" Margin="5"/>
-            <Button Content="Cancel" Command="{Binding CancelCommand}" 
-                    Style="{StaticResource ActionButton}" Background="#6c757d"
-                    Width="80" Height="35" Margin="5"/>
+            <!-- Travels DataGrid (auto height) -->
+            <GroupBox Grid.Row="2" Header="TRAVELS">
+                <DataGrid ItemsSource="{Binding Travels}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                          BorderBrush="#E0E0E0" BorderThickness="1"
+                          RowBackground="White" AlternatingRowBackground="#F9F9F9"
+                          GridLinesVisibility="Horizontal" MaxHeight="160" VerticalAlignment="Top">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding TravelDate, StringFormat=dd/MM/yyyy}" Width="80" SortDirection="Descending"/>
+                        <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="*"/>
+                        <DataGridTextColumn Header="Distance" Binding="{Binding DistanceKm}" Width="70"/>
+                        <DataGridTextColumn Header="Cost" Binding="{Binding TravelCost, StringFormat=C}" Width="80"/>
+                        <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="120"/>
+                        <DataGridTemplateColumn Header="" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✖" 
+                                            Command="{Binding DataContext.RemoveTravelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0" Foreground="#E74C3C"
+                                            FontSize="14" Cursor="Hand" ToolTip="Remove"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+        </Grid>
+
+        <!-- ========== 4. BOTTOM BUTTONS ========== -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}"
+                    Width="80" Height="34" Margin="5,0" TabIndex="11"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource SuccessButton}"
+                    Width="80" Height="34" Margin="5,0" TabIndex="12"/>
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource ActionButton}"
+                    Background="#95A5A6" Width="80" Height="34" Margin="5,0" TabIndex="13"/>
         </StackPanel>
     </Grid>
 </Window>

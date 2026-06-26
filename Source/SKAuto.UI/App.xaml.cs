@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SKAuto.Core.DTOs;          // For AppConfig
+using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
 using SKAuto.Core.Services;
@@ -11,6 +11,7 @@ using SKAuto.Export.Pdf;
 using SKAuto.Import.Parsers;
 using SKAuto.Import.Validators;
 using SKAuto.UI.ViewModels;
+using SKAuto.UI.Views;
 using System;
 using System.Globalization;
 using System.IO;
@@ -22,7 +23,9 @@ namespace SKAuto.UI
     public partial class App : Application
     {
         private readonly IHost _host;
+        private ILoggingService _logger;
 
+        // ✅ Make setter public so LoginViewModel can set it
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
 
@@ -31,42 +34,25 @@ namespace SKAuto.UI
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    // Database
-                    services.AddSingleton<DatabaseContext>();
+                    services.AddTransient<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
                     var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SKAuto", "SKAuto.db");
                     services.AddSingleton(dbPath);
-
-                    // Unit of Work
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-                    // Import/Export
                     services.AddScoped<IImportParser, PSAParser>();
                     services.AddScoped<IImportParser, ExcelParser>();
                     services.AddScoped<IImportParser, PdfParser>();
                     services.AddScoped<IValidationService, ImportValidator>();
                     services.AddScoped<IExportService, ExcelReportGenerator>();
                     services.AddScoped<PdfReportGenerator>();
-
-                    // ViewModels
                     services.AddSingleton<MainViewModel>();
                     services.AddTransient<WorkOrderViewModel>();
-
-                    // Services
                     services.AddScoped<IBackupService, BackupService>();
                     services.AddScoped<IGoogleDriveService, GoogleDriveService>();
-
-                    // Validators
                     services.AddScoped<IChassisValidator, ChassisValidator>();
                     services.AddScoped<IEODValidationService, EODValidationService>();
-
-                    // Logging
                     services.AddSingleton<ILoggingService, LoggingService>();
-
-                    // Configuration
                     services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-
-                    // Main Window
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
@@ -74,46 +60,128 @@ namespace SKAuto.UI
 
         protected override async void OnStartup(StartupEventArgs e)
         {
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
+
             await _host.StartAsync();
+            _logger = _host.Services.GetRequiredService<ILoggingService>();
+            _logger.LogInfo("Application starting...");
 
-            // Initialize database
-            var initializer = _host.Services.GetRequiredService<DatabaseInitializer>();
-            await initializer.InitializeAsync();
+            var splash = new Splash(
+                loadResources: () =>
+                {
+                    try
+                    {
+                        var initializer = _host.Services.GetRequiredService<DatabaseInitializer>();
+                        initializer.InitializeAsync().GetAwaiter().GetResult();
+                        _logger.LogInfo("Database initialized.");
 
-            // Load configuration
-            var configService = _host.Services.GetRequiredService<IConfigurationService>();
-            var appConfig = await configService.GetAsync<AppConfig>("AppConfig");
-            if (appConfig == null)
-            {
-                // First run – create and save default config
-                appConfig = new AppConfig();
-                await configService.SetAsync("AppConfig", appConfig);
-            }
-            CurrentConfig = appConfig;
+                        var configService = _host.Services.GetRequiredService<IConfigurationService>();
+                        var appConfig = configService.GetAsync<AppConfig>("AppConfig").GetAwaiter().GetResult();
+                        if (appConfig == null)
+                        {
+                            appConfig = new AppConfig();
+                            configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
+                            _logger.LogInfo("Created default configuration.");
+                        }
+                        CurrentConfig = appConfig;
 
-            // Set application culture based on saved language
-            try
-            {
-                var culture = new CultureInfo(appConfig.Language);
-                CultureInfo.DefaultThreadCurrentCulture = culture;
-                CultureInfo.DefaultThreadCurrentUICulture = culture;
-            }
-            catch
-            {
-                // Fallback to French if invalid
-                CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
-                CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
-            }
+                        string fixedLanguage = appConfig.Language;
+                        if (!string.IsNullOrEmpty(fixedLanguage) && fixedLanguage.Contains("("))
+                        {
+                            int start = fixedLanguage.IndexOf('(') + 1;
+                            int end = fixedLanguage.IndexOf(')');
+                            if (start > 0 && end > start)
+                                fixedLanguage = fixedLanguage.Substring(start, end - start);
+                        }
+                        try
+                        {
+                            var culture = new CultureInfo(fixedLanguage);
+                            CultureInfo.DefaultThreadCurrentCulture = culture;
+                            CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            _logger.LogInfo($"Culture set to {fixedLanguage}");
+                        }
+                        catch
+                        {
+                            _logger.LogWarning($"Invalid culture, falling back to fr-FR");
+                            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
+                            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Resource loading failed", ex);
+                        throw;
+                    }
+                },
+                onComplete: () =>
+                {
+                    try
+                    {
+                        // ---- SHOW LOGIN ----
+                        User loggedInUser = null;
+                        using (var scope = _host.Services.CreateScope())
+                        {
+                            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                            var logger = scope.ServiceProvider.GetRequiredService<ILoggingService>();
+                            var loginVM = new LoginViewModel(unitOfWork, logger);
+                            var loginView = new LoginView(loginVM);
+                            if (loginView.ShowDialog() != true)
+                            {
+                                _logger.LogInfo("Login cancelled or failed. Exiting.");
+                                Shutdown();
+                                return;
+                            }
+                            loggedInUser = App.CurrentUser;
+                        }
 
-            // Show main window
-            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+                        // ---- GET MAIN VIEW MODEL AND SET USER ----
+                        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                        if (mainWindow.DataContext is MainViewModel mainVM)
+                        {
+                            mainVM.SetCurrentUser(loggedInUser);
+                        }
 
+                        Current.MainWindow = mainWindow;
+                        mainWindow.Show();
+                        mainWindow.Activate();
+                        mainWindow.Focus();
+                        _logger.LogInfo("Main window shown and activated.");
+                        Application.Current.MainWindow.WindowState = WindowState.Maximized;
+                        mainWindow.Title = $"SKAuto - {loggedInUser.Username} ({loggedInUser.Role})";
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Failed to show main window", ex);
+                        MessageBox.Show($"Fatal error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Environment.Exit(1);
+                    }
+                },
+                logger: _logger
+            );
+
+            splash.Show();
             base.OnStartup(e);
         }
 
         protected override async void OnExit(ExitEventArgs e)
         {
+            _logger?.LogInfo("Application exiting.");
+
+            try
+            {
+                var backupService = _host.Services.GetRequiredService<IBackupService>();
+                var backupFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "SKAuto",
+                    "Backups");
+                var backupPath = await backupService.BackupDatabaseAsync(backupFolder);
+                _logger.LogInfo($"Automatic backup created on exit: {backupPath}");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError("Automatic backup failed on exit", ex);
+            }
+
             await _host.StopAsync();
             _host.Dispose();
             base.OnExit(e);

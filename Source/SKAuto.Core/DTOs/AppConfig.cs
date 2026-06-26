@@ -5,6 +5,7 @@
         public string Language { get; set; } = "fr-FR";
         public ReportColors ReportColors { get; set; } = new();
         public ReportFonts ReportFonts { get; set; } = new();
+        public int MaxBackupsToKeep { get; set; } = 10;   // Number of backups to keep
     }
 
     public class ReportColors

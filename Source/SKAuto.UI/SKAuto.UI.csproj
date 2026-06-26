@@ -12,6 +12,9 @@
     <Compile Remove="Views\VehicleLookupView.xaml.cs" />
     <Compile Remove="Views\WorkOrderView.xaml.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\logo.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <Page Remove="Views\MainWindow.xaml" />
@@ -33,5 +36,8 @@
   <ProjectReference Include="..\SKAuto.Data\SKAuto.Data.csproj" />
   <ProjectReference Include="..\SKAuto.Import\SKAuto.Import.csproj" />
   <ProjectReference Include="..\SKAuto.Export\SKAuto.Export.csproj" />
+</ItemGroup>
+<ItemGroup>
+  <Resource Include="Views\logo.png" />
 </ItemGroup>
 </Project>

@@ -37,9 +37,9 @@
         <Border Grid.Row="1" Style="{StaticResource CardBorder}">
             <StackPanel>
                 <TextBlock Text="Language" Style="{StaticResource SectionHeader}"/>
-                <ComboBox SelectedItem="{Binding Language}" Margin="5">
-                    <ComboBoxItem Content="English (en-US)" Tag="en-US"/>
-                    <ComboBoxItem Content="Français (fr-FR)" Tag="fr-FR"/>
+                <ComboBox SelectedValue="{Binding Language}" SelectedValuePath="Tag" DisplayMemberPath="Content" Margin="5">
+                    <ComboBoxItem Tag="fr-FR" Content="Français (fr-FR)"/>
+                    <ComboBoxItem Tag="en-US" Content="English (en-US)"/>
                 </ComboBox>
             </StackPanel>
         </Border>

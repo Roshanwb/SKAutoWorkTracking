@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
+using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -16,7 +16,6 @@ namespace SKAuto.UI.ViewModels
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _logger;
 
-        // Fields for commands that need CanExecute updates
         private IRelayCommand<Accessory>? _editAccessoryCommand;
         private IAsyncRelayCommand? _deleteAccessoryCommand;
         private IAsyncRelayCommand? _saveAccessoryCommand;
@@ -36,7 +35,33 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _isEditMode;
 
-        // Public command properties
+        // Separate properties for editing (avoids partial method issues)
+        [ObservableProperty]
+        private string _editName = string.Empty;
+
+        [ObservableProperty]
+        private TaskType _editTaskType = TaskType.Fit;
+
+        [ObservableProperty]
+        private string _editPartNumber = string.Empty;
+
+        [ObservableProperty]
+        private string _editDescription = string.Empty;
+
+        [ObservableProperty]
+        private int? _editTime = 30;
+
+        [ObservableProperty]
+        private decimal? _editPrice;
+
+        [ObservableProperty]
+        private bool _editRequiresPassword;
+
+        [ObservableProperty]
+        private bool _editIsActive = true;
+
+        public Array TaskTypeValues => Enum.GetValues(typeof(TaskType));
+
         public IAsyncRelayCommand LoadAccessoriesCommand { get; }
         public IRelayCommand AddAccessoryCommand { get; }
         public IRelayCommand<Accessory> EditAccessoryCommand => _editAccessoryCommand!;
@@ -49,51 +74,92 @@ namespace SKAuto.UI.ViewModels
             _unitOfWork = unitOfWork;
             _logger = logger;
 
+            _logger.LogInfo("AccessoryManagementViewModel initializing");
+
             LoadAccessoriesCommand = new AsyncRelayCommand(LoadAccessoriesAsync);
             AddAccessoryCommand = new RelayCommand(AddAccessory);
             _editAccessoryCommand = new RelayCommand<Accessory>(EditAccessory, a => a != null);
             _deleteAccessoryCommand = new AsyncRelayCommand(DeleteAccessoryAsync, () => SelectedAccessory != null);
-            _saveAccessoryCommand = new AsyncRelayCommand(SaveAccessoryAsync, () => CurrentEditAccessory != null);
+            _saveAccessoryCommand = new AsyncRelayCommand(SaveAccessoryAsync, () => !string.IsNullOrWhiteSpace(EditName));
             CancelEditCommand = new RelayCommand(CancelEdit);
 
-            // Load immediately
+            _logger.LogInfo("AccessoryManagementViewModel initialization complete, loading accessories");
             LoadAccessoriesCommand.Execute(null);
         }
 
         partial void OnSelectedAccessoryChanged(Accessory? value)
         {
+            if (value != null)
+                _logger.LogInfo($"Selected accessory changed to ID {value.Id}, Name '{value.Name}'");
+            else
+                _logger.LogInfo("Selected accessory changed to null");
             _editAccessoryCommand?.NotifyCanExecuteChanged();
             _deleteAccessoryCommand?.NotifyCanExecuteChanged();
         }
 
         partial void OnCurrentEditAccessoryChanged(Accessory? value)
         {
+            if (value != null)
+            {
+                // Populate edit fields from the accessory
+                EditName = value.Name ?? "";
+                EditTaskType = value.TaskType;
+                EditPartNumber = value.PartNumber ?? "";
+                EditDescription = value.Description ?? "";
+                EditTime = value.Time;
+                EditPrice = value.Price;
+                EditRequiresPassword = value.RequiresPassword;
+                EditIsActive = value.IsActive;
+                _logger.LogInfo($"Edit fields populated for accessory ID {value.Id}");
+            }
+            else
+            {
+                // Clear edit fields
+                EditName = "";
+                EditTaskType = TaskType.Fit;
+                EditPartNumber = "";
+                EditDescription = "";
+                EditTime = 30;
+                EditPrice = null;
+                EditRequiresPassword = false;
+                EditIsActive = true;
+                _logger.LogInfo("Edit fields cleared");
+            }
+            _saveAccessoryCommand?.NotifyCanExecuteChanged();
+        }
+
+        partial void OnEditNameChanged(string value)
+        {
             _saveAccessoryCommand?.NotifyCanExecuteChanged();
         }
 
         private async Task LoadAccessoriesAsync()
         {
+            _logger.LogInfo("LoadAccessoriesAsync started");
             try
             {
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
+                var activeAccessories = accessories.Where(x => x.IsActive).OrderBy(x => x.Name).ToList();
 
                 await App.Current.Dispatcher.InvokeAsync(() =>
                 {
                     Accessories.Clear();
-                    foreach (var a in accessories.Where(x => x.IsActive).OrderBy(x => x.Name))
+                    foreach (var a in activeAccessories)
                         Accessories.Add(a);
                 });
 
-                _logger?.LogInfo($"Loaded {accessories.Count()} accessories");
+                _logger.LogInfo($"LoadAccessoriesAsync completed: {Accessories.Count} active accessories loaded (total {accessories.Count()})");
             }
             catch (Exception ex)
             {
-                _logger?.LogError($"Failed to load accessories: {ex.Message}");
+                _logger.LogError("LoadAccessoriesAsync failed", ex);
+                MessageBox.Show($"Error loading accessories: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void AddAccessory()
         {
+            _logger.LogInfo("AddAccessory called - creating new accessory");
             CurrentEditAccessory = new Accessory
             {
                 Name = "",
@@ -102,86 +168,156 @@ namespace SKAuto.UI.ViewModels
                 Time = 30,
                 Price = null,
                 RequiresPassword = false,
-                IsActive = true
+                IsActive = true,
+                TaskType = TaskType.Fit
             };
             IsEditMode = true;
+            _logger.LogInfo("New accessory created, edit mode activated");
         }
 
         private void EditAccessory(Accessory? accessory)
         {
-            if (accessory == null) return;
+            if (accessory == null)
+            {
+                _logger.LogWarning("EditAccessory called with null accessory");
+                return;
+            }
 
-            CurrentEditAccessory = accessory;   // edit directly – changes will be saved from this instance
+            _logger.LogInfo($"EditAccessory called for accessory ID {accessory.Id}, Name '{accessory.Name}'");
+            CurrentEditAccessory = accessory;
             IsEditMode = true;
+            _logger.LogInfo("Edit mode activated for accessory");
         }
 
         private async Task DeleteAccessoryAsync()
         {
-            if (SelectedAccessory == null) return;
-
-            var result = System.Windows.MessageBox.Show(
-                $"Delete accessory '{SelectedAccessory.Name}'?",
-                "Confirm Delete",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Warning);
-
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (SelectedAccessory == null)
             {
-                try
-                {
-                    await _unitOfWork.Accessories.DeleteAsync(SelectedAccessory);
-                    await _unitOfWork.CompleteAsync();
+                _logger.LogWarning("DeleteAccessoryAsync called with no accessory selected");
+                return;
+            }
 
-                    await LoadAccessoriesAsync();
-                    SelectedAccessory = null; // Clear selection after delete
-                    _logger?.LogInfo($"Deleted accessory: {SelectedAccessory?.Name}");
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError($"Failed to delete: {ex.Message}");
-                    System.Windows.MessageBox.Show($"Cannot delete: {ex.Message}", "Error");
-                }
+            var accessoryToDelete = SelectedAccessory;
+            _logger.LogInfo($"DeleteAccessoryAsync called for accessory ID {accessoryToDelete.Id}, Name '{accessoryToDelete.Name}'");
+
+            var result = MessageBox.Show(
+                $"Delete accessory '{accessoryToDelete.Name}'?",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                _logger.LogInfo($"Deletion cancelled for accessory ID {accessoryToDelete.Id}");
+                return;
+            }
+
+            try
+            {
+                await _unitOfWork.Accessories.DeleteAsync(accessoryToDelete);
+                await _unitOfWork.CompleteAsync();
+                _logger.LogInfo($"Accessory ID {accessoryToDelete.Id} deleted successfully");
+
+                await LoadAccessoriesAsync();
+                SelectedAccessory = null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to delete accessory ID {accessoryToDelete.Id}", ex);
+                MessageBox.Show($"Cannot delete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async Task SaveAccessoryAsync()
         {
-            if (CurrentEditAccessory == null) return;
+            if (CurrentEditAccessory == null)
+            {
+                _logger.LogWarning("SaveAccessoryAsync called with no accessory to save");
+                return;
+            }
+
+            var accessoryToSave = CurrentEditAccessory;
+            bool isNew = accessoryToSave.Id == 0;
+            string newName = EditName?.Trim() ?? "";
+            _logger.LogInfo($"SaveAccessoryAsync called for {(isNew ? "new" : "existing")} accessory: ID {accessoryToSave.Id}, Name '{newName}'");
+
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                _logger.LogWarning("Save attempted with empty accessory name");
+                MessageBox.Show("Accessory name cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             try
             {
-                if (CurrentEditAccessory.Id == 0)
-                    await _unitOfWork.Accessories.AddAsync(CurrentEditAccessory);
+                // Duplicate name check
+                bool nameChanged = isNew || !string.Equals(accessoryToSave.Name, newName, StringComparison.OrdinalIgnoreCase);
+                if (nameChanged)
+                {
+                    var existing = (await _unitOfWork.Accessories.FindAsync(a => a.Name.ToLower() == newName.ToLower())).FirstOrDefault();
+                    if (existing != null && (isNew || existing.Id != accessoryToSave.Id))
+                    {
+                        _logger.LogWarning($"Duplicate accessory name '{newName}' – existing ID {existing.Id}");
+                        MessageBox.Show($"An accessory with the name '{newName}' already exists. Please use a different name.", "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                }
+
+                // Update accessory with edited values
+                accessoryToSave.Name = newName;
+                accessoryToSave.TaskType = EditTaskType;
+                accessoryToSave.PartNumber = EditPartNumber;
+                accessoryToSave.Description = EditDescription;
+                accessoryToSave.Time = EditTime;
+                accessoryToSave.Price = EditPrice;
+                accessoryToSave.RequiresPassword = EditRequiresPassword;
+                accessoryToSave.IsActive = EditIsActive;
+
+                if (isNew)
+                {
+                    _logger.LogInfo($"Adding new accessory with Name '{newName}'");
+                    await _unitOfWork.Accessories.AddAsync(accessoryToSave);
+                }
                 else
-                    await _unitOfWork.Accessories.UpdateAsync(CurrentEditAccessory); // tracked instance
+                {
+                    _logger.LogInfo($"Updating existing accessory ID {accessoryToSave.Id}");
+                    await _unitOfWork.Accessories.UpdateAsync(accessoryToSave);
+                }
 
                 await _unitOfWork.CompleteAsync();
-                await LoadAccessoriesAsync(); // refresh list
+                _logger.LogInfo($"Accessory saved successfully (ID {accessoryToSave.Id})");
+
+                await LoadAccessoriesAsync();
                 CancelEdit();
             }
             catch (Exception ex)
             {
-                _logger?.LogError("Failed to save accessory", ex);
+                _logger.LogError($"Failed to save accessory ID {accessoryToSave.Id}", ex);
                 MessageBox.Show($"Error saving accessory: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void CancelEdit()
         {
+            _logger.LogInfo("CancelEdit called - clearing edit mode");
             IsEditMode = false;
             CurrentEditAccessory = null;
+            _logger.LogInfo("Edit mode cancelled");
         }
 
         partial void OnSearchTextChanged(string value)
         {
+            _logger.LogInfo($"Search text changed: '{value}'");
             FilterAccessories();
         }
 
         private void FilterAccessories()
         {
+            _logger.LogInfo("FilterAccessories started");
+
             if (string.IsNullOrWhiteSpace(SearchText))
             {
-                // Reload all
+                _logger.LogInfo("Search text empty, reloading all accessories");
                 _ = LoadAccessoriesAsync();
                 return;
             }
@@ -191,6 +327,8 @@ namespace SKAuto.UI.ViewModels
                 (a.PartNumber?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (a.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false)
             ).ToList();
+
+            _logger.LogInfo($"Filtered accessories: {filtered.Count} matches out of {Accessories.Count} total");
 
             Accessories.Clear();
             foreach (var a in filtered)

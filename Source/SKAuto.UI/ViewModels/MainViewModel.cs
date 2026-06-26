@@ -8,19 +8,22 @@ using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.Export.Pdf;
 using SKAuto.UI.Views;
+using SKAuto.Core.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input; // for MessageBox
+using System.Windows.Input;
+using SKAuto.Core.Entities; // for MessageBox
 
 namespace SKAuto.UI.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfigurationService _configService; 
+        private readonly IConfigurationService _configService;
+        private readonly ILoggingService _logger;
 
         [ObservableProperty]
         private ObservableCollection<WorkOrderDto> _todayWorkOrders = new();
@@ -51,8 +54,15 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private WeeklySummaryDto _weeklySummary = new();
+
         [ObservableProperty]
         private string _syncStatus;
+
+        [ObservableProperty]
+        private User? _currentUser;
+
+        [ObservableProperty]
+        private bool _isAdmin;
 
         public IRelayCommand PreviousDayCommand { get; }
         public IRelayCommand NextDayCommand { get; }
@@ -74,15 +84,19 @@ namespace SKAuto.UI.ViewModels
         public ICommand ShowAccessoryManagementCommand { get; }
         public IRelayCommand OpenBackupCommand { get; }
         public IRelayCommand OpenReportsCommand { get; }
-
-
+        public IRelayCommand OpenPriceUpdateCommand { get; }
+        public IRelayCommand OpenHelpCommand { get; }
+        public IRelayCommand OpenAboutCommand { get; }
         public IRelayCommand OpenDriveSettingsCommand { get; }
         public IRelayCommand SyncNowCommand { get; }
+        public IRelayCommand ShowUserManagementCommand { get; }
+        public IRelayCommand ChangePasswordCommand { get; }
 
-        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService)
+        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService, ILoggingService logger)
         {
             _unitOfWork = unitOfWork;
             _configService = configService;
+            _logger = logger;
 
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
@@ -106,9 +120,31 @@ namespace SKAuto.UI.ViewModels
             OpenDriveSettingsCommand = new RelayCommand(OpenDriveSettings);
             SyncNowCommand = new RelayCommand(async () => await SyncNowAsync());
             OpenReportsCommand = new RelayCommand(OpenReports);
-            //GenerateReportsCommand = new RelayCommand(OpenReports);
+            OpenPriceUpdateCommand = new RelayCommand(OpenPriceUpdate);
+            OpenHelpCommand = new RelayCommand(OpenHelp);
+            OpenAboutCommand = new RelayCommand(OpenAbout);
+            ShowUserManagementCommand = new RelayCommand(ShowUserManagement, () => IsAdmin);
+            ChangePasswordCommand = new RelayCommand(ChangePassword);
 
             LoadTodayWorkCommand.Execute(null);
+        }
+
+        private void ShowUserManagement()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var vm = new UserManagementViewModel(_unitOfWork, logger, CurrentUser);
+            var win = new UserManagementView { DataContext = vm };
+            win.Owner = Application.Current.MainWindow;
+            win.ShowDialog();
+        }
+
+        private void ChangePassword()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var vm = new UserEditViewModel(_unitOfWork, logger, CurrentUser, null, UserEditMode.ChangePassword);
+            var win = new UserEditView(vm);
+            win.Owner = Application.Current.MainWindow;
+            win.ShowDialog();
         }
 
         [RelayCommand]
@@ -117,8 +153,16 @@ namespace SKAuto.UI.ViewModels
             var settingsWindow = new SettingsView();
             settingsWindow.DataContext = new SettingsViewModel(_configService);
             settingsWindow.Owner = Application.Current.MainWindow;
-            settingsWindow.ShowDialog();
+            settingsWindow.Show();
         }
+
+        public void SetCurrentUser(User user)
+        {
+            CurrentUser = user;
+            IsAdmin = user?.Role == UserRole.Admin;
+            _logger.LogInfo($"User set: {user?.Username}, IsAdmin: {IsAdmin}");
+        }
+
         private void OpenReports()
         {
             var vm = new ReportsViewModel(
@@ -127,8 +171,35 @@ namespace SKAuto.UI.ViewModels
                 App.GetService<PdfReportGenerator>(),
                 App.GetService<ILoggingService>());
             var win = new ReportsView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
         }
+
+        private void OpenHelp()
+        {
+            var helpWindow = new HelpView();
+            helpWindow.Owner = Application.Current.MainWindow;
+            helpWindow.ShowDialog();
+        }
+
+        private void OpenAbout()
+        {
+            MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights®",
+                            "About", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private async void OpenPriceUpdate()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var vm = new PriceUpdateViewModel(_unitOfWork, logger);
+            var window = new PriceUpdateView { DataContext = vm, Owner = Application.Current.MainWindow };
+            var result = window.ShowDialog();
+            if (result == true)
+            {
+                // Refresh today's work orders to show updated prices
+                await LoadTodayWorkAsync();
+                StatusMessage = "Prices updated and grid refreshed.";
+            }
+        }
+
         private void OpenDriveSettings()
         {
             var driveService = App.GetService<IGoogleDriveService>();
@@ -138,7 +209,7 @@ namespace SKAuto.UI.ViewModels
 
             var vm = new GoogleDriveSettingsViewModel(driveService, config, backupService, logger);
             var win = new GoogleDriveSettingsView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
             UpdateSyncStatus();
         }
 
@@ -175,7 +246,7 @@ namespace SKAuto.UI.ViewModels
             var loggingService = App.GetService<ILoggingService>();
             var vm = new BackupViewModel(backupService, loggingService);
             var win = new BackupView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
         }
         private async Task LoadTodayWorkAsync()
         {
@@ -218,8 +289,13 @@ namespace SKAuto.UI.ViewModels
 
         private void CreateWorkOrder()
         {
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, 0);
+            var logger = App.GetService<ILoggingService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            // ✅ Set the owner to the current MainWindow
+            window.Owner = Application.Current.MainWindow;
+            // ✅ Set startup location (already in XAML, but ensure it's set)
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (window.ShowDialog() == true)
             {
                 LoadTodayWorkCommand.Execute(null);
@@ -241,10 +317,17 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenImport()
         {
+            var scopeFactory = App.GetService<IServiceScopeFactory>();
+            var loggingService = App.GetService<ILoggingService>();
+            var serviceProvider = App.GetService<IServiceProvider>();
+
             var importVM = new ImportViewModel(
-                _unitOfWork,
-                App.GetService<ILoggingService>(),
-                App.GetService<IServiceProvider>());
+                null,               // IUnitOfWork – not used inside ImportViewModel; safe to pass null
+                loggingService,
+                serviceProvider,
+                scopeFactory
+            );
+
             var importView = new ImportView { DataContext = importVM };
             importView.ShowDialog();
             LoadTodayWorkCommand.Execute(null);
@@ -302,7 +385,7 @@ namespace SKAuto.UI.ViewModels
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Application.Current.MainWindow
             };
-            window.ShowDialog();
+            window.Show();
         }
 
         private async Task RescheduleAsync()
@@ -355,7 +438,8 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedWorkOrder == null) return;
 
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, SelectedWorkOrder.Id);
+            var logger = App.GetService<ILoggingService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
@@ -423,10 +507,10 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenClientManagement()
         {
-            var vm = new ClientManagementViewModel(_unitOfWork);
+            var logger = App.GetService<ILoggingService>();
+            var vm = new ClientManagementViewModel(_unitOfWork, logger);
             var win = new ClientManagementView { DataContext = vm };
-            win.ShowDialog();
-            // Refresh main grid in case client names changed
+            win.Show();
             LoadTodayWorkCommand.Execute(null);
         }
 
@@ -434,14 +518,15 @@ namespace SKAuto.UI.ViewModels
         {
             var vm = new VehicleManagementViewModel(_unitOfWork);
             var win = new VehicleManagementView { DataContext = vm };
-            win.ShowDialog();
+            win.Show();
             // Vehicles might affect work orders? Not directly, but could be needed.
             LoadTodayWorkCommand.Execute(null);
         }
 
         private async Task EditWorkOrderAsync(int workOrderId)
         {
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, workOrderId);
+            var logger = App.GetService<ILoggingService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {

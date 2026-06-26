@@ -1,19 +1,11 @@
 ﻿<Window x:Class="SKAuto.UI.Views.BackupView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SKAuto.UI.ViewModels"
-        mc:Ignorable="d"
-        Title="Backup &amp; Restore" Height="600" Width="550"
+        Title="Backup &amp; Restore" Height="650" Width="550"
         WindowStartupLocation="CenterOwner">
-
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-    </Window.Resources>
-
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -24,11 +16,11 @@
         <!-- Backup Section -->
         <GroupBox Header="Backup Database" Grid.Row="0" Margin="0,0,0,10" Padding="10">
             <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal">
                     <TextBox Text="{Binding BackupFolder}" Width="300" Margin="0,0,10,0"/>
-                    <Button Content="Browse" Command="{Binding SelectBackupFolderCommand}" Padding="10,5" Margin="0,0,10,0" Background="Wheat"/>
+                    <Button Content="Browse" Command="{Binding SelectBackupFolderCommand}" Padding="10,5" Margin="0,0,10,0"/>
                     <Button Content="Create Backup" Command="{Binding BackupCommand}" 
-                        Style="{StaticResource ActionButton}" Background="#4CAF50" Width="100" Margin="0,0,10,0"/>
+                            Style="{StaticResource ActionButton}" Background="#4CAF50" Width="100"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>
@@ -36,12 +28,11 @@
         <!-- Export Section -->
         <GroupBox Header="Export Data to CSV/ZIP" Grid.Row="1" Margin="0,0,0,10" Padding="10">
             <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal">
                     <TextBox Text="{Binding ExportFolder}" Width="300" Margin="0,0,10,0"/>
-                    <Button Content="Browse" Command="{Binding SelectExportFolderCommand}" Padding="10,5" Margin="0,0,10,0" Background="Wheat"/>
-                
-                <Button Content="Export Data" Command="{Binding ExportCommand}" 
-                        Style="{StaticResource ActionButton}" Background="#3498db" HorizontalAlignment="Left" Width="100" Margin="0,0,10,0"/>
+                    <Button Content="Browse" Command="{Binding SelectExportFolderCommand}" Padding="10,5" Margin="0,0,10,0"/>
+                    <Button Content="Export Data" Command="{Binding ExportCommand}" 
+                            Style="{StaticResource ActionButton}" Background="#3498db" Width="100"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>
@@ -51,86 +42,53 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBox Text="{Binding ImportFilePath}" Width="300" Margin="0,0,10,0" IsReadOnly="True"/>
-                    <Button Content="Browse" Command="{Binding SelectImportFileCommand}" Padding="10,5" Margin="0,0,10,0" Background="Wheat"/>
+                    <Button Content="Browse" Command="{Binding SelectImportFileCommand}" Padding="10,5" Margin="0,0,10,0"/>
                     <Button Content="Import" Command="{Binding ImportCommand}" 
-        Style="{StaticResource ActionButton}" Background="#f39c12" HorizontalAlignment="Left" Width="100" Margin="0,0,10,0"/>
+                            Style="{StaticResource ActionButton}" Background="#f39c12" Width="100"/>
                 </StackPanel>
 
                 <CheckBox Content="Dry Run (preview only)" IsChecked="{Binding IsDryRun}" Margin="0,0,0,10"/>
 
-                <Expander Header="Conflict Resolution Options" IsExpanded="False" Margin="0,0,0,10">
-                    <StackPanel>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="Conflict resolution:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ComboBox ItemsSource="{Binding ConflictResolutions}" 
+                              SelectedItem="{Binding Conflict}" Width="100">
+                        <ComboBoxItem>Skip</ComboBoxItem>
+                        <ComboBoxItem>Overwrite</ComboBoxItem>
+                    </ComboBox>
+                    <TextBlock Text="(Skip = ignore existing records, Overwrite = replace them)" 
+                               FontSize="10" Foreground="Gray" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
 
-                            <Label Grid.Row="0" Grid.Column="0" Content="Clients:"/>
-                            <ComboBox Grid.Row="0" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding ClientConflict}" Margin="5"/>
-
-                            <Label Grid.Row="1" Grid.Column="0" Content="Vehicles:"/>
-                            <ComboBox Grid.Row="1" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding VehicleConflict}" Margin="5"/>
-
-                            <Label Grid.Row="2" Grid.Column="0" Content="Accessories:"/>
-                            <ComboBox Grid.Row="2" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding AccessoryConflict}" Margin="5"/>
-
-                            <Label Grid.Row="3" Grid.Column="0" Content="Work Orders:"/>
-                            <ComboBox Grid.Row="3" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding WorkOrderConflict}" Margin="5"/>
-
-                            <Label Grid.Row="4" Grid.Column="0" Content="Work Tasks:"/>
-                            <ComboBox Grid.Row="4" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding WorkTaskConflict}" Margin="5"/>
-
-                            <Label Grid.Row="5" Grid.Column="0" Content="Travels:"/>
-                            <ComboBox Grid.Row="5" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding TravelConflict}" Margin="5"/>
-
-                            <Label Grid.Row="6" Grid.Column="0" Content="Protected Rates:"/>
-                            <ComboBox Grid.Row="6" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding ProtectedRateConflict}" Margin="5"/>
-
-                            <Label Grid.Row="7" Grid.Column="0" Content="Users:"/>
-                            <ComboBox Grid.Row="7" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding UserConflict}" Margin="5"/>
-
-                            <Label Grid.Row="8" Grid.Column="0" Content="Source Docs:"/>
-                            <ComboBox Grid.Row="8" Grid.Column="1" 
-                                      ItemsSource="{Binding ConflictResolutions}"
-                                      SelectedItem="{Binding SourceDocumentConflict}" Margin="5"/>
-                        </Grid>
-                    </StackPanel>
-                </Expander>
-
-                
+        <!-- Backup List / Restore Section -->
+        <GroupBox Header="Automatic Backups (in %APPDATA%\SKAuto\Backups)" Grid.Row="3" Margin="0,0,0,10" Padding="10">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Content="Refresh List" Command="{Binding RefreshBackupsCommand}" 
+                            Style="{StaticResource ActionButton}" Background="#3498db"
+                            Width="100" Margin="0,0,10,0"/>
+                    <Button Content="Restore Selected" Command="{Binding RestoreSelectedBackupCommand}" 
+                            Style="{StaticResource ActionButton}" Background="#e67e22"
+                            Width="120" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Foreground="Gray"/>
+                </StackPanel>
+                <DataGrid ItemsSource="{Binding BackupFiles}" SelectedItem="{Binding SelectedBackupFile}"
+                          AutoGenerateColumns="False" IsReadOnly="True" Height="120"
+                          BorderBrush="#dee2e6" BorderThickness="1"
+                          RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
+                        <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
+                        <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </StackPanel>
         </GroupBox>
 
         <!-- Result / Log -->
-        <GroupBox Header="Result" Grid.Row="3" Margin="0,0,0,10" Padding="10">
+        <GroupBox Header="Result" Grid.Row="4" Margin="0,0,0,10" Padding="10">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
             </ScrollViewer>
@@ -139,6 +97,6 @@
         <!-- Close Button -->
         <Button Content="Close" Command="{Binding CloseCommand}" 
                 Style="{StaticResource ActionButton}" Background="#6c757d" 
-                HorizontalAlignment="Right" Width="80" Grid.Row="4"/>
+                HorizontalAlignment="Right" Width="80" Grid.Row="5"/>
     </Grid>
 </Window>

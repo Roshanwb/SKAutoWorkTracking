@@ -4,6 +4,7 @@ using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
+using SKAuto.UI.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace SKAuto.UI.ViewModels
     public partial class WorkOrderDetailViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILoggingService _logger;
         private readonly bool _isNew;
 
         [ObservableProperty]
@@ -38,6 +40,13 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<Accessory> _availableAccessories = new();
 
+        // Search properties
+        [ObservableProperty]
+        private ObservableCollection<Accessory> _filteredAccessories = new();
+
+        [ObservableProperty]
+        private string _accessorySearchText = string.Empty;
+
         [ObservableProperty]
         private Accessory? _selectedAccessory;
 
@@ -47,57 +56,242 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<WorkTask> _tasks = new();
 
-        // For enum dropdowns
+        [ObservableProperty]
+        private ObservableCollection<Travel> _travels = new();
+
         public Array OrderTypeValues => Enum.GetValues(typeof(OrderType));
         public Array WorkStatusValues => Enum.GetValues(typeof(WorkStatus));
 
         public IAsyncRelayCommand SearchVehicleCommand { get; }
         public IRelayCommand AddTaskCommand { get; }
         public IRelayCommand<WorkTask> RemoveTaskCommand { get; }
+        public IRelayCommand AddTravelCommand { get; }
+        public IRelayCommand<Travel> RemoveTravelCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
         public IRelayCommand CancelCommand { get; }
         public IAsyncRelayCommand DeleteCommand { get; }
+        public IRelayCommand OpenVehicleEditCommand { get; }
+        public IRelayCommand OpenAddTaskCommand { get; }
 
-        public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, int workOrderId = 0)
+        public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, int workOrderId = 0)
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
             _isNew = workOrderId == 0;
+
+            _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}");
 
             SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync);
             AddTaskCommand = new RelayCommand(AddTask);
             RemoveTaskCommand = new RelayCommand<WorkTask>(RemoveTask);
+            AddTravelCommand = new RelayCommand(AddTravel);
+            RemoveTravelCommand = new RelayCommand<Travel>(RemoveTravel);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             CancelCommand = new RelayCommand(() => CloseWindow());
             DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew);
+            OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
+            OpenAddTaskCommand = new RelayCommand(OpenAddTask);
 
-            InitializeAsync(workOrderId).ConfigureAwait(false);
+            _ = InitializeAsync(workOrderId);
         }
 
+        // Called when search text changes
+        partial void OnAccessorySearchTextChanged(string value)
+        {
+            _logger.LogInfo($"Accessory search text changed: '{value}'");
+            FilterAccessories(value);
+        }
+
+        private void FilterAccessories(string searchText)
+        {
+            _logger.LogInfo($"Filtering accessories with search: '{searchText}'");
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                FilteredAccessories = new ObservableCollection<Accessory>(AvailableAccessories);
+                _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories (no filter)");
+                return;
+            }
+
+            var lowerSearch = searchText.ToLowerInvariant();
+            var filtered = AvailableAccessories
+                .Where(a => a.Name?.ToLowerInvariant().Contains(lowerSearch) == true ||
+                            a.PartNumber?.ToLowerInvariant().Contains(lowerSearch) == true)
+                .ToList();
+
+            FilteredAccessories = new ObservableCollection<Accessory>(filtered);
+            _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories matched");
+        }
+
+        
+
+        // ========== ADD TRAVEL ==========
+        private void AddTravel()
+        {
+            _logger.LogInfo("AddTravel called");
+            var dialog = new TravelDialog();
+            // ✅ Set the owner to the current MainWindow
+            dialog.Owner = Application.Current.MainWindow;
+            // ✅ Set startup location (already in XAML, but ensure it's set)
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var travel = new Travel
+                    {
+                        WorkOrderId = WorkOrder.Id,
+                        TravelDate = dialog.TravelDate,
+                        Destination = dialog.Destination,
+                        DistanceKm = decimal.TryParse(dialog.DistanceKm, out var km) ? km : (decimal?)null,
+                        TravelCost = decimal.TryParse(dialog.TravelCost, out var cost) ? cost : (decimal?)null,
+                        Notes = dialog.Notes
+                    };
+                    Travels.Add(travel);
+                    WorkOrder.Travels.Add(travel);
+                    _logger.LogInfo($"Added travel to {travel.Destination} on {travel.TravelDate:yyyy-MM-dd}, cost={travel.TravelCost}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to add travel", ex);
+                    MessageBox.Show($"Error adding travel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                _logger.LogInfo("Add travel cancelled by user");
+            }
+        }
+
+        // ========== REMOVE TRAVEL ==========
+        private void RemoveTravel(Travel? travel)
+        {
+            if (travel == null) return;
+            _logger.LogInfo($"Removing travel: Destination={travel.Destination}, Date={travel.TravelDate:yyyy-MM-dd}");
+            Travels.Remove(travel);
+            WorkOrder.Travels.Remove(travel);
+        }
+
+        // ========== OPEN ADD TASK (MANAGE TASKS) ==========
+        private async void OpenAddTask()
+        {
+            try
+            {
+                var logger = App.GetService<ILoggingService>();
+                var vm = new AccessoryManagementViewModel(_unitOfWork, logger);
+                var view = new AccessoryManagementView { DataContext = vm };
+
+                var window = new Window
+                {
+                    Title = "Manage Tasks",
+                    Content = view,
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                };
+
+                if (window.ShowDialog() == true)
+                {
+                    // Clear search text so the newly added accessory appears
+                    AccessorySearchText = "";
+                    // Ensure the refresh happens on the UI thread
+                    await Application.Current.Dispatcher.InvokeAsync(async () =>
+                    {
+                        await RefreshAccessoriesAsync();
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError("Failed to open accessory management", ex);
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task RefreshAccessoriesAsync()
+        {
+            _logger.LogInfo("Refreshing accessories list");
+            // Run on the UI thread to avoid cross-thread collection issues
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                var accessories = await _unitOfWork.Accessories.GetAllAsync();
+                AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+                FilterAccessories(AccessorySearchText);
+                _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories, filtered to {FilteredAccessories.Count}");
+            });
+        }
+        // ========== OPEN VEHICLE EDIT ==========
+        private async void OpenVehicleEdit()
+        {
+            if (SelectedVehicle == null) return;
+
+            _logger.LogInfo($"Opening vehicle edit for chassis {SelectedVehicle.ChassisNumber}");
+            var editWindow = new VehicleEditWindow();
+            var viewModel = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
+            editWindow.DataContext = viewModel;
+            editWindow.Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
+
+            if (editWindow.ShowDialog() == true)
+            {
+                var refreshedVehicle = await _unitOfWork.Vehicles.GetByIdAsync(SelectedVehicle.Id);
+                if (refreshedVehicle != null)
+                {
+                    SelectedVehicle = refreshedVehicle;
+                    if (refreshedVehicle.Client != null)
+                    {
+                        SelectedClient = refreshedVehicle.Client;
+                        WorkOrder.VehicleId = refreshedVehicle.Id;
+                    }
+                    _logger.LogInfo($"Vehicle refreshed after edit: {refreshedVehicle.ChassisNumber}");
+                }
+                await RefreshVehiclesList();
+                OnPropertyChanged(nameof(SelectedVehicle));
+            }
+        }
+
+        // ========== INITIALIZE ==========
         private async Task InitializeAsync(int workOrderId)
         {
             try
             {
+                _logger.LogInfo("InitializeAsync started");
+
                 var clients = await _unitOfWork.Clients.GetAllAsync();
                 Clients = new ObservableCollection<Client>(clients);
+                _logger.LogInfo($"Loaded {Clients.Count} clients");
 
                 var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
                 Vehicles = new ObservableCollection<Vehicle>(vehicles);
+                _logger.LogInfo($"Loaded {Vehicles.Count} vehicles");
 
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
-                AvailableAccessories = new ObservableCollection<Accessory>(accessories);
+                AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+                FilterAccessories(""); // initialize filtered list with all items
+                _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories");
 
                 if (!_isNew)
                 {
                     var repo = (WorkOrderRepository)_unitOfWork.WorkOrders;
                     WorkOrder = await repo.GetWithDetailsAsync(workOrderId);
+                    if (WorkOrder == null)
+                    {
+                        _logger.LogError($"WorkOrder with ID {workOrderId} not found");
+                        MessageBox.Show($"Work order #{workOrderId} not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        CloseWindow();
+                        return;
+                    }
+
                     SelectedVehicle = WorkOrder.Vehicle;
                     if (SelectedVehicle != null)
                     {
                         ChassisSearch = SelectedVehicle.ChassisNumber;
-                        // Automatically set the client from the vehicle
                         SelectedClient = SelectedVehicle.Client;
+                        _logger.LogInfo($"Loaded existing work order #{WorkOrder.Id}, Vehicle: {SelectedVehicle.ChassisNumber}, Client: {SelectedClient?.Name ?? "None"}");
                     }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
+                    Travels = new ObservableCollection<Travel>(WorkOrder.Travels);
+                    _logger.LogInfo($"Loaded {Tasks.Count} tasks and {Travels.Count} travels for work order");
                 }
                 else
                 {
@@ -105,96 +299,139 @@ namespace SKAuto.UI.ViewModels
                     {
                         OrderDate = DateTime.Today,
                         Status = WorkStatus.Planned,
-                        OrderType = OrderType.Direct_Fitting
+                        OrderType = OrderType.PSA_Contract
                     };
                     Tasks = new ObservableCollection<WorkTask>();
+                    Travels = new ObservableCollection<Travel>();
+                    _logger.LogInfo("Created new work order");
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError("InitializeAsync failed", ex);
                 MessageBox.Show($"Error initializing: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CloseWindow();
             }
         }
 
+        // ========== SEARCH VEHICLE ==========
         private async Task SearchVehicleAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;
 
+            _logger.LogInfo($"Searching vehicle with chassis: {ChassisSearch}");
             try
             {
-                // Use the repository method that includes the client
                 var repo = (VehicleRepository)_unitOfWork.Vehicles;
                 var vehicle = await repo.GetByChassisWithClientAsync(ChassisSearch);
                 if (vehicle != null)
                 {
                     SelectedVehicle = vehicle;
-                    // Client is automatically set via the vehicle's navigation property
                     SelectedClient = vehicle.Client;
+                    _logger.LogInfo($"Vehicle found: {vehicle.ChassisNumber}, Client: {vehicle.Client?.Name ?? "None"} (ID {vehicle.ClientId})");
+                    return;
                 }
-                else
-                {
-                    var result = MessageBox.Show($"Vehicle with chassis {ChassisSearch} not found. Create new vehicle?",
-                        "Create Vehicle", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        // Need a client for the new vehicle – we'll use the currently selected client
-                        // or prompt the user to select one. For simplicity, we'll use the first client.
-                        if (SelectedClient == null && Clients.Any())
-                        {
-                            SelectedClient = Clients.First();
-                        }
-                        if (SelectedClient == null)
-                        {
-                            MessageBox.Show("Please select a client first.", "No Client", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            return;
-                        }
 
-                        vehicle = new Vehicle
-                        {
-                            ChassisNumber = ChassisSearch,
-                            Model = "Unknown",
-                            ClientId = SelectedClient.Id,
-                            IsActive = true
-                        };
-                        await _unitOfWork.Vehicles.AddAsync(vehicle);
-                        await _unitOfWork.CompleteAsync();
-                        SelectedVehicle = vehicle;
-                        // Refresh vehicles list
-                        var allVehicles = await _unitOfWork.Vehicles.GetAllAsync();
-                        Vehicles = new ObservableCollection<Vehicle>(allVehicles);
+                _logger.LogWarning($"Vehicle with chassis {ChassisSearch} not found");
+                var result = MessageBox.Show($"Vehicle with chassis {ChassisSearch} not found. Create new vehicle?",
+                    "Create Vehicle", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result != MessageBoxResult.Yes) return;
+
+                if (SelectedClient == null)
+                {
+                    if (Clients.Any())
+                    {
+                        SelectedClient = Clients.First();
+                        _logger.LogInfo($"Auto-selected client: {SelectedClient.Name} (ID {SelectedClient.Id})");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No client available – cannot create vehicle");
+                        MessageBox.Show("No client exists. Please create a client first using 'Manage Clients'.", "No Client", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
                 }
+
+                if (SelectedClient.Id <= 0)
+                {
+                    _logger.LogError($"Selected client has invalid ID {SelectedClient.Id}");
+                    MessageBox.Show("The selected client is not saved yet. Please save the client first, then try again.", "Invalid Client", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                var existingClient = await _unitOfWork.Clients.GetByIdAsync(SelectedClient.Id);
+                if (existingClient == null)
+                {
+                    _logger.LogError($"Client with ID {SelectedClient.Id} does not exist in database.");
+                    MessageBox.Show("The selected client no longer exists. Please refresh clients and try again.", "Client Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                _logger.LogInfo($"Creating new vehicle for client: {existingClient.Name} (ID {existingClient.Id})");
+
+                vehicle = new Vehicle
+                {
+                    ChassisNumber = ChassisSearch,
+                    Model = "Unknown",
+                    ClientId = existingClient.Id,
+                    IsActive = true
+                };
+
+                await _unitOfWork.Vehicles.AddAsync(vehicle);
+                await _unitOfWork.CompleteAsync();
+
+                SelectedVehicle = vehicle;
+                await RefreshVehiclesList();
+                _logger.LogInfo($"Created new vehicle: {vehicle.ChassisNumber} for client {existingClient.Name}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error searching vehicle: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _logger.LogError($"Error searching/creating vehicle: {ChassisSearch}", ex);
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // Helper method to refresh the Vehicles collection
+        private async Task RefreshVehiclesList()
+        {
+            var allVehicles = await _unitOfWork.Vehicles.GetAllAsync();
+            Vehicles = new ObservableCollection<Vehicle>(allVehicles);
+            _logger.LogInfo($"Refreshed vehicles list, now {Vehicles.Count} vehicles");
         }
 
         partial void OnSelectedVehicleChanged(Vehicle? value)
         {
             if (value != null)
             {
-                // Client is automatically determined from the vehicle
                 SelectedClient = value.Client;
-                // WorkOrder.VehicleId is set automatically when we assign SelectedVehicle
-                // because the ViewModel sets the ID in the property setter? Actually we need to update WorkOrder.VehicleId.
                 if (WorkOrder != null)
                 {
                     WorkOrder.VehicleId = value.Id;
+                    _logger.LogInfo($"Selected vehicle changed to ID {value.Id}, Chassis {value.ChassisNumber}");
                 }
             }
         }
 
         partial void OnSelectedClientChanged(Client? value)
         {
-            // Client is read-only when vehicle is selected; this is just for display.
-            // We don't set anything on WorkOrder because client is determined by vehicle.
+            if (value != null && SelectedVehicle != null)
+            {
+                SelectedVehicle.ClientId = value.Id;
+                SelectedVehicle.Client = value;
+                _logger.LogInfo($"Updated vehicle client to {value.Name} (ID {value.Id})");
+            }
+            if (value != null)
+                _logger.LogInfo($"Selected client changed to {value.Name} (ID {value.Id})");
         }
 
+        // ========== ADD TASK ==========
         private void AddTask()
         {
-            if (SelectedAccessory == null) return;
+            if (SelectedAccessory == null)
+            {
+                _logger.LogWarning("AddTask called with no accessory selected");
+                return;
+            }
 
             var task = new WorkTask
             {
@@ -202,61 +439,82 @@ namespace SKAuto.UI.ViewModels
                 AccessoryId = SelectedAccessory.Id,
                 Accessory = SelectedAccessory,
                 Quantity = Quantity,
-                TaskType = TaskType.Fit,
+                TaskType = SelectedAccessory.TaskType,
                 TaskStatus = WorkStatus.Planned,
                 Price = SelectedAccessory.Price,
                 EstimatedMinutes = SelectedAccessory.Time
             };
             Tasks.Add(task);
             WorkOrder.WorkTasks.Add(task);
+            _logger.LogInfo($"Added task: Accessory '{SelectedAccessory.Name}', Type '{SelectedAccessory.TaskType}', Quantity {Quantity}, Price {SelectedAccessory.Price}");
         }
 
+        // ========== REMOVE TASK ==========
         private void RemoveTask(WorkTask? task)
         {
             if (task != null)
             {
+                var taskInfo = $"AccessoryId {task.AccessoryId}, Quantity {task.Quantity}, Price {task.Price}";
                 Tasks.Remove(task);
                 WorkOrder.WorkTasks.Remove(task);
+                _logger.LogInfo($"Removed task: {taskInfo}");
             }
         }
 
+        // ========== SAVE ==========
         private async Task SaveAsync()
         {
             try
             {
-                // Validate required fields
-                if (WorkOrder.VehicleId == 0 || SelectedVehicle == null)
+                _logger.LogInfo("SaveAsync started");
+
+                if (SelectedVehicle == null)
                 {
+                    _logger.LogWarning("Save attempted without a vehicle selected");
                     MessageBox.Show("Please select a vehicle.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Client is automatically determined by vehicle, so no separate check needed
+                WorkOrder.VehicleId = SelectedVehicle.Id;
+
+                if (SelectedClient != null && SelectedVehicle.ClientId != SelectedClient.Id)
+                {
+                    _logger.LogInfo($"Updating vehicle client from {SelectedVehicle.ClientId} to {SelectedClient.Id}");
+                    SelectedVehicle.ClientId = SelectedClient.Id;
+                    await _unitOfWork.Vehicles.UpdateAsync(SelectedVehicle);
+                }
 
                 WorkOrder.CalculateTotal();
+                _logger.LogInfo($"WorkOrder total calculated: {WorkOrder.TotalAmount:C}");
 
                 if (_isNew)
                 {
                     await _unitOfWork.WorkOrders.AddAsync(WorkOrder);
+                    _logger.LogInfo($"New work order added (ID {WorkOrder.Id})");
                 }
                 else
                 {
                     await _unitOfWork.WorkOrders.UpdateAsync(WorkOrder);
+                    _logger.LogInfo($"Work order updated (ID {WorkOrder.Id})");
                 }
 
                 await _unitOfWork.CompleteAsync();
+                _logger.LogInfo("Work order saved successfully");
                 CloseWindow(true);
             }
             catch (Exception ex)
             {
+                _logger.LogError("SaveAsync failed", ex);
                 MessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        // ========== DELETE ==========
         private async Task DeleteAsync()
         {
             if (_isNew) return;
 
+            _logger.LogInfo($"DeleteAsync called for work order #{WorkOrder.Id}");
             var result = MessageBox.Show($"Delete work order #{WorkOrder.Id}? This will also delete all associated tasks and travels.",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes) return;
@@ -265,16 +523,20 @@ namespace SKAuto.UI.ViewModels
             {
                 await _unitOfWork.WorkOrders.DeleteAsync(WorkOrder);
                 await _unitOfWork.CompleteAsync();
+                _logger.LogInfo($"Work order #{WorkOrder.Id} deleted successfully");
                 CloseWindow(true);
             }
             catch (Exception ex)
             {
+                _logger.LogError($"DeleteAsync failed for work order #{WorkOrder.Id}", ex);
                 MessageBox.Show($"Error deleting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        // ========== CLOSE WINDOW ==========
         private void CloseWindow(bool success = false)
         {
+            _logger.LogInfo($"Closing window, success={success}");
             foreach (Window window in Application.Current.Windows)
                 if (window.DataContext == this)
                 {

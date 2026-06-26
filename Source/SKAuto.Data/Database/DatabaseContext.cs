@@ -60,6 +60,11 @@ namespace SKAuto.Data.Database
                 .Property(t => t.TaskStatus)
                 .HasConversion<string>();
 
+            // NEW: Convert Accessory.TaskType enum to string
+            modelBuilder.Entity<Accessory>()
+                .Property(a => a.TaskType)
+                .HasConversion<string>();
+
             // Unique constraints
             modelBuilder.Entity<Client>()
                 .HasIndex(c => c.Name)

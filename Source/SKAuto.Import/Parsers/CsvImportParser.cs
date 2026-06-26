@@ -42,7 +42,7 @@ namespace SKAuto.Import.Parsers
             int livreurCol = FindColumn(headerList, new[] { "Livreur"});
 
             // Use modeleCol if found, otherwise use marqueCol
-            int modelCol = modeleCol != -1 ? modeleCol : 3;
+            int modelCol = modeleCol != -1 ? modeleCol : 4;
 
             // Required columns: Vin, Client, model, FinPrep
             if (vinCol == -1 || clientCol == -1 || modelCol == -1 || finPrepCol == -1)
