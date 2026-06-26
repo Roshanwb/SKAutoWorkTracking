@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
+using SKAuto.Core.Helpers;
 using System;
 using System.IO;
 using System.Linq;
@@ -34,15 +35,15 @@ namespace SKAuto.Data.Database
             new User
             {
                 Username = "admin",
-                PasswordHash = "admin",  // In production, hash this!
-                Role = "Admin",
+                PasswordHash = PasswordHelper.HashPassword("admin123"),
+                Role = UserRole.Admin,
                 IsActive = true
             },
             new User
             {
                 Username = "user",
-                PasswordHash = "user",
-                Role = "User",
+                PasswordHash = PasswordHelper.HashPassword("user"),
+                Role = UserRole.User ,
                 IsActive = true
             }
         };

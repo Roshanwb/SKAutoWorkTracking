@@ -14,22 +14,22 @@
     <Window.Resources>
         <!-- Converters -->
         <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-        <!-- Base style for circular icon buttons -->
-        <Style x:Key="IconButtonBase" TargetType="Button">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+        <!-- Icon button base -->
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
             <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="20"
-                                Padding="0">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="18">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -42,28 +42,20 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Week‑specific icon buttons (green hover) -->
-        <Style x:Key="WeekIconButton" BasedOn="{StaticResource IconButtonBase}" TargetType="Button">
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#66BB6A"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Style for right‑panel action buttons -->
+        <!-- Action button (right panel) -->
         <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="Height" Value="35"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
-            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -76,33 +68,35 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Style for small status update buttons -->
+        <!-- Small status buttons -->
         <Style x:Key="StatusButton" BasedOn="{StaticResource ActionButton}" TargetType="Button">
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Padding" Value="5,3"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="12"/>
         </Style>
 
-        <!-- DataGrid header style -->
+        <!-- DataGrid header -->
         <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#34495e"/>
+            <Setter Property="Background" Value="#2C3E50"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="35"/>
-            <Setter Property="BorderBrush" Value="#2c3e50"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="BorderBrush" Value="#1A252F"/>
             <Setter Property="BorderThickness" Value="0,0,1,0"/>
         </Style>
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
-        <!-- Menu -->
-        <Menu DockPanel.Dock="Top" Background="#ecf0f1">
+        <!-- ===== MENU ===== -->
+        <Menu DockPanel.Dock="Top" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
             <MenuItem Header="_File">
                 <MenuItem Header="_Import" Command="{Binding ImportDataCommand}"/>
                 <Separator/>
+                <MenuItem Header="Change Password" Command="{Binding ChangePasswordCommand}"/>
                 <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}"/>
+                <Separator/>
                 <MenuItem Header="_Exit"/>
             </MenuItem>
-            <MenuItem Header="_Manage">
+            <MenuItem Header="_Manage" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <MenuItem Header="_Clients" Command="{Binding OpenClientManagementCommand}"/>
                 <MenuItem Header="_Vehicles" Command="{Binding OpenVehicleManagementCommand}"/>
                 <MenuItem Header="_Tasks" Command="{Binding ShowAccessoryManagementCommand}"/>
@@ -112,9 +106,9 @@
                 <MenuItem Header="Bulk Price Update" Command="{Binding OpenPriceUpdateCommand}"/>
             </MenuItem>
             <MenuItem Header="_Reports">
-                <MenuItem Header="_Generate Daily Report" Command="{Binding OpenReportsCommand}"/>
+                <MenuItem Header="_Generate Report" Command="{Binding OpenReportsCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Admin">
+            <MenuItem Header="_Admin" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <MenuItem Header="_Backup/Restore" Command="{Binding OpenBackupCommand}"/>
             </MenuItem>
             <MenuItem Header="Help">
@@ -124,61 +118,32 @@
             </MenuItem>
         </Menu>
 
+        <!-- ===== MAIN GRID ===== -->
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <!-- Header -->
+                <!-- Toolbar -->
                 <RowDefinition Height="*"/>
-                <!-- Main Content -->
-                <RowDefinition Height="Auto"/>
-                <!-- Status Bar -->
+                <!-- DataGrid + Right Panel -->
                 <RowDefinition Height="Auto"/>
                 <!-- Footer -->
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Border Grid.Row="0" Background="#2c3e50" Padding="10">
+            <!-- ===== TOOLBAR ===== -->
+            <Border Grid.Row="0" Background="#2C3E50" Padding="8,6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!-- Previous Week -->
-                    <Button Style="{StaticResource WeekIconButton}"
-                            Command="{Binding PreviousWeekCommand}"
-                            Content="&#xeb9e;" FontSize="24"
-                            ToolTip="Previous Week"/>
-                    <!-- Previous Day -->
-                    <Button Style="{StaticResource IconButtonBase}"
-                            Command="{Binding PreviousDayCommand}"
-                            Content="&#xE76B;" Margin="5,0,0,0"
-                            ToolTip="Previous Day"/>
-                    <!-- Date Picker -->
-                    <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}" 
-                                Width="120" Margin="10,0" VerticalAlignment="Center" Background="White"/>
-                    <!-- Next Day -->
-                    <Button Style="{StaticResource IconButtonBase}"
-                            Command="{Binding NextDayCommand}"
-                            Content="&#xE76C;" Margin="0,0,5,0"
-                            ToolTip="Next Day"/>
-                    <!-- Next Week -->
-                    <Button Style="{StaticResource WeekIconButton}"
-                            Command="{Binding NextWeekCommand}"
-                            Content="&#xeb9d;" FontSize="24" Margin="0,0,5,0"
-                            ToolTip="Next Week"/>
-                    <!-- Refresh Button -->
-                    <Button Content="Refresh" 
-                            Command="{Binding LoadTodayWorkCommand}" 
-                            Style="{StaticResource ActionButton}"
-                            Background="#2196F3"
-                            Width="80" Margin="20,0,0,0"/>
-                    <!-- Status message -->
-                    <TextBlock Text="{Binding StatusMessage}" 
-                               Foreground="#ecf0f1" 
-                               Margin="20,0,0,0" 
-                               VerticalAlignment="Center" 
-                               FontStyle="Italic"/>
+                    <Button Style="{StaticResource IconButton}" Command="{Binding PreviousWeekCommand}" Content="&#xeb9e;" ToolTip="Previous Week"/>
+                    <Button Style="{StaticResource IconButton}" Command="{Binding PreviousDayCommand}" Content="&#xE76B;" Margin="4,0,0,0" ToolTip="Previous Day"/>
+                    <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="8,0" Background="White" VerticalAlignment="Center"/>
+                    <Button Style="{StaticResource IconButton}" Command="{Binding NextDayCommand}" Content="&#xE76C;" Margin="0,0,4,0" ToolTip="Next Day"/>
+                    <Button Style="{StaticResource IconButton}" Command="{Binding NextWeekCommand}" Content="&#xeb9d;" ToolTip="Next Week"/>
+                    <Button Content="Refresh" Command="{Binding LoadTodayWorkCommand}" Style="{StaticResource ActionButton}" Background="#2196F3" Width="70" Margin="16,0,0,0"/>
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#BDC3C7" Margin="16,0,0,0" VerticalAlignment="Center" FontStyle="Italic" FontSize="12"/>
                 </StackPanel>
             </Border>
 
-            <!-- Main Content -->
-            <Grid Grid.Row="1">
+            <!-- ===== MAIN CONTENT ===== -->
+            <Grid Grid.Row="1" Margin="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -191,68 +156,56 @@
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           SelectionMode="Single"
-                          Margin="10"
                           BorderThickness="1"
-                          BorderBrush="#bdc3c7"
-                          RowBackground="#ffffff"
-                          AlternatingRowBackground="#f8f9fa"
+                          BorderBrush="#DEE2E6"
+                          RowBackground="#FFFFFF"
+                          AlternatingRowBackground="#F8F9FA"
                           ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTemplateColumn Header="Edit" Width="50">
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="45"/>
+                        <DataGridTemplateColumn Header="Edit" Width="45">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="✏️" 
-                                            Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                            CommandParameter="{Binding Id}" 
-                                            Background="Transparent" BorderThickness="0" 
-                                            Foreground="#3498db" FontSize="14"
-                                            Cursor="Hand"/>
+                                    <Button Content="✏️" Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}" Background="Transparent" BorderThickness="0" Foreground="#3498DB" FontSize="14" Cursor="Hand"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="150"/>
+                        <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="140"/>
                         <DataGridTextColumn Header="Vehicle" Binding="{Binding VehicleModel}" Width="80"/>
                         <DataGridTextColumn Header="Chassis" Binding="{Binding VehicleChassis}" Width="80"/>
-                        <DataGridTextColumn Header="Type" Binding="{Binding OrderType}" Width="100"/>
-                        <!-- Status column with colored background -->
+                        <DataGridTextColumn Header="Type" Binding="{Binding OrderType}" Width="90"/>
                         <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                     <Setter Property="Foreground" Value="White"/>
-                                    <Setter Property="Padding" Value="5,2"/>
+                                    <Setter Property="Padding" Value="4,2"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Header="Tasks" Binding="{Binding TaskCount}" Width="60"/>
-                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="80"/>
+                        <DataGridTextColumn Header="Tasks" Binding="{Binding TaskCount}" Width="55"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="80" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Right Panel -->
-                <StackPanel Grid.Column="1" Width="230" Margin="0,10,15,10">
-                    <!-- Today's Summary -->
-                    <Border Background="White" BorderBrush="#dee2e6" BorderThickness="1" 
-                            Padding="12" Margin="0,0,0,12" CornerRadius="4">
+                <!-- ===== RIGHT PANEL ===== -->
+                <StackPanel Grid.Column="1" Width="210" Margin="12,0,0,0">
+                    <!-- Summary Cards -->
+                    <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
                         <StackPanel>
-                            <TextBlock Text="Today's Summary" FontWeight="SemiBold" 
-                                       FontSize="14" Foreground="#2c3e50" Margin="0,0,0,8"/>
-                            <TextBlock Text="{Binding TotalOrdersToday, StringFormat='Orders: {0}'}" Margin="0,2,0,2"/>
-                            <TextBlock Text="{Binding TotalRevenueToday, StringFormat='Revenue: {0:C}'}" Margin="0,2,0,2"/>
+                            <TextBlock Text="Today" FontWeight="SemiBold" FontSize="13" Foreground="#2C3E50" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding TotalOrdersToday, StringFormat='Orders: {0}'}" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalRevenueToday, StringFormat='Revenue: {0:C}'}" FontSize="12"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Weekly Summary -->
-                    <Border Background="White" BorderBrush="#dee2e6" BorderThickness="1" 
-                            Padding="12" Margin="0,0,0,12" CornerRadius="4">
+                    <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
                         <StackPanel>
-                            <TextBlock Text="Weekly Summary" FontWeight="SemiBold" 
-                                       FontSize="14" Foreground="#2c3e50" Margin="0,0,0,8"/>
-                            <TextBlock>
+                            <TextBlock Text="Week" FontWeight="SemiBold" FontSize="13" Foreground="#2C3E50" Margin="0,0,0,4"/>
+                            <TextBlock FontSize="11">
                                 <TextBlock.Text>
                                     <MultiBinding StringFormat="Week of {0:dd/MM} – {1:dd/MM}">
                                         <Binding Path="WeeklySummary.WeekStart"/>
@@ -260,10 +213,8 @@
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
-                            <TextBlock Text="{Binding WeeklySummary.TotalWorkOrders, StringFormat='Total Orders: {0}'}" Margin="0,2,0,2"/>
-                            <TextBlock Text="{Binding WeeklySummary.CompletedOrders, StringFormat='Completed: {0}'}" Margin="0,2,0,2"/>
-                            <TextBlock Text="{Binding WeeklySummary.InProgressOrders, StringFormat='In Progress: {0}'}" Margin="0,2,0,2"/>
-                            <TextBlock Text="{Binding WeeklySummary.TotalRevenue, StringFormat='Total Revenue: {0:C}'}" Margin="0,2,0,2"/>
+                            <TextBlock Text="{Binding WeeklySummary.TotalWorkOrders, StringFormat='Total Orders: {0}'}" FontSize="11"/>
+                            <TextBlock Text="{Binding WeeklySummary.TotalRevenue, StringFormat='Revenue: {0:C}'}" FontSize="11" FontWeight="SemiBold" Foreground="#27AE60"/>
                             <Expander Header="Top Clients" IsExpanded="False" Margin="0,5,0,0" BorderBrush="#e0e0e0">
                                 <ItemsControl ItemsSource="{Binding WeeklySummary.ClientSummaries}" MaxHeight="150">
                                     <ItemsControl.ItemTemplate>
@@ -280,76 +231,39 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Primary Actions -->
+                    <Button Content="New Work Order" Style="{StaticResource ActionButton}" Background="#E91E63" Height="55" FontSize="15" FontWeight="Bold" Command="{Binding CreateWorkOrderCommand}"/>
 
-                    <!-- Action buttons -->
-                    <Button Content="New Work Order" 
-                            Style="{StaticResource ActionButton}"
-                            Height="60"
-                            FontSize="15"
-                            Background="#E91E63        "
-                            Command="{Binding CreateWorkOrderCommand}"/>
+                    <!-- Secondary Actions -->
+                    <Button Content="Import Data" Style="{StaticResource ActionButton}" Background="#8BC34A" Command="{Binding ImportDataCommand}"/>
+                    <Button Content="Generate Reports" Style="{StaticResource ActionButton}" Background="#27AE60" Command="{Binding OpenReportsCommand}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-                    <!-- Management buttons -->
-                    <Button Content="Manage Clients" 
-                            Style="{StaticResource ActionButton}"
-                            Background="#17a2b8"
-                            Command="{Binding OpenClientManagementCommand}"/>
-                    <Button Content="Manage Vehicles" 
-                            Style="{StaticResource ActionButton}"
-                            Background="#17a2b8"
-                            Command="{Binding OpenVehicleManagementCommand}"/>
+                    <!-- Admin Only -->
+                    <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Button Content="Manage Clients" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding OpenClientManagementCommand}"/>
+                        <Button Content="Manage Vehicles" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding OpenVehicleManagementCommand}"/>
+                    </StackPanel>
 
-                    <Button Content="Generate Reports" 
-                            Style="{StaticResource ActionButton}"
-                            Background="#27ae60"
-                            Command="{Binding OpenReportsCommand}"/>
-                    <Button Content="Import Data" 
-                             Style="{StaticResource ActionButton}"
-                             Background="#8BC34A "
-                             Command="{Binding ImportDataCommand}"/>
+                    <!-- Status Updates -->
+                    <TextBlock Text="Update Status" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
+                    <Button Content="In Progress" Style="{StaticResource StatusButton}" Background="#F39C12" Command="{Binding UpdateStatusCommand}" CommandParameter="InProgress"/>
+                    <Button Content="Blocked" Style="{StaticResource StatusButton}" Background="#E74C3C" Command="{Binding UpdateStatusCommand}" CommandParameter="Blocked"/>
+                    <Button Content="Done" Style="{StaticResource StatusButton}" Background="#2ECC71" Command="{Binding UpdateStatusCommand}" CommandParameter="Done"/>
 
-                    <TextBlock Text="Update Status" FontWeight="SemiBold" Margin="0,8,0,5"/>
-                    <Button Content="Mark In Progress" 
-                            Style="{StaticResource StatusButton}"
-                            Background="#f39c12"
-                            Command="{Binding UpdateStatusCommand}"
-                            CommandParameter="InProgress"/>
-                    <Button Content="Mark Blocked" 
-                            Style="{StaticResource StatusButton}"
-                            Background="#e74c3c"
-                            Command="{Binding UpdateStatusCommand}"
-                            CommandParameter="Blocked"/>
-                    <Button Content="Mark Done" 
-                            Style="{StaticResource StatusButton}"
-                            Background="#2ecc71"
-                            Command="{Binding UpdateStatusCommand}"
-                            CommandParameter="Done"/>
-
-                    <TextBlock Text="Actions" FontWeight="SemiBold" Margin="0,8,0,5"/>
-                    <Button Content="Delete Work Order" 
-                            Style="{StaticResource StatusButton}"
-                            Background="#dc3545"
-                            Command="{Binding DeleteWorkOrderCommand}"/>
-                    <!-- Status Bar -->
-                    <StatusBar Grid.Row="2" Background="#ecf0f1">
-                        <StatusBarItem>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding SyncStatus}" Margin="5,0"/>
-                                <Button Content="Google Drive Settings" Command="{Binding OpenDriveSettingsCommand}" Margin="10,0" Padding="5,0" Background="Transparent" BorderThickness="0" Foreground="Blue" Cursor="Hand"/>
-                            </StackPanel>
-                        </StatusBarItem>
-                    </StatusBar>
+                    <TextBlock Text="Danger" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
+                    <Button Content="Delete Work Order" Style="{StaticResource StatusButton}" Background="#DC3545" Command="{Binding DeleteWorkOrderCommand}"/>
                 </StackPanel>
             </Grid>
 
-
-
-            <!-- Footer -->
-            <Border Grid.Row="3" Background="#ecf0f1" Padding="8">
-                <TextBlock Text="SK Auto Work Tracking System v1.0 – © 2026 by Insights®" 
-                           HorizontalAlignment="Center"
-                           Foreground="#7f8c8d"
-                           FontSize="11"/>
+            <!-- ===== FOOTER ===== -->
+            <Border Grid.Row="2" Background="#F8F9FA" Padding="6,4" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+                <Grid>
+                    <TextBlock Text="SK Auto Work Tracking v1.0 – © 2026 Insights®" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding SyncStatus}" Margin="0,0,8,0" FontSize="11" Foreground="#7F8C8D"/>
+                        <Button Content="Drive" Command="{Binding OpenDriveSettingsCommand}" Background="Transparent" BorderThickness="0" Foreground="#3498DB" Cursor="Hand" FontSize="11"/>
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
     </DockPanel>

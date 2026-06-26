@@ -8,19 +8,22 @@ using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.Export.Pdf;
 using SKAuto.UI.Views;
+using SKAuto.Core.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input; // for MessageBox
+using System.Windows.Input;
+using SKAuto.Core.Entities; // for MessageBox
 
 namespace SKAuto.UI.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfigurationService _configService; 
+        private readonly IConfigurationService _configService;
+        private readonly ILoggingService _logger;
 
         [ObservableProperty]
         private ObservableCollection<WorkOrderDto> _todayWorkOrders = new();
@@ -51,8 +54,15 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private WeeklySummaryDto _weeklySummary = new();
+
         [ObservableProperty]
         private string _syncStatus;
+
+        [ObservableProperty]
+        private User? _currentUser;
+
+        [ObservableProperty]
+        private bool _isAdmin;
 
         public IRelayCommand PreviousDayCommand { get; }
         public IRelayCommand NextDayCommand { get; }
@@ -79,11 +89,14 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand OpenAboutCommand { get; }
         public IRelayCommand OpenDriveSettingsCommand { get; }
         public IRelayCommand SyncNowCommand { get; }
+        public IRelayCommand ShowUserManagementCommand { get; }
+        public IRelayCommand ChangePasswordCommand { get; }
 
-        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService)
+        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService, ILoggingService logger)
         {
             _unitOfWork = unitOfWork;
             _configService = configService;
+            _logger = logger;
 
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
@@ -110,8 +123,28 @@ namespace SKAuto.UI.ViewModels
             OpenPriceUpdateCommand = new RelayCommand(OpenPriceUpdate);
             OpenHelpCommand = new RelayCommand(OpenHelp);
             OpenAboutCommand = new RelayCommand(OpenAbout);
+            ShowUserManagementCommand = new RelayCommand(ShowUserManagement, () => IsAdmin);
+            ChangePasswordCommand = new RelayCommand(ChangePassword);
 
             LoadTodayWorkCommand.Execute(null);
+        }
+
+        private void ShowUserManagement()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var vm = new UserManagementViewModel(_unitOfWork, logger, CurrentUser);
+            var win = new UserManagementView { DataContext = vm };
+            win.Owner = Application.Current.MainWindow;
+            win.ShowDialog();
+        }
+
+        private void ChangePassword()
+        {
+            var logger = App.GetService<ILoggingService>();
+            var vm = new UserEditViewModel(_unitOfWork, logger, CurrentUser, null, UserEditMode.ChangePassword);
+            var win = new UserEditView(vm);
+            win.Owner = Application.Current.MainWindow;
+            win.ShowDialog();
         }
 
         [RelayCommand]
@@ -122,6 +155,14 @@ namespace SKAuto.UI.ViewModels
             settingsWindow.Owner = Application.Current.MainWindow;
             settingsWindow.Show();
         }
+
+        public void SetCurrentUser(User user)
+        {
+            CurrentUser = user;
+            IsAdmin = user?.Role == UserRole.Admin;
+            _logger.LogInfo($"User set: {user?.Username}, IsAdmin: {IsAdmin}");
+        }
+
         private void OpenReports()
         {
             var vm = new ReportsViewModel(

@@ -25,6 +25,7 @@ namespace SKAuto.UI
         private readonly IHost _host;
         private ILoggingService _logger;
 
+        // ✅ Make setter public so LoginViewModel can set it
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
 
@@ -116,10 +117,37 @@ namespace SKAuto.UI
                 {
                     try
                     {
+                        // ---- SHOW LOGIN ----
+                        User loggedInUser = null;
+                        using (var scope = _host.Services.CreateScope())
+                        {
+                            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                            var logger = scope.ServiceProvider.GetRequiredService<ILoggingService>();
+                            var loginVM = new LoginViewModel(unitOfWork, logger);
+                            var loginView = new LoginView(loginVM);
+                            if (loginView.ShowDialog() != true)
+                            {
+                                _logger.LogInfo("Login cancelled or failed. Exiting.");
+                                Shutdown();
+                                return;
+                            }
+                            loggedInUser = App.CurrentUser;
+                        }
+
+                        // ---- GET MAIN VIEW MODEL AND SET USER ----
                         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                        if (mainWindow.DataContext is MainViewModel mainVM)
+                        {
+                            mainVM.SetCurrentUser(loggedInUser);
+                        }
+
                         Current.MainWindow = mainWindow;
                         mainWindow.Show();
-                        _logger.LogInfo("Main window shown.");
+                        mainWindow.Activate();
+                        mainWindow.Focus();
+                        _logger.LogInfo("Main window shown and activated.");
+                        Application.Current.MainWindow.WindowState = WindowState.Maximized;
+                        mainWindow.Title = $"SKAuto - {loggedInUser.Username} ({loggedInUser.Role})";
                     }
                     catch (Exception ex)
                     {
@@ -139,7 +167,6 @@ namespace SKAuto.UI
         {
             _logger?.LogInfo("Application exiting.");
 
-            // Automatic backup on exit
             try
             {
                 var backupService = _host.Services.GetRequiredService<IBackupService>();

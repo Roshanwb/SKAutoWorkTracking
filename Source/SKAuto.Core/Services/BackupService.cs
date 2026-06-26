@@ -740,7 +740,7 @@ namespace SKAuto.Core.Services
                     if (options.Conflict == ConflictResolution.Overwrite)
                     {
                         existing.PasswordHash = row.GetValueOrDefault("PasswordHash");
-                        existing.Role = row.GetValueOrDefault("Role") ?? "User";
+                        existing.Role = Enum.TryParse<UserRole>(row.GetValueOrDefault("Role"), true, out var role) ? role : UserRole.User;
                         existing.IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1";
                         if (!options.DryRun) await _unitOfWork.Users.UpdateAsync(existing);
                         result.RowsUpdated++;
@@ -754,7 +754,7 @@ namespace SKAuto.Core.Services
                     {
                         Username = username,
                         PasswordHash = row.GetValueOrDefault("PasswordHash"),
-                        Role = row.GetValueOrDefault("Role") ?? "User",
+                        Role = Enum.TryParse<UserRole>(row.GetValueOrDefault("Role"), true, out var role) ? role : UserRole.User,
                         IsActive = row.GetValueOrDefault("IsActive") == "True" || row.GetValueOrDefault("IsActive") == "true" || row.GetValueOrDefault("IsActive") == "1"
                     };
                     if (!options.DryRun) await _unitOfWork.Users.AddAsync(newUser);
