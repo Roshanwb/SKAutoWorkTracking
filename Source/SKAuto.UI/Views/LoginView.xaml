@@ -5,12 +5,34 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Height="290" Width="400"
+        Height="310" Width="400"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <Window.Resources>
         <SolidColorBrush x:Key="PrimaryColor" Color="#2C3E50"/>
         <SolidColorBrush x:Key="AccentColor" Color="#3498DB"/>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="{StaticResource PrimaryColor}" BorderThickness="2">
@@ -28,6 +50,8 @@
                 <!-- Error message -->
                 <RowDefinition Height="Auto"/>
                 <!-- Buttons -->
+                <RowDefinition Height="Auto"/>
+                <!-- Forgot password -->
                 <RowDefinition Height="*"/>
                 <!-- Footer spacing -->
             </Grid.RowDefinitions>
@@ -66,8 +90,19 @@
                         Cursor="Hand" Margin="5"/>
             </StackPanel>
 
+            <!-- NEW: Forgot Password link -->
+            <TextBlock Grid.Row="6" Grid.ColumnSpan="2" Text="Forgot Password?" 
+                       Foreground="#3498DB" HorizontalAlignment="Center" 
+                       Margin="0,2,0,5" FontSize="11" Cursor="Hand"
+                       TextDecorations="Underline"
+                       MouseDown="ForgotPassword_Click">
+                <TextBlock.ToolTip>
+                    <ToolTip>Reset your password (requires admin approval)</ToolTip>
+                </TextBlock.ToolTip>
+            </TextBlock>
+
             <!-- Footer text – spans both columns -->
-            <TextBlock Grid.Row="6" Grid.ColumnSpan="2" Text="2026 - Insights®" FontSize="11" Foreground="#95A5A6" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Bottom"/>
+            <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="2026 - Insights®" FontSize="11" Foreground="#95A5A6" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Bottom"/>
         </Grid>
     </Border>
 </Window>

@@ -20,7 +20,8 @@ namespace SKAuto.UI.ViewModels
     {
         Add,
         Edit,
-        ChangePassword
+        ChangePassword,
+        ResetPassword   // NEW: for forgot password from login screen
     }
 
     public partial class UserEditViewModel : ObservableObject
@@ -111,6 +112,17 @@ namespace SKAuto.UI.ViewModels
                     ShowConfirmPassword = true;
                     ShowAdminFields = false;
                     break;
+
+                case UserEditMode.ResetPassword:
+                    WindowTitle = "Reset Password";
+                    IsUsernameEditable = true;          // user types their username
+                    Username = "";
+                    PasswordLabel = "New Password";
+                    ConfirmPasswordLabel = "Confirm Password";
+                    ShowConfirmPassword = true;
+                    ShowAdminFields = false;            // no role/active
+                    IsActive = true;
+                    break;
             }
 
             SaveCommand = new AsyncRelayCommand(SaveAsync);
@@ -126,6 +138,34 @@ namespace SKAuto.UI.ViewModels
                 {
                     MessageBox.Show("Username cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
+                }
+                else if (_mode == UserEditMode.ResetPassword)
+                {
+                    // Find user by username
+                    var user = (await _unitOfWork.Users.FindAsync(u => u.Username == Username)).FirstOrDefault();
+                    if (user == null || !user.IsActive)
+                    {
+                        MessageBox.Show("Username not found or inactive.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // Validate password
+                    if (string.IsNullOrWhiteSpace(Password) || Password.Length < 6)
+                    {
+                        MessageBox.Show("Password must be at least 6 characters.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    if (Password != ConfirmPassword)
+                    {
+                        MessageBox.Show("Passwords do not match.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    user.PasswordHash = PasswordHelper.HashPassword(Password);
+                    await _unitOfWork.Users.UpdateAsync(user);
+                    await _unitOfWork.CompleteAsync();
+                    _logger.LogInfo($"Password reset for user: {Username}");
+                    MessageBox.Show("Password reset successfully. Please log in with your new password.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 // For Add and ChangePassword, password must be provided
@@ -187,6 +227,8 @@ namespace SKAuto.UI.ViewModels
                     await _unitOfWork.CompleteAsync();
                     _logger.LogInfo($"Admin updated user: {_editingUser.Username}");
                 }
+
+
                 else // ChangePassword
                 {
                     // Verify current password

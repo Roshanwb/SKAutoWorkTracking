@@ -1,4 +1,5 @@
-﻿using SKAuto.UI.ViewModels;
+﻿using SKAuto.Core.Interfaces;
+using SKAuto.UI.ViewModels;
 using System.Windows;
 using System.Windows.Input;
 
@@ -66,6 +67,17 @@ namespace SKAuto.UI.Views
                 Application.Current.Shutdown();
                 e.Handled = true;
             }
+        }
+        private void ForgotPassword_Click(object sender, MouseButtonEventArgs e)
+        {
+            var logger = App.GetService<ILoggingService>();
+            var unitOfWork = App.GetService<IUnitOfWork>();
+            var vm = new UserEditViewModel(unitOfWork, logger, null, null, UserEditMode.ResetPassword);
+            var view = new UserEditView(vm);
+            view.Owner = this;
+            view.ShowDialog();
+            // Optionally, if reset succeeded, focus password box
+            PasswordBox.Focus();
         }
     }
 }
