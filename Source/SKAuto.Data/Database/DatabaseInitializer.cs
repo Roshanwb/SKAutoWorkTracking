@@ -37,14 +37,16 @@ namespace SKAuto.Data.Database
                 Username = "admin",
                 PasswordHash = PasswordHelper.HashPassword("admin123"),
                 Role = UserRole.Admin,
-                IsActive = true
+                IsActive = true,
+                Email = "admin@example.com"
             },
             new User
             {
                 Username = "user",
                 PasswordHash = PasswordHelper.HashPassword("user"),
                 Role = UserRole.User ,
-                IsActive = true
+                IsActive = true,
+                Email = "user@example.com"
             }
         };
                 await _context.Users.AddRangeAsync(users);

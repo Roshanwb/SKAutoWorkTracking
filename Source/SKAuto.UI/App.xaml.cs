@@ -25,7 +25,6 @@ namespace SKAuto.UI
         private readonly IHost _host;
         private ILoggingService _logger;
 
-        // ✅ Make setter public so LoginViewModel can set it
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
 
@@ -53,6 +52,7 @@ namespace SKAuto.UI
                     services.AddScoped<IEODValidationService, EODValidationService>();
                     services.AddSingleton<ILoggingService, LoggingService>();
                     services.AddSingleton<IConfigurationService, JsonConfigurationService>();
+                    services.AddSingleton<IEmailService, SmtpEmailService>();   // ← NEW
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
@@ -117,7 +117,7 @@ namespace SKAuto.UI
                 {
                     try
                     {
-                        // ---- SHOW LOGIN ----
+                        // Show login
                         User loggedInUser = null;
                         using (var scope = _host.Services.CreateScope())
                         {
@@ -134,7 +134,6 @@ namespace SKAuto.UI
                             loggedInUser = App.CurrentUser;
                         }
 
-                        // ---- GET MAIN VIEW MODEL AND SET USER ----
                         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
                         if (mainWindow.DataContext is MainViewModel mainVM)
                         {
@@ -147,7 +146,6 @@ namespace SKAuto.UI
                         mainWindow.Focus();
                         _logger.LogInfo("Main window shown and activated.");
                         Application.Current.MainWindow.WindowState = WindowState.Maximized;
-                        mainWindow.Title = $"SKAuto - {loggedInUser.Username} ({loggedInUser.Role})";
                     }
                     catch (Exception ex)
                     {

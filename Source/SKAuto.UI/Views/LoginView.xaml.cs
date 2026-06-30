@@ -76,8 +76,6 @@ namespace SKAuto.UI.Views
             var view = new UserEditView(vm);
             view.Owner = this;
             view.ShowDialog();
-            // Optionally, if reset succeeded, focus password box
-            PasswordBox.Focus();
         }
     }
 }

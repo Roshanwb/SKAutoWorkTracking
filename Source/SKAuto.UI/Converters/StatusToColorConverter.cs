@@ -14,17 +14,19 @@ namespace SKAuto.UI.Converters
             {
                 return status switch
                 {
-                    WorkStatus.Planned => Brushes.Blue,
-                    WorkStatus.InProgress => Brushes.Orange,
-                    WorkStatus.Blocked => Brushes.Red,
-                    WorkStatus.Done => Brushes.Green,
-                    _ => Brushes.Gray
+                    WorkStatus.Planned => new SolidColorBrush(Colors.LightGray),
+                    WorkStatus.InProgress => new SolidColorBrush(Colors.Orange),
+                    WorkStatus.Blocked => new SolidColorBrush(Colors.Red),
+                    WorkStatus.Done => new SolidColorBrush(Colors.Green),
+                    _ => new SolidColorBrush(Colors.LightGray)
                 };
             }
-            return Brushes.Gray;
+            return new SolidColorBrush(Colors.LightGray);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
     }
 }

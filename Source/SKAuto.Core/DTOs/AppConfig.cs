@@ -5,7 +5,19 @@
         public string Language { get; set; } = "fr-FR";
         public ReportColors ReportColors { get; set; } = new();
         public ReportFonts ReportFonts { get; set; } = new();
-        public int MaxBackupsToKeep { get; set; } = 10;   // Number of backups to keep
+        public int MaxBackupsToKeep { get; set; } = 20;   // Number of backups to keep
+                                                          // NEW: Email settings for password reset
+        public EmailConfig Email { get; set; } = new();
+    }
+
+    public class EmailConfig
+    {
+        public string SmtpHost { get; set; } = "smtp.gmail.com";
+        public int SmtpPort { get; set; } = 587;
+        public bool EnableSsl { get; set; } = true;
+        public string SenderEmail { get; set; }
+        public string SenderPassword { get; set; }
+        public string SenderName { get; set; } = "SKAuto Work Tracking";
     }
 
     public class ReportColors

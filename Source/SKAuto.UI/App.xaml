@@ -17,6 +17,7 @@
             <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:StringToBrushConverter x:Key="StringToBrush"/>
+            <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
