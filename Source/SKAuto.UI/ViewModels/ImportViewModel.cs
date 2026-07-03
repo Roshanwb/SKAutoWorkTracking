@@ -6,8 +6,8 @@ using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
-using SKAuto.Import.Parsers;
 using SKAuto.Data.Repository;
+using SKAuto.Import.Parsers;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -634,9 +635,11 @@ namespace SKAuto.UI.ViewModels
                 return;
             }
 
+            // --- UI feedback start ---
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
+            Mouse.OverrideCursor = Cursors.Wait;
 
             IProgress<ProgressReport> progress = new Progress<ProgressReport>(p =>
             {
@@ -654,7 +657,8 @@ namespace SKAuto.UI.ViewModels
                     var workOrderRepo = (WorkOrderRepository)unitOfWork.WorkOrders;
                     var workTaskRepo = (WorkTaskRepository)unitOfWork.WorkTasks;
 
-                    // ---- 1. Collect distinct cleaned client names, chassis numbers, and required codes ----
+                    // Step 1: Collect distinct data
+                    progress.Report(new ProgressReport { Percent = 5, Operation = "Collecting data from selected rows..." });
                     var clientNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     var vinList = new HashSet<string>();
                     var requiredCodes = new HashSet<string>();
@@ -671,19 +675,25 @@ namespace SKAuto.UI.ViewModels
                             requiredCodes.Add(code);
                     }
 
-                    // ---- 2. Fetch existing clients and vehicles ----
+                    progress.Report(new ProgressReport { Percent = 10, Operation = $"Found {clientNames.Count} clients, {vinList.Count} vehicles" });
+
+                    // Step 2: Fetch existing clients
+                    progress.Report(new ProgressReport { Percent = 20, Operation = "Fetching existing clients..." });
                     var allClients = await clientRepo.GetAllAsync();
                     var clientDict = new Dictionary<string, Client>(StringComparer.OrdinalIgnoreCase);
                     foreach (var c in allClients)
                         clientDict[c.Name] = c;
 
+                    // Step 3: Fetch existing vehicles
+                    progress.Report(new ProgressReport { Percent = 30, Operation = "Fetching existing vehicles..." });
                     var existingVehicles = await vehicleRepo.GetByChassisNumbersAsync(vinList);
                     var vehicleDict = existingVehicles.ToDictionary(v => v.ChassisNumber, v => v);
 
-                    // ---- 3. Create new clients (if enabled) ----
+                    // Step 4: Create new clients (if enabled)
                     var newClients = new List<Client>();
                     if (ImportClients)
                     {
+                        progress.Report(new ProgressReport { Percent = 40, Operation = "Creating new clients..." });
                         foreach (var name in clientNames)
                         {
                             if (!clientDict.ContainsKey(name))
@@ -716,11 +726,12 @@ namespace SKAuto.UI.ViewModels
                         }
                     }
 
-                    // ---- 4. Ensure accessories exist (always needed if work orders are imported) ----
+                    // Step 5: Ensure accessories exist (if work orders)
                     var accessoryIdByCode = new Dictionary<string, int>();
                     var accessoryDefaultPriceByCode = new Dictionary<string, decimal>();
                     if (ImportWorkOrders && requiredCodes.Any())
                     {
+                        progress.Report(new ProgressReport { Percent = 50, Operation = "Ensuring accessories exist..." });
                         foreach (var code in requiredCodes)
                         {
                             if (!CodeToTaskInfo.TryGetValue(code, out var taskInfo))
@@ -750,10 +761,11 @@ namespace SKAuto.UI.ViewModels
                         }
                     }
 
-                    // ---- 5. Create new vehicles (if enabled) ----
+                    // Step 6: Create new vehicles (if enabled)
                     var newVehicles = new List<Vehicle>();
                     if (ImportVehicles)
                     {
+                        progress.Report(new ProgressReport { Percent = 60, Operation = "Creating new vehicles..." });
                         foreach (var vin in vinList)
                         {
                             if (!vehicleDict.ContainsKey(vin))
@@ -781,81 +793,87 @@ namespace SKAuto.UI.ViewModels
                         }
                     }
 
-                    // ---- 6. Process each row: create work orders (if enabled) ----
+                    // Step 7: Process work orders (with progress in loop)
                     var workOrdersToAdd = new List<WorkOrder>();
                     var perWorkOrderTaskInfo = new List<(int WorkOrderIndex, int AccessoryId, decimal Price)>();
                     int total = selectedRows.Count;
                     int processed = 0;
                     int skipped = 0;
 
-                    foreach (var item in selectedRows)
+                    if (ImportWorkOrders)
                     {
-                        processed++;
-                        var dto = item.Data;
-                        string code = ExtractCodeFromClient(dto.ClientName, out string _);
-                        decimal? priceFromCode = null;
-                        if (!string.IsNullOrEmpty(code))
+                        progress.Report(new ProgressReport { Percent = 70, Operation = $"Processing work orders (0/{total})..." });
+                        foreach (var item in selectedRows)
                         {
-                            if (decimal.TryParse(code, out decimal parsedPrice))
-                                priceFromCode = parsedPrice;
-                            else if (CodeToTaskInfo.TryGetValue(code, out var taskInfo))
-                                priceFromCode = taskInfo.DefaultPrice;
-                            else
-                                _loggingService.LogWarning($"Code '{code}' not found in mapping");
-                        }
-
-                        string cleanClient = CleanClientName(dto.ClientName);
-                        var vehicle = vehicleDict.GetValueOrDefault(dto.Chassis);
-                        if (vehicle == null && ImportVehicles)
-                        {
-                            // Should not happen because we created missing vehicles above, but just in case
-                            _loggingService.LogWarning($"Vehicle {dto.Chassis} not found and vehicle import disabled – skipping work order");
-                            skipped++;
-                            continue;
-                        }
-
-                        if (dto.HasDate && ImportWorkOrders && vehicle != null)
-                        {
-                            var exists = (await workOrderRepo
-                                .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
-                                .Any();
-                            if (exists)
+                            processed++;
+                            var dto = item.Data;
+                            string code = ExtractCodeFromClient(dto.ClientName, out string _);
+                            decimal? priceFromCode = null;
+                            if (!string.IsNullOrEmpty(code))
                             {
-                                _loggingService.LogWarning($"Skipped duplicate: {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                                if (decimal.TryParse(code, out decimal parsedPrice))
+                                    priceFromCode = parsedPrice;
+                                else if (CodeToTaskInfo.TryGetValue(code, out var taskInfo))
+                                    priceFromCode = taskInfo.DefaultPrice;
+                                else
+                                    _loggingService.LogWarning($"Code '{code}' not found in mapping");
+                            }
+
+                            string cleanClient = CleanClientName(dto.ClientName);
+                            var vehicle = vehicleDict.GetValueOrDefault(dto.Chassis);
+                            if (vehicle == null && ImportVehicles)
+                            {
+                                _loggingService.LogWarning($"Vehicle {dto.Chassis} not found and vehicle import disabled – skipping work order");
                                 skipped++;
                                 continue;
                             }
 
-                            var workOrder = new WorkOrder
+                            if (dto.HasDate && ImportWorkOrders && vehicle != null)
                             {
-                                VehicleId = vehicle.Id,
-                                OrderDate = dto.OrderDate,
-                                Status = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done,
-                                CompletedDate = dto.OrderDate,
-                                OrderType = OrderType.PSA_Contract,
-                                Notes = $"Imported from {dto.Source}"
-                            };
-                            workOrdersToAdd.Add(workOrder);
+                                var exists = (await workOrderRepo
+                                    .FindAsync(w => w.Vehicle.ChassisNumber == dto.Chassis && w.OrderDate == dto.OrderDate))
+                                    .Any();
+                                if (exists)
+                                {
+                                    _loggingService.LogWarning($"Skipped duplicate: {dto.Chassis} on {dto.OrderDate:yyyy-MM-dd}");
+                                    skipped++;
+                                    continue;
+                                }
 
-                            if (code != null && accessoryIdByCode.TryGetValue(code, out int accessoryId))
-                            {
-                                decimal taskPrice = priceFromCode ?? accessoryDefaultPriceByCode[code];
-                                perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, accessoryId, taskPrice));
-                                _loggingService.LogInfo($"Preparing task for {dto.Chassis}: code '{code}', price {taskPrice}");
+                                var workOrder = new WorkOrder
+                                {
+                                    VehicleId = vehicle.Id,
+                                    OrderDate = dto.OrderDate,
+                                    Status = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done,
+                                    CompletedDate = dto.OrderDate,
+                                    OrderType = OrderType.PSA_Contract,
+                                    Notes = $"Imported from {dto.Source}"
+                                };
+                                workOrdersToAdd.Add(workOrder);
+
+                                if (code != null && accessoryIdByCode.TryGetValue(code, out int accessoryId))
+                                {
+                                    decimal taskPrice = priceFromCode ?? accessoryDefaultPriceByCode[code];
+                                    perWorkOrderTaskInfo.Add((workOrdersToAdd.Count - 1, accessoryId, taskPrice));
+                                    _loggingService.LogInfo($"Preparing task for {dto.Chassis}: code '{code}', price {taskPrice}");
+                                }
                             }
-                        }
-                        else if (!ImportWorkOrders)
-                        {
-                            _loggingService.LogInfo($"Work order creation disabled – skipping {dto.Chassis}");
-                        }
+                            else if (!ImportWorkOrders)
+                            {
+                                _loggingService.LogInfo($"Work order creation disabled – skipping {dto.Chassis}");
+                            }
 
-                        int percent = (int)((double)processed / total * 100);
-                        progress.Report(new ProgressReport { Percent = percent, Operation = $"Processing {processed}/{total}: {dto.Chassis}" });
+                            // Update progress for the loop (70% to 95%)
+                            int percent = 70 + (int)((double)processed / total * 25);
+                            if (percent > 95) percent = 95;
+                            progress.Report(new ProgressReport { Percent = percent, Operation = $"Processing work orders {processed}/{total}: {dto.Chassis}" });
+                        }
                     }
 
-                    // ---- 7. Save work orders and tasks ----
+                    // Step 8: Save work orders and tasks
                     if (workOrdersToAdd.Any())
                     {
+                        progress.Report(new ProgressReport { Percent = 96, Operation = "Saving work orders..." });
                         await workOrderRepo.AddRangeAsync(workOrdersToAdd);
                         await unitOfWork.CompleteAsync();
                     }
@@ -877,6 +895,7 @@ namespace SKAuto.UI.ViewModels
 
                     if (tasksToAdd.Any())
                     {
+                        progress.Report(new ProgressReport { Percent = 98, Operation = "Saving tasks..." });
                         await workTaskRepo.AddRangeAsync(tasksToAdd);
                         foreach (var wo in workOrdersToAdd)
                         {
@@ -885,6 +904,9 @@ namespace SKAuto.UI.ViewModels
                         }
                         await unitOfWork.CompleteAsync();
                     }
+
+                    // Final progress
+                    progress.Report(new ProgressReport { Percent = 100, Operation = "Import complete!" });
 
                     int importedCount = workOrdersToAdd.Count;
                     int vehicleOnlyCount = selectedRows.Count - importedCount - skipped;
@@ -907,8 +929,10 @@ namespace SKAuto.UI.ViewModels
                 IsImporting = false;
                 ImportProgress = 0;
                 CurrentOperation = "";
+                Mouse.OverrideCursor = null;
             }
         }
+
         private void CloseWindow(bool success = false)
         {
             foreach (Window window in Application.Current.Windows)

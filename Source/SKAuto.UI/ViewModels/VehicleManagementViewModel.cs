@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -31,6 +32,16 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<Vehicle> _filteredVehicles = new();
+
+        // Progress properties
+        [ObservableProperty]
+        private bool _isImporting;
+
+        [ObservableProperty]
+        private int _importProgress;
+
+        [ObservableProperty]
+        private string _currentOperation = "";
 
         public IAsyncRelayCommand ImportVehiclesCommand { get; }
         public IRelayCommand CloseCommand { get; }
@@ -77,6 +88,12 @@ namespace SKAuto.UI.ViewModels
         // ===== IMPORT VEHICLES =====
         private async Task ImportVehiclesAsync()
         {
+            // --- UI feedback start ---
+            IsImporting = true;
+            ImportProgress = 0;
+            CurrentOperation = "Preparing import...";
+            Mouse.OverrideCursor = Cursors.Wait;
+
             var dialog = new OpenFileDialog
             {
                 Title = "Select ParcCarrières CSV file",
@@ -85,7 +102,13 @@ namespace SKAuto.UI.ViewModels
             };
 
             if (dialog.ShowDialog() != true)
+            {
+                IsImporting = false;
+                ImportProgress = 0;
+                CurrentOperation = "";
+                Mouse.OverrideCursor = null;
                 return;
+            }
 
             string filePath = dialog.FileName;
             var logger = App.GetService<ILoggingService>();
@@ -94,6 +117,8 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 var parser = new VehicleCsvParser();
+                CurrentOperation = "Parsing CSV file...";
+                ImportProgress = 10;
                 var importDtos = parser.Parse(filePath);
 
                 if (!importDtos.Any())
@@ -108,17 +133,15 @@ namespace SKAuto.UI.ViewModels
                     var clientRepo = (ClientRepository)unitOfWork.Clients;
                     var vehicleRepo = (VehicleRepository)unitOfWork.Vehicles;
 
-                    // ----- Step 1: Collect all cleaned client names from DTOs -----
-                    var clientNames = importDtos
-                        .Select(dto => CleanClientName(dto.ClientName))
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-
-                    // ----- Step 2: Fetch existing clients and build a dictionary -----
+                    CurrentOperation = "Fetching existing clients...";
+                    ImportProgress = 20;
                     var allClients = await clientRepo.GetAllAsync();
                     var clientDict = allClients.ToDictionary(c => c.Name, c => c, StringComparer.OrdinalIgnoreCase);
 
-                    // ----- Step 3: Ensure "PSA Group" exists -----
+                    CurrentOperation = "Preparing clients...";
+                    ImportProgress = 30;
+
+                    // Ensure "PSA Group" client
                     if (!clientDict.ContainsKey("PSA Group"))
                     {
                         var psaGroup = new Client { Name = "PSA Group", Type = ClientType.PSA, IsActive = true };
@@ -128,7 +151,13 @@ namespace SKAuto.UI.ViewModels
                         logger.LogInfo("Created default client 'PSA Group'");
                     }
 
-                    // ----- Step 4: Create missing clients and save them -----
+                    // Collect all cleaned client names
+                    var clientNames = importDtos
+                        .Select(dto => CleanClientName(dto.ClientName))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                    // Create missing clients
                     var newClients = new List<Client>();
                     foreach (var name in clientNames)
                     {
@@ -136,40 +165,48 @@ namespace SKAuto.UI.ViewModels
                         {
                             var client = new Client { Name = name, Type = ClientType.PSA, IsActive = true };
                             newClients.Add(client);
-                            clientDict[name] = client; // temporary entry
+                            clientDict[name] = client;
                         }
                     }
 
                     if (newClients.Any())
                     {
+                        CurrentOperation = $"Saving {newClients.Count} new clients...";
+                        ImportProgress = 40;
                         await clientRepo.AddRangeAsync(newClients);
                         await unitOfWork.CompleteAsync();
-                        // Now clientDict contains the same objects, but they now have their Ids set.
-                        // However, we need to refresh the dictionary with the updated objects.
-                        // Since we used the same object references, the Ids are already updated.
-                        // But to be safe, we can reload them or just use the existing references.
-                        // The objects in clientDict are the same instances that were saved.
                         logger.LogInfo($"Created {newClients.Count} new clients.");
                     }
 
-                    // ----- Step 5: Build a map of clean client name -> client ID -----
+                    // Build client ID map
                     var clientIdMap = clientDict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Id, StringComparer.OrdinalIgnoreCase);
 
-                    // ----- Step 6: Fetch existing vehicles to check for duplicates -----
+                    CurrentOperation = "Fetching existing vehicles...";
+                    ImportProgress = 50;
                     var existingVehicles = await vehicleRepo.GetAllAsync();
                     var vehicleDict = existingVehicles.ToDictionary(v => v.ChassisNumber, v => v, StringComparer.OrdinalIgnoreCase);
 
-                    // ----- Step 7: Prepare new vehicles with valid ClientId -----
+                    CurrentOperation = "Processing vehicles...";
+                    ImportProgress = 60;
                     var newVehicles = new List<Vehicle>();
                     int skipped = 0;
+                    int total = importDtos.Count;
+                    int processed = 0;
 
                     foreach (var dto in importDtos)
                     {
-                        // Get client ID from the map – fallback to PSA Group if not found
+                        processed++;
+                        // Update progress every 100 items
+                        if (processed % 100 == 0 || processed == total)
+                        {
+                            int progress = 60 + (int)((double)processed / total * 30);
+                            ImportProgress = progress;
+                            CurrentOperation = $"Processing vehicle {processed}/{total}...";
+                        }
+
                         string cleanClient = CleanClientName(dto.ClientName);
                         if (!clientIdMap.TryGetValue(cleanClient, out int clientId))
                         {
-                            // Shouldn't happen because we created all clients, but fallback
                             clientId = clientIdMap["PSA Group"];
                         }
 
@@ -183,21 +220,24 @@ namespace SKAuto.UI.ViewModels
                         {
                             ChassisNumber = dto.ChassisNumber,
                             Model = dto.Model,
-                            ClientId = clientId, // Valid ID from saved client
+                            ClientId = clientId,
                             IsActive = true
                         };
                         newVehicles.Add(vehicle);
-                        vehicleDict[dto.ChassisNumber] = vehicle; // for dedup within this import
+                        vehicleDict[dto.ChassisNumber] = vehicle;
                     }
 
-                    // ----- Step 8: Save vehicles -----
                     if (newVehicles.Any())
                     {
+                        CurrentOperation = $"Saving {newVehicles.Count} new vehicles...";
+                        ImportProgress = 90;
                         await vehicleRepo.AddRangeAsync(newVehicles);
                         await unitOfWork.CompleteAsync();
                         logger.LogInfo($"Added {newVehicles.Count} new vehicles.");
                     }
 
+                    ImportProgress = 100;
+                    CurrentOperation = "Import complete!";
                     logger.LogInfo($"Vehicle import: {newVehicles.Count} added, {skipped} skipped, {newClients.Count} new clients.");
                     MessageBox.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
                         "Import Vehicles", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -209,6 +249,13 @@ namespace SKAuto.UI.ViewModels
             {
                 logger.LogError("Vehicle import failed", ex);
                 MessageBox.Show($"Error: {ex.Message}", "Import Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsImporting = false;
+                ImportProgress = 0;
+                CurrentOperation = "";
+                Mouse.OverrideCursor = null;
             }
         }
 

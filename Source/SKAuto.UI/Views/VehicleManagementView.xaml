@@ -1,13 +1,19 @@
 ﻿<Window x:Class="SKAuto.UI.Views.VehicleManagementView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:SKAuto.UI.Converters"
         Title="Manage Vehicles" Height="550" Width="950"
         WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -15,15 +21,16 @@
         <Border Grid.Row="0" Margin="0,0,0,10" Padding="5" BorderBrush="#ddd" BorderThickness="1" CornerRadius="4">
             <StackPanel Orientation="Horizontal">
                 <Button Content="Import Vehicles" Command="{Binding ImportVehiclesCommand}" 
-                Style="{StaticResource ActionButton}" Background="#28a745"
-                Width="120" Margin="0,0,15,0"/>
+                        Style="{StaticResource ActionButton}" Background="#28a745"
+                        Width="120" Margin="0,0,15,0"/>
                 <TextBlock Text="Search Chassis:" VerticalAlignment="Center" Margin="5,0,10,0"/>
                 <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                 Width="250" Height="30" Margin="5" 
-                 BorderBrush="#dee2e6" Padding="5,0,0,0"/>
+                         Width="250" Height="30" Margin="5" 
+                         BorderBrush="#dee2e6" Padding="5,0,0,0"/>
                 <TextBlock Text="(type to filter)" FontSize="10" Foreground="Gray" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
+
         <!-- DataGrid -->
         <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredVehicles}" SelectedItem="{Binding SelectedVehicle}"
                   AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10"
@@ -42,8 +49,16 @@
             </DataGrid.Columns>
         </DataGrid>
 
+        <!-- Progress section -->
+        <StackPanel Grid.Row="2" Margin="0,5,0,5">
+            <TextBlock Text="{Binding CurrentOperation}" FontSize="11" Foreground="Gray" Margin="0,0,0,3"/>
+            <ProgressBar Value="{Binding ImportProgress}" Height="5" 
+                         Visibility="{Binding IsImporting, Converter={StaticResource BoolToVis}}"
+                         Background="#e0e0e0" Foreground="#4CAF50"/>
+        </StackPanel>
+
         <!-- Buttons -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Add" Command="{Binding AddVehicleCommand}" 
                     Style="{StaticResource ActionButton}" Background="#4CAF50"
                     Width="80" Margin="5"/>
