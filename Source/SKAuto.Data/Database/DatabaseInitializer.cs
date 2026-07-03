@@ -38,7 +38,7 @@ namespace SKAuto.Data.Database
                 PasswordHash = PasswordHelper.HashPassword("admin123"),
                 Role = UserRole.Admin,
                 IsActive = true,
-                Email = "admin@example.com"
+                Email = "dev.SKAuto@gmail.com"
             },
             new User
             {
@@ -46,7 +46,7 @@ namespace SKAuto.Data.Database
                 PasswordHash = PasswordHelper.HashPassword("user"),
                 Role = UserRole.User ,
                 IsActive = true,
-                Email = "user@example.com"
+                Email = "dev.SKAuto@gmail.com"
             }
         };
                 await _context.Users.AddRangeAsync(users);

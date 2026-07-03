@@ -371,7 +371,12 @@ namespace SKAuto.Core.Services
             foreach (var row in rows)
             {
                 var chassis = row.GetValueOrDefault("ChassisNumber")?.Trim();
-                if (string.IsNullOrEmpty(chassis)) continue;
+                if (string.IsNullOrEmpty(chassis))
+                {
+                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = "Missing chassis" });
+                    result.RowsSkipped++;
+                    continue;
+                }
 
                 var clientName = row.GetValueOrDefault("Client")?.Trim();
                 if (string.IsNullOrEmpty(clientName))
@@ -381,6 +386,7 @@ namespace SKAuto.Core.Services
                     _logger.LogWarning($"Skipped vehicle {chassis}: missing client name");
                     continue;
                 }
+
                 if (!clients.TryGetValue(clientName, out var client))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = $"Client '{clientName}' not found" });
@@ -389,6 +395,7 @@ namespace SKAuto.Core.Services
                     continue;
                 }
 
+                // Check if vehicle exists (by chassis)
                 if (existingDict.TryGetValue(chassis, out var existing))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ExistingValue = existing.ChassisNumber, ImportedValue = chassis });
@@ -423,7 +430,7 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[chassis] = newVehicle;
                     existingDict[chassis] = newVehicle;
-                    _logger.LogInfo($"Inserted new vehicle: {chassis}");
+                    _logger.LogInfo($"Inserted new vehicle: {chassis} for client {client.Name}");
                 }
             }
             _logger.LogInfo($"ImportVehiclesAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
@@ -454,6 +461,7 @@ namespace SKAuto.Core.Services
                     _logger.LogWarning($"Skipped work order ID {id}: missing vehicle chassis");
                     continue;
                 }
+
                 if (!vehicles.TryGetValue(chassis, out var vehicle))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = $"Vehicle '{chassis}' not found" });
@@ -462,6 +470,7 @@ namespace SKAuto.Core.Services
                     continue;
                 }
 
+                // Check if work order exists by ID
                 if (existingDict.TryGetValue(id, out var existing))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
@@ -485,7 +494,7 @@ namespace SKAuto.Core.Services
                 {
                     var newOrder = new WorkOrder
                     {
-                        Id = id,
+                        Id = id, // Use the ID from CSV
                         OrderDate = DateTime.TryParse(row.GetValueOrDefault("OrderDate"), out var d) ? d : DateTime.Today,
                         Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned,
                         OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract,
@@ -498,7 +507,7 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[newOrder.Id] = newOrder;
                     existingDict[newOrder.Id] = newOrder;
-                    _logger.LogInfo($"Inserted new work order ID {id}");
+                    _logger.LogInfo($"Inserted new work order ID {id} for vehicle {chassis}");
                 }
             }
             _logger.LogInfo($"ImportWorkOrdersAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");

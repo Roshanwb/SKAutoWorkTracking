@@ -1,18 +1,64 @@
 ﻿<Window x:Class="SKAuto.UI.Views.GoogleDriveSettingsView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Google Drive Settings" Height="450" Width="500"
-        WindowStartupLocation="CenterOwner">
-    <Grid Margin="10">
+        Title="Google Drive Settings" Height="480" Width="520"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
+    <Window.Resources>
+        <Style x:Key="FormLabel" TargetType="Label">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+        </Style>
+        <Style x:Key="FormTextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="BorderBrush" Value="#BDC3C7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="5,0"/>
+            <Setter Property="Margin" Value="0,2,0,10"/>
+        </Style>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Title -->
             <RowDefinition Height="Auto"/>
+            <!-- Client ID -->
             <RowDefinition Height="Auto"/>
+            <!-- Client Secret -->
             <RowDefinition Height="Auto"/>
+            <!-- User Email -->
             <RowDefinition Height="Auto"/>
+            <!-- Folder ID -->
             <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
             <RowDefinition Height="Auto"/>
+            <!-- Status Panel -->
             <RowDefinition Height="*"/>
+            <!-- Spacer -->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="120"/>
@@ -20,36 +66,43 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Content="Client ID:"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ClientId}" Margin="5"/>
-        <Button Grid.Row="0" Grid.Column="2" Content="?" ToolTip="Get from Google Cloud Console"/>
+        <!-- Title -->
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Google Drive Settings" FontSize="16" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,12"/>
 
-        <Label Grid.Row="1" Grid.Column="0" Content="Client Secret:"/>
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ClientSecret}" Margin="5"/>
+        <!-- Client ID (Admin only) -->
+        <Label Grid.Row="1" Grid.Column="0" Content="Client ID:" Style="{StaticResource FormLabel}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ClientId}" Style="{StaticResource FormTextBox}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Button Grid.Row="1" Grid.Column="2" Content="?" ToolTip="Get from Google Cloud Console" Margin="5,5,0,0" Height="30" Width="30" Background="Transparent" BorderBrush="#BDC3C7" BorderThickness="1" Cursor="Help" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-        <Label Grid.Row="2" Grid.Column="0" Content="User Email:"/>
-        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding UserEmail}" Margin="5"/>
+        <!-- Client Secret (Admin only) -->
+        <Label Grid.Row="2" Grid.Column="0" Content="Client Secret:" Style="{StaticResource FormLabel}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ClientSecret}" Style="{StaticResource FormTextBox}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-        <Label Grid.Row="3" Grid.Column="0" Content="Folder ID:"/>
-        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding FolderId}" Margin="5"/>
-        <Button Grid.Row="3" Grid.Column="2" Content="Browse" Command="{Binding BrowseFolderCommand}" Margin="5"/>
+        <!-- User Email (Admin only) -->
+        <Label Grid.Row="3" Grid.Column="0" Content="User Email:" Style="{StaticResource FormLabel}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UserEmail}" Style="{StaticResource FormTextBox}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-        <StackPanel Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
-            <Button Content="Authenticate" Command="{Binding AuthenticateCommand}" Margin="5" Padding="10,5"/>
-            <Button Content="Test Connection" Command="{Binding TestConnectionCommand}" Margin="5" Padding="10,5" IsEnabled="{Binding IsConnected}"/>
-            <Button Content="Save Settings" Command="{Binding SaveSettingsCommand}" Margin="5" Padding="10,5"/>
+        <!-- Folder ID (Admin only) -->
+        <Label Grid.Row="4" Grid.Column="0" Content="Folder ID:" Style="{StaticResource FormLabel}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding FolderId}" Style="{StaticResource FormTextBox}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Button Grid.Row="4" Grid.Column="2" Content="Browse" Command="{Binding BrowseFolderCommand}" Margin="5,5,0,0" Height="30" Width="70" Style="{StaticResource ActionButton}" Background="#17A2B8" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="5" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,5">
+            <Button Content="Authenticate" Command="{Binding AuthenticateCommand}" Style="{StaticResource ActionButton}" Background="#3498DB" Margin="5" Width="100"/>
+            <Button Content="Test Connection" Command="{Binding TestConnectionCommand}" Style="{StaticResource ActionButton}" Background="#F39C12" Margin="5" IsEnabled="{Binding IsConnected}"  Width="100"/>
+            <Button Content="Save Settings" Command="{Binding SaveSettingsCommand}" Style="{StaticResource ActionButton}" Background="#27AE60" Margin="5"  Width="100"/>
         </StackPanel>
 
-        <Border Grid.Row="5" Grid.ColumnSpan="3" Background="#f0f0f0" Padding="10" Margin="5">
+        <!-- Status Panel -->
+        <Border Grid.Row="6" Grid.ColumnSpan="3" Background="#F8F9FA" Padding="10" Margin="0,5,0,0" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="4">
             <StackPanel>
-                <TextBlock Text="Status:" FontWeight="Bold"/>
-                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
-                <TextBlock Text="Last Sync:" FontWeight="Bold" Margin="0,5,0,0"/>
-                <TextBlock Text="{Binding LastSync, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"/>
+                <TextBlock Text="Status:" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="12" Margin="0,2,0,0"/>
+                <TextBlock Text="Last Sync:" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,0"/>
+                <TextBlock Text="{Binding LastSync, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" FontSize="12"/>
+                <Button Content="Sync Now" Command="{Binding SyncNowCommand}" Style="{StaticResource ActionButton}" Background="#17A2B8" HorizontalAlignment="Right" Width="100" Margin="0,8,0,0" Padding="8,0"/>
             </StackPanel>
         </Border>
-
-        <Button Grid.Row="6" Grid.ColumnSpan="3" Content="Sync Now" Command="{Binding SyncNowCommand}" 
-                HorizontalAlignment="Center" Width="100" Margin="5" Padding="10,5"/>
     </Grid>
 </Window>

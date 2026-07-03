@@ -1,12 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -45,6 +48,23 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _isRefreshingBackups;
 
+        // Drive properties
+        [ObservableProperty]
+        private ObservableCollection<BackupFileInfo> _driveBackupFiles = new();
+
+        [ObservableProperty]
+        private BackupFileInfo _selectedDriveBackupFile;
+
+        [ObservableProperty]
+        private bool _isRefreshingDriveBackups;
+
+        [ObservableProperty]
+        private bool _isDriveConnected;
+
+        // NEW: Busy indicator
+        [ObservableProperty]
+        private bool _isBusy;
+
         public IAsyncRelayCommand SelectBackupFolderCommand { get; }
         public IAsyncRelayCommand SelectExportFolderCommand { get; }
         public IAsyncRelayCommand SelectImportFileCommand { get; }
@@ -55,6 +75,10 @@ namespace SKAuto.UI.ViewModels
 
         public IAsyncRelayCommand RefreshBackupsCommand { get; }
         public IAsyncRelayCommand RestoreSelectedBackupCommand { get; }
+
+        // Drive commands
+        public IAsyncRelayCommand RefreshDriveBackupsCommand { get; }
+        public IAsyncRelayCommand RestoreSelectedDriveBackupCommand { get; }
 
         private string _backupsListFolder;
 
@@ -79,7 +103,129 @@ namespace SKAuto.UI.ViewModels
             RefreshBackupsCommand = new AsyncRelayCommand(RefreshBackupsAsync);
             RestoreSelectedBackupCommand = new AsyncRelayCommand(RestoreSelectedBackupAsync, () => SelectedBackupFile != null);
 
+            RefreshDriveBackupsCommand = new AsyncRelayCommand(RefreshDriveBackupsAsync);
+            RestoreSelectedDriveBackupCommand = new AsyncRelayCommand(RestoreSelectedDriveBackupAsync, () => SelectedDriveBackupFile != null && IsDriveConnected);
+
             _ = RefreshBackupsAsync();
+        }
+
+        private async Task RefreshDriveBackupsAsync()
+        {
+            if (IsRefreshingDriveBackups) return;
+            IsRefreshingDriveBackups = true;
+            try
+            {
+                var driveService = App.GetService<IGoogleDriveService>();
+                IsDriveConnected = await driveService.TestConnectionAsync();
+                if (!IsDriveConnected)
+                {
+                    StatusMessage = "Google Drive not connected. Please authenticate first.";
+                    return;
+                }
+                var files = await driveService.ListDriveBackupsAsync();
+                DriveBackupFiles = new ObservableCollection<BackupFileInfo>(files);
+                if (DriveBackupFiles.Count > 0)
+                    SelectedDriveBackupFile = DriveBackupFiles[0];
+                StatusMessage = $"Found {DriveBackupFiles.Count} backup files in Google Drive.";
+                _loggingService.LogInfo(StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Failed to list Drive backups", ex);
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show($"Error listing Drive backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsRefreshingDriveBackups = false;
+                RestoreSelectedDriveBackupCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        private async Task RestoreSelectedDriveBackupAsync()
+        {
+            if (SelectedDriveBackupFile == null)
+            {
+                MessageBox.Show("Please select a Drive backup to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Restore database from Drive backup '{SelectedDriveBackupFile.FileName}' (created {SelectedDriveBackupFile.CreatedAt:dd/MM/yyyy HH:mm})?\n\n" +
+                "This will:\n1. Create a local backup of the current database.\n2. Download the Drive backup.\n3. Restore the downloaded backup.",
+                "Confirm Restore from Drive",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            Mouse.OverrideCursor = Cursors.Wait;
+            StatusMessage = "Step 1: Creating local backup...";
+
+            try
+            {
+                // Step 1: Create local backup in the standard backup folder
+                string backupFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "SKAuto",
+                    "Backups");
+                var localBackupPath = await _backupService.BackupDatabaseAsync(backupFolder);
+                _loggingService.LogInfo($"Local backup created before Drive restore: {localBackupPath}");
+                StatusMessage = $"Local backup saved to: {localBackupPath}";
+
+                // Step 2: Download Drive backup to a temporary folder
+                StatusMessage = "Step 2: Downloading Drive backup...";
+                var driveService = App.GetService<IGoogleDriveService>();
+                string driveFileId = SelectedDriveBackupFile.FilePath;
+                string downloadedPath = await driveService.DownloadDriveBackupAsync(driveFileId);
+                _loggingService.LogInfo($"Drive backup downloaded to: {downloadedPath}");
+
+                // Step 3: Import the downloaded ZIP
+                StatusMessage = "Step 3: Importing backup...";
+                var options = new BackupImportOptions
+                {
+                    DryRun = IsDryRun,
+                    Conflict = Conflict
+                };
+                var importResult = await _backupService.ImportDataAsync(downloadedPath, options);
+
+                if (importResult.Success)
+                {
+                    StatusMessage = $"Database restored from Drive backup '{SelectedDriveBackupFile.FileName}'.\n" +
+                                    $"Inserted: {importResult.RowsInserted}, Updated: {importResult.RowsUpdated}, Skipped: {importResult.RowsSkipped}";
+                    _loggingService.LogInfo(StatusMessage);
+                    MessageBox.Show($"Restore successful.\n\nLocal backup created before restore:\n{localBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    StatusMessage = $"Restore failed: {importResult.ErrorMessage}";
+                    _loggingService.LogError(StatusMessage);
+                    MessageBox.Show($"Restore failed:\n{importResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                // Clean up downloaded file
+                try { File.Delete(downloadedPath); } catch { }
+
+                // Refresh the Drive backup list
+                await RefreshDriveBackupsAsync();
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Restore from Drive failed", ex);
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show($"Restore from Drive failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                Mouse.OverrideCursor = null;
+                RestoreSelectedDriveBackupCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        partial void OnSelectedDriveBackupFileChanged(BackupFileInfo value)
+        {
+            RestoreSelectedDriveBackupCommand.NotifyCanExecuteChanged();
         }
 
         private async Task SelectBackupFolderAsync()

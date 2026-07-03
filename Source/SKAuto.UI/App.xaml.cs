@@ -52,7 +52,7 @@ namespace SKAuto.UI
                     services.AddScoped<IEODValidationService, EODValidationService>();
                     services.AddSingleton<ILoggingService, LoggingService>();
                     services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-                    services.AddSingleton<IEmailService, SmtpEmailService>();   // ← NEW
+                    services.AddSingleton<IEmailService, SmtpEmailService>();
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
@@ -106,6 +106,26 @@ namespace SKAuto.UI
                             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
                             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
                         }
+
+                        // ---- GOOGLE DRIVE AUTO-AUTH ----
+                        try
+                        {
+                            var driveSettings = configService.GetAsync<GoogleDriveSettings>("GoogleDrive").GetAwaiter().GetResult();
+                            if (driveSettings != null && !string.IsNullOrEmpty(driveSettings.ClientId) && !string.IsNullOrEmpty(driveSettings.ClientSecret))
+                            {
+                                var driveService = _host.Services.GetRequiredService<IGoogleDriveService>();
+                                bool authenticated = driveService.AuthenticateAsync(driveSettings).GetAwaiter().GetResult();
+                                if (authenticated)
+                                    _logger.LogInfo("Google Drive auto-authenticated successfully on startup.");
+                                else
+                                    _logger.LogWarning("Google Drive auto-authentication failed.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning($"Google Drive auto-authentication error: {ex.Message}");
+                        }
+                        // ---- END AUTO-AUTH ----
                     }
                     catch (Exception ex)
                     {

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.DTOs;
+using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using System;
 using System.IO;
@@ -37,12 +38,14 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private string _statusMessage;
 
-        public Array ConflictResolutions => Enum.GetValues(typeof(ConflictResolution));
+        [ObservableProperty]
+        private bool _isAdmin;
 
         public IAsyncRelayCommand AuthenticateCommand { get; }
         public IAsyncRelayCommand TestConnectionCommand { get; }
         public IAsyncRelayCommand SaveSettingsCommand { get; }
         public IAsyncRelayCommand SyncNowCommand { get; }
+        public IAsyncRelayCommand BrowseFolderCommand { get; } // NEW
 
         public GoogleDriveSettingsViewModel(
             IGoogleDriveService driveService,
@@ -55,12 +58,16 @@ namespace SKAuto.UI.ViewModels
             _backupService = backupService;
             _logger = logger;
 
+            // Set IsAdmin based on the logged-in user
+            IsAdmin = App.CurrentUser?.Role == UserRole.Admin;
+
             Task.Run(async () => await LoadSettingsAsync());
 
             AuthenticateCommand = new AsyncRelayCommand(AuthenticateAsync);
             TestConnectionCommand = new AsyncRelayCommand(TestConnectionAsync, () => IsConnected);
             SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
             SyncNowCommand = new AsyncRelayCommand(SyncNowAsync, () => IsConnected);
+            BrowseFolderCommand = new AsyncRelayCommand(BrowseFolderAsync);
         }
 
         private async Task LoadSettingsAsync()
@@ -147,7 +154,6 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                // Use a fixed folder name – the service will find or create it
                 const string folderName = "SKAuto Backups";
                 string folderId = await _driveService.GetFolderIdAsync(folderName);
 
@@ -180,6 +186,32 @@ namespace SKAuto.UI.ViewModels
                 _logger.LogError("Sync failed", ex);
                 StatusMessage = $"Sync failed: {ex.Message}";
                 MessageBox.Show($"Sync failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // NEW: Browse folder command – finds or creates the default folder
+        private async Task BrowseFolderAsync()
+        {
+            try
+            {
+                const string folderName = "SKAuto Backups";
+                string folderId = await _driveService.GetFolderIdAsync(folderName);
+                if (!string.IsNullOrEmpty(folderId))
+                {
+                    FolderId = folderId;
+                    StatusMessage = $"Folder '{folderName}' selected (ID: {folderId})";
+                    _logger.LogInfo($"Folder selected: {folderName} -> {folderId}");
+                }
+                else
+                {
+                    StatusMessage = "Could not find or create folder.";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error browsing folder: {ex.Message}";
+                _logger.LogError("BrowseFolder failed", ex);
+                MessageBox.Show($"Error selecting folder:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

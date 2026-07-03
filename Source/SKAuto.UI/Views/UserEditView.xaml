@@ -34,7 +34,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -62,7 +62,7 @@
 
         <!-- Role (Admin) -->
         <Label Grid.Row="6" Grid.Column="0" Content="Role:" VerticalAlignment="Center" Visibility="{Binding ShowAdminFields, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-        <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding RoleValues}" SelectedItem="{Binding SelectedRole}" Margin="5" Height="28" Width="120" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding ShowAdminFields, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding RoleValues}" SelectedItem="{Binding SelectedRole}" Margin="5" Height="28" Width="120" HorizontalAlignment="Left" VerticalContentAlignment="Center" Visibility="{Binding ShowAdminFields, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
         <!-- Active (Admin) -->
         <Label Grid.Row="7" Grid.Column="0" Content="Active:" VerticalAlignment="Center" Visibility="{Binding ShowAdminFields, Converter={StaticResource BooleanToVisibilityConverter}}"/>
