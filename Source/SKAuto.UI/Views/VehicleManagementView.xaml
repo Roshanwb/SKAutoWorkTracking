@@ -14,14 +14,16 @@
         <!-- Search Panel -->
         <Border Grid.Row="0" Margin="0,0,0,10" Padding="5" BorderBrush="#ddd" BorderThickness="1" CornerRadius="4">
             <StackPanel Orientation="Horizontal">
+                <Button Content="Import Vehicles" Command="{Binding ImportVehiclesCommand}" 
+                Style="{StaticResource ActionButton}" Background="#28a745"
+                Width="120" Margin="0,0,15,0"/>
                 <TextBlock Text="Search Chassis:" VerticalAlignment="Center" Margin="5,0,10,0"/>
                 <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                         Width="250" Height="30" Margin="5" 
-                         BorderBrush="#dee2e6" Padding="5,0,0,0"/>
+                 Width="250" Height="30" Margin="5" 
+                 BorderBrush="#dee2e6" Padding="5,0,0,0"/>
                 <TextBlock Text="(type to filter)" FontSize="10" Foreground="Gray" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
-
         <!-- DataGrid -->
         <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredVehicles}" SelectedItem="{Binding SelectedVehicle}"
                   AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10"

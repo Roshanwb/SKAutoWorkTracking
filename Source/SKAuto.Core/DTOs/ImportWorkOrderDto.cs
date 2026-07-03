@@ -12,5 +12,6 @@ namespace SKAuto.Core.DTOs
         public string Source { get; set; } = ""; // "PDF" or "Excel"
         public OrderType TypeOfWork { get; set; } = OrderType.PSA_Contract;
         public bool HasDate { get; set; }                 // true if date was present and parsed
+        public string Etat { get; set; } = "";
     }
 }

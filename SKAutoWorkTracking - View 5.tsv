@@ -1,0 +1,57 @@
+Title	URL	Assignees	Status	Linked pull requests	Sub-issues progress
+#36: Create Build Scripts	https://github.com/Roshanwb/SKAutoWorkTracking/issues/36		Done		
+#37: Create Installer Package	https://github.com/Roshanwb/SKAutoWorkTracking/issues/37		Done		
+#26: Create Admin Interface	https://github.com/Roshanwb/SKAutoWorkTracking/issues/26		Done		
+#15: Add Security Layer	https://github.com/Roshanwb/SKAutoWorkTracking/issues/15		In Progress		
+Define Core Entities	https://github.com/Roshanwb/SKAutoWorkTracking/issues/11		In Progress		
+#44: Performance Profiling	https://github.com/Roshanwb/SKAutoWorkTracking/issues/44		In Progress		
+#46: UI Responsiveness	https://github.com/Roshanwb/SKAutoWorkTracking/issues/46		In Progress		
+Add Database Validation Layer	https://github.com/Roshanwb/SKAutoWorkTracking/issues/10		Done		
+Design Complete Database Schema	https://github.com/Roshanwb/SKAutoWorkTracking/issues/6		Done		
+Implement Entity Framework Core Context	https://github.com/Roshanwb/SKAutoWorkTracking/issues/7		Done		
+#1: Create GitHub Repository	https://github.com/Roshanwb/SKAutoWorkTracking/issues/1		Done		
+Create DTOs and View Models	https://github.com/Roshanwb/SKAutoWorkTracking/issues/12		Done		
+#3: Configure NuGet Packages	https://github.com/Roshanwb/SKAutoWorkTracking/issues/3		Done		
+#22: Create Main Dashboard	https://github.com/Roshanwb/SKAutoWorkTracking/issues/22		Done		
+Implement Repository Pattern	https://github.com/Roshanwb/SKAutoWorkTracking/issues/9		Done		
+Create Database Initializer	https://github.com/Roshanwb/SKAutoWorkTracking/issues/8		Done		
+#23: Build Work Order Management UI	https://github.com/Roshanwb/SKAutoWorkTracking/issues/23		Done		
+#5: Create Documentation Foundation	https://github.com/Roshanwb/SKAutoWorkTracking/issues/5		Done		
+#4: Set Up GitHub Actions	https://github.com/Roshanwb/SKAutoWorkTracking/issues/4		Done		
+Implement Import Service	https://github.com/Roshanwb/SKAutoWorkTracking/issues/13		Done		
+#2: Set Up Project Structure	https://github.com/Roshanwb/SKAutoWorkTracking/issues/2		Done		
+#27: Implement Configuration Service	https://github.com/Roshanwb/SKAutoWorkTracking/issues/27		Backlog		
+#28: Create Application Settings	https://github.com/Roshanwb/SKAutoWorkTracking/issues/28		Backlog		
+#29: Add User Preferences	https://github.com/Roshanwb/SKAutoWorkTracking/issues/29		Backlog		
+#30: Create Backup System	https://github.com/Roshanwb/SKAutoWorkTracking/issues/30		Done		
+#31: Set Up Unit Testing	https://github.com/Roshanwb/SKAutoWorkTracking/issues/31		Backlog		
+#32: Write Entity Tests	https://github.com/Roshanwb/SKAutoWorkTracking/issues/32		Backlog		
+#33: Write Service Tests	https://github.com/Roshanwb/SKAutoWorkTracking/issues/33		Backlog		
+#34: Create Integration Tests	https://github.com/Roshanwb/SKAutoWorkTracking/issues/34		Backlog		
+#35: Add Code Quality Checks	https://github.com/Roshanwb/SKAutoWorkTracking/issues/35		Backlog		
+#38: Implement Auto-Updater	https://github.com/Roshanwb/SKAutoWorkTracking/issues/38		Backlog		
+#39: Create Deployment Documentation	https://github.com/Roshanwb/SKAutoWorkTracking/issues/39		Backlog		
+#42: Create Training Materials	https://github.com/Roshanwb/SKAutoWorkTracking/issues/42		Backlog		
+#43: Create Support Documentation	https://github.com/Roshanwb/SKAutoWorkTracking/issues/43		Backlog		
+#41: Create Technical Documentation	https://github.com/Roshanwb/SKAutoWorkTracking/issues/41		Backlog		
+#45: Memory Optimization	https://github.com/Roshanwb/SKAutoWorkTracking/issues/45		Backlog		
+#47: Error Handling Enhancement	https://github.com/Roshanwb/SKAutoWorkTracking/issues/47		Backlog		
+#48: Add Advanced Reporting	https://github.com/Roshanwb/SKAutoWorkTracking/issues/48		Backlog		
+#49: Add Inventory Management	https://github.com/Roshanwb/SKAutoWorkTracking/issues/49		Backlog		
+#50: Add Scheduling Features	https://github.com/Roshanwb/SKAutoWorkTracking/issues/50		Backlog		
+#51: Add Mobile Companion	https://github.com/Roshanwb/SKAutoWorkTracking/issues/51		Backlog		
+#40: Create User Manual	https://github.com/Roshanwb/SKAutoWorkTracking/issues/40		Backlog		
+Implement Client Management	https://github.com/Roshanwb/SKAutoWorkTracking/issues/54		Done		
+#24: Create Import Interface	https://github.com/Roshanwb/SKAutoWorkTracking/issues/24		Done		
+#21: Set Up WPF Application	https://github.com/Roshanwb/SKAutoWorkTracking/issues/21		Done		
+#14: Implement Validation Service	https://github.com/Roshanwb/SKAutoWorkTracking/issues/14		Done		
+#16: Implement PSA Plan Parser	https://github.com/Roshanwb/SKAutoWorkTracking/issues/16		Done		
+Add Google Drive backup and sync	https://github.com/Roshanwb/SKAutoWorkTracking/issues/58		Done		
+#17: Create Excel Report Generator	https://github.com/Roshanwb/SKAutoWorkTracking/issues/17		Done		
+#18: Implement PDF Report Generator	https://github.com/Roshanwb/SKAutoWorkTracking/issues/18		Done		
+#25: Build Reports Interface	https://github.com/Roshanwb/SKAutoWorkTracking/issues/25		Done		
+#19: Add CSV Export Functionality	https://github.com/Roshanwb/SKAutoWorkTracking/issues/19		Done		
+#20: Create Import/Export Workflows	https://github.com/Roshanwb/SKAutoWorkTracking/issues/20		Done		
+Implement Vehicle Management	https://github.com/Roshanwb/SKAutoWorkTracking/issues/55		Done		
+Enhance Import Window – Row Selection	https://github.com/Roshanwb/SKAutoWorkTracking/issues/57		Done		
+Fix Work Order Edit – Display Chassis	https://github.com/Roshanwb/SKAutoWorkTracking/issues/56		Done		
