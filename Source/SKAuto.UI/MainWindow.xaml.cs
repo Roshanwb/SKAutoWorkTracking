@@ -3,6 +3,7 @@ using SKAuto.UI.ViewModels;
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using WinForms = System.Windows.Forms;
@@ -55,7 +56,38 @@ namespace SKAuto.UI
             _isExiting = true;
             _trayIcon.Visible = false;
             _trayIcon.Dispose();
-            Close();
+
+            // ---- CREATE BACKUP BEFORE EXIT ----
+            try
+            {
+                if (App.CurrentUser != null)
+                {
+                    var logger = App.GetService<ILoggingService>();
+                    logger?.LogInfo("Creating backup on exit (from system tray)...");
+
+                    var backupService = App.GetService<IBackupService>();
+                    var backupFolder = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "SKAuto",
+                        "Backups");
+                    var backupPath = backupService.BackupDatabaseAsync(backupFolder).GetAwaiter().GetResult();
+                    logger?.LogInfo($"Backup created: {backupPath}");
+                }
+                else
+                {
+                    var logger = App.GetService<ILoggingService>();
+                    logger?.LogInfo("No user logged in – skipping backup on exit.");
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError("Backup on exit failed", ex);
+            }
+            // ---------------------------------
+
+            // Now shut down the application
+            System.Windows.Application.Current.Shutdown();
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -66,6 +98,7 @@ namespace SKAuto.UI
                 return;
             }
 
+            // Minimize to tray if logged in
             if (App.CurrentUser != null)
             {
                 e.Cancel = true;
