@@ -83,7 +83,7 @@ namespace SKAuto.UI.ViewModels
         }
 
         private void Close() =>
-            Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
+            System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
 
         // ===== IMPORT VEHICLES =====
         private async Task ImportVehiclesAsync()
@@ -92,9 +92,9 @@ namespace SKAuto.UI.ViewModels
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
-            Mouse.OverrideCursor = Cursors.Wait;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Select ParcCarrières CSV file",
                 Filter = "CSV files|*.csv",
@@ -123,7 +123,7 @@ namespace SKAuto.UI.ViewModels
 
                 if (!importDtos.Any())
                 {
-                    MessageBox.Show("No valid vehicle data found in the file.", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("No valid vehicle data found in the file.", "Import", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
@@ -239,8 +239,8 @@ namespace SKAuto.UI.ViewModels
                     ImportProgress = 100;
                     CurrentOperation = "Import complete!";
                     logger.LogInfo($"Vehicle import: {newVehicles.Count} added, {skipped} skipped, {newClients.Count} new clients.");
-                    MessageBox.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
-                        "Import Vehicles", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
+                        "Import Vehicles", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 
                     await LoadVehiclesAsync();
                 }
@@ -248,7 +248,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 logger.LogError("Vehicle import failed", ex);
-                MessageBox.Show($"Error: {ex.Message}", "Import Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Import Failed", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {

@@ -40,7 +40,7 @@ namespace SKAuto.UI.Views
         }
 
         // Enter on Username: move focus to Password
-        private void UsernameBox_KeyDown(object sender, KeyEventArgs e)
+        private void UsernameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -50,7 +50,7 @@ namespace SKAuto.UI.Views
         }
 
         // Enter on Password: trigger login
-        private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
+        private void PasswordBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter && _viewModel.LoginCommand.CanExecute(null))
             {
@@ -60,11 +60,11 @@ namespace SKAuto.UI.Views
         }
 
         // Escape anywhere: exit the application
-        private void LoginView_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void LoginView_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                Application.Current.Shutdown();
+                System.Windows.Application.Current.Shutdown();
                 e.Handled = true;
             }
         }

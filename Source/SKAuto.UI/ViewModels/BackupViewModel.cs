@@ -133,7 +133,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _loggingService.LogError("Failed to list Drive backups", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Error listing Drive backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error listing Drive backups: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -146,20 +146,20 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedDriveBackupFile == null)
             {
-                MessageBox.Show("Please select a Drive backup to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Please select a Drive backup to restore.", "No Selection", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
                 $"Restore database from Drive backup '{SelectedDriveBackupFile.FileName}' (created {SelectedDriveBackupFile.CreatedAt:dd/MM/yyyy HH:mm})?\n\n" +
                 "This will:\n1. Create a local backup of the current database.\n2. Download the Drive backup.\n3. Restore the downloaded backup.",
                 "Confirm Restore from Drive",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+            if (result != System.Windows.MessageBoxResult.Yes) return;
 
             IsBusy = true;
-            Mouse.OverrideCursor = Cursors.Wait;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             StatusMessage = "Step 1: Creating local backup...";
 
             try
@@ -194,13 +194,13 @@ namespace SKAuto.UI.ViewModels
                     StatusMessage = $"Database restored from Drive backup '{SelectedDriveBackupFile.FileName}'.\n" +
                                     $"Inserted: {importResult.RowsInserted}, Updated: {importResult.RowsUpdated}, Skipped: {importResult.RowsSkipped}";
                     _loggingService.LogInfo(StatusMessage);
-                    MessageBox.Show($"Restore successful.\n\nLocal backup created before restore:\n{localBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show($"Restore successful.\n\nLocal backup created before restore:\n{localBackupPath}", "Restore Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 }
                 else
                 {
                     StatusMessage = $"Restore failed: {importResult.ErrorMessage}";
                     _loggingService.LogError(StatusMessage);
-                    MessageBox.Show($"Restore failed:\n{importResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Restore failed:\n{importResult.ErrorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
 
                 // Clean up downloaded file
@@ -213,7 +213,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _loggingService.LogError("Restore from Drive failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Restore from Drive failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Restore from Drive failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -246,7 +246,7 @@ namespace SKAuto.UI.ViewModels
 
         private async Task SelectImportFileAsync()
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Select import zip file",
                 Filter = "Zip files|*.zip"
@@ -263,14 +263,14 @@ namespace SKAuto.UI.ViewModels
                 var path = await _backupService.BackupDatabaseAsync(BackupFolder);
                 StatusMessage = $"Backup created: {path}";
                 _loggingService.LogInfo($"Database backup created at {path}");
-                MessageBox.Show($"Backup saved to:\n{path}", "Backup Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Backup saved to:\n{path}", "Backup Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 await RefreshBackupsAsync();
             }
             catch (Exception ex)
             {
                 _loggingService.LogError("Backup failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Backup failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Backup failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -281,13 +281,13 @@ namespace SKAuto.UI.ViewModels
                 var path = await _backupService.ExportDataAsync(ExportFolder);
                 StatusMessage = $"Export created: {path}";
                 _loggingService.LogInfo($"Data export created at {path}");
-                MessageBox.Show($"Export saved to:\n{path}", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Export saved to:\n{path}", "Export Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 _loggingService.LogError("Export failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Export failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -295,7 +295,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (string.IsNullOrEmpty(ImportFilePath))
             {
-                MessageBox.Show("Please select an import file first.", "No File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Please select an import file first.", "No File", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -318,26 +318,26 @@ namespace SKAuto.UI.ViewModels
                         msg += $"\nConflicts: {result.Conflicts.Count} (see log)";
                     StatusMessage = msg;
                     _loggingService.LogInfo(msg);
-                    MessageBox.Show(msg, IsDryRun ? "Dry Run Result" : "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show(msg, IsDryRun ? "Dry Run Result" : "Import Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 }
                 else
                 {
                     StatusMessage = $"Import failed: {result.ErrorMessage}";
                     _loggingService.LogError($"Import failed: {result.ErrorMessage}");
-                    MessageBox.Show($"Import failed:\n{result.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Import failed:\n{result.ErrorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 _loggingService.LogError("Import exception", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Import error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Import error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void CloseWindow()
         {
-            foreach (Window w in Application.Current.Windows)
+            foreach (Window w in System.Windows.Application.Current.Windows)
                 if (w.DataContext == this)
                 {
                     w.Close();
@@ -362,7 +362,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _loggingService.LogError("Failed to list backup files", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Error listing backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error listing backups: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -375,16 +375,16 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedBackupFile == null)
             {
-                MessageBox.Show("Please select a backup file to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Please select a backup file to restore.", "No Selection", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
                 $"Restore database from backup '{SelectedBackupFile.FileName}' (created {SelectedBackupFile.CreatedAt:dd/MM/yyyy HH:mm})?\n\nThis will replace the current database. A backup of the current database will be created automatically before restore.",
                 "Confirm Restore",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+            if (result != System.Windows.MessageBoxResult.Yes) return;
 
             try
             {
@@ -392,14 +392,14 @@ namespace SKAuto.UI.ViewModels
                 var currentBackupPath = await _backupService.RestoreDatabaseAsync(SelectedBackupFile.FilePath);
                 StatusMessage = $"Database restored from {SelectedBackupFile.FileName}. Previous database backed up to {currentBackupPath}";
                 _loggingService.LogInfo(StatusMessage);
-                MessageBox.Show($"Restore successful.\n\nCurrent database before restore was backed up to:\n{currentBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Restore successful.\n\nCurrent database before restore was backed up to:\n{currentBackupPath}", "Restore Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 await RefreshBackupsAsync();
             }
             catch (Exception ex)
             {
                 _loggingService.LogError("Restore failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Restore failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Restore failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 

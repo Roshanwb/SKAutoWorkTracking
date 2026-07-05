@@ -153,7 +153,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError("LoadAccessoriesAsync failed", ex);
-                MessageBox.Show($"Error loading accessories: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error loading accessories: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -200,13 +200,13 @@ namespace SKAuto.UI.ViewModels
             var accessoryToDelete = SelectedAccessory;
             _logger.LogInfo($"DeleteAccessoryAsync called for accessory ID {accessoryToDelete.Id}, Name '{accessoryToDelete.Name}'");
 
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
                 $"Delete accessory '{accessoryToDelete.Name}'?",
                 "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
 
-            if (result != MessageBoxResult.Yes)
+            if (result != System.Windows.MessageBoxResult.Yes)
             {
                 _logger.LogInfo($"Deletion cancelled for accessory ID {accessoryToDelete.Id}");
                 return;
@@ -224,7 +224,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to delete accessory ID {accessoryToDelete.Id}", ex);
-                MessageBox.Show($"Cannot delete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Cannot delete: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -244,7 +244,7 @@ namespace SKAuto.UI.ViewModels
             if (string.IsNullOrWhiteSpace(newName))
             {
                 _logger.LogWarning("Save attempted with empty accessory name");
-                MessageBox.Show("Accessory name cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Accessory name cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -258,7 +258,7 @@ namespace SKAuto.UI.ViewModels
                     if (existing != null && (isNew || existing.Id != accessoryToSave.Id))
                     {
                         _logger.LogWarning($"Duplicate accessory name '{newName}' – existing ID {existing.Id}");
-                        MessageBox.Show($"An accessory with the name '{newName}' already exists. Please use a different name.", "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show($"An accessory with the name '{newName}' already exists. Please use a different name.", "Duplicate Name", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -293,7 +293,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to save accessory ID {accessoryToSave.Id}", ex);
-                MessageBox.Show($"Error saving accessory: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error saving accessory: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 

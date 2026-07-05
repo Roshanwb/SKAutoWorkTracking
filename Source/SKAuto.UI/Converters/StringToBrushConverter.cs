@@ -11,15 +11,15 @@ namespace SKAuto.UI.Converters
         {
             var hex = value as string;
             if (string.IsNullOrEmpty(hex) || !hex.StartsWith("#"))
-                return Brushes.Transparent;
+                return System.Windows.Media.Brushes.Transparent;
             try
             {
-                var color = (Color)ColorConverter.ConvertFromString(hex);
-                return new SolidColorBrush(color);
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex);
+                return new System.Windows.Media.SolidColorBrush(color);
             }
             catch
             {
-                return Brushes.Transparent;
+                return System.Windows.Media.Brushes.Transparent;
             }
         }
 

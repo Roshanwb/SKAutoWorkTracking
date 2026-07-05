@@ -155,22 +155,22 @@ namespace SKAuto.UI.ViewModels
                 StatusMessage = $"✅ Updated {updatedCount} work order task(s). Accessory default price {(UpdateDefaultPrice ? "updated" : "unchanged")}.";
                 _logger.LogInfo($"Bulk price update completed: {updatedCount} tasks updated.");
 
-                MessageBox.Show($"Successfully updated {updatedCount} work order tasks.\nAccessory default price {(UpdateDefaultPrice ? "was also updated." : "remains unchanged.")}",
-                                "Update Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Successfully updated {updatedCount} work order tasks.\nAccessory default price {(UpdateDefaultPrice ? "was also updated." : "remains unchanged.")}",
+                                "Update Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 CloseWindow(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError("Bulk price update failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Failed to update prices: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Failed to update prices: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 CloseWindow(false);
             }
         }
 
         private void CloseWindow(bool? dialogResult = null)
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.DialogResult = dialogResult;

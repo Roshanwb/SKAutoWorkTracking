@@ -171,20 +171,20 @@ namespace SKAuto.UI.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Username))
             {
-                MessageBox.Show("Please enter your username.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Please enter your username.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             var user = (await _unitOfWork.Users.FindAsync(u => u.Username == Username)).FirstOrDefault();
             if (user == null || !user.IsActive)
             {
-                MessageBox.Show("User not found or inactive.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("User not found or inactive.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrEmpty(user.Email))
             {
-                MessageBox.Show("No email address configured for this user. Please contact an administrator.", "Email Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("No email address configured for this user. Please contact an administrator.", "Email Missing", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -205,17 +205,17 @@ namespace SKAuto.UI.ViewModels
                     <p>If you did not request this, please ignore this email.</p>
                 ";
                 await emailService.SendEmailAsync(user.Email, "SKAuto - Password Reset Code", body);
-                MessageBox.Show($"A verification code has been sent to {user.Email}. Please check your inbox.", "Code Sent", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"A verification code has been sent to {user.Email}. Please check your inbox.", "Code Sent", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
             catch (System.Net.Mail.SmtpException smtpEx)
             {
                 _logger.LogError($"SMTP error sending email to {user.Email}", smtpEx);
-                MessageBox.Show($"Email could not be sent.", "Email Failed ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"Email could not be sent.", "Email Failed ", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to send reset email to {user.Email}", ex);
-                MessageBox.Show($"Email could not be sent.", "Email Failed ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"Email could not be sent.", "Email Failed ", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
 
             ActionButtonText = "Verify & Reset";
@@ -227,7 +227,7 @@ namespace SKAuto.UI.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(Username))
                 {
-                    MessageBox.Show("Username cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("Username cannot be empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
@@ -243,25 +243,25 @@ namespace SKAuto.UI.ViewModels
                     var user = (await _unitOfWork.Users.FindAsync(u => u.Username == Username)).FirstOrDefault();
                     if (user == null || !user.IsActive)
                     {
-                        MessageBox.Show("User not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("User not found.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     if (user.ResetToken != VerificationCode || user.ResetTokenExpiry < DateTime.UtcNow)
                     {
-                        MessageBox.Show("Invalid or expired verification code.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Invalid or expired verification code.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(Password) || Password != ConfirmPassword)
                     {
-                        MessageBox.Show("Passwords do not match or are empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Passwords do not match or are empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     if (Password.Length < 6)
                     {
-                        MessageBox.Show("Password must be at least 6 characters.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Password must be at least 6 characters.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -271,7 +271,7 @@ namespace SKAuto.UI.ViewModels
                     await _unitOfWork.Users.UpdateAsync(user);
                     await _unitOfWork.CompleteAsync();
                     _logger.LogInfo($"Password reset for user {Username}");
-                    MessageBox.Show("Password reset successfully. Please log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("Password reset successfully. Please log in.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     Completed?.Invoke(this, true);
                     return;
                 }
@@ -282,7 +282,7 @@ namespace SKAuto.UI.ViewModels
                     // Validate email
                     if (string.IsNullOrWhiteSpace(Email))
                     {
-                        MessageBox.Show("Email is required.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Email is required.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
                     try
@@ -293,7 +293,7 @@ namespace SKAuto.UI.ViewModels
                     }
                     catch
                     {
-                        MessageBox.Show("Invalid email format.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Invalid email format.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -302,12 +302,12 @@ namespace SKAuto.UI.ViewModels
                     {
                         if (string.IsNullOrWhiteSpace(Password))
                         {
-                            MessageBox.Show("Password cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show("Password cannot be empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                         if (Password != ConfirmPassword)
                         {
-                            MessageBox.Show("Passwords do not match.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show("Passwords do not match.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                     }
@@ -317,7 +317,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         if (!string.IsNullOrWhiteSpace(Password) && Password != ConfirmPassword)
                         {
-                            MessageBox.Show("Passwords do not match.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show("Passwords do not match.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                     }
@@ -329,19 +329,19 @@ namespace SKAuto.UI.ViewModels
                     // Verify current password
                     if (!PasswordHelper.VerifyPassword(Password, _currentUser.PasswordHash))
                     {
-                        MessageBox.Show("Current password is incorrect.", "Invalid Password", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Current password is incorrect.", "Invalid Password", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     // Validate new password
                     if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword != ConfirmPassword)
                     {
-                        MessageBox.Show("New passwords do not match or are empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("New passwords do not match or are empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
                     if (NewPassword.Length < 6)
                     {
-                        MessageBox.Show("New password must be at least 6 characters.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("New password must be at least 6 characters.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -350,7 +350,7 @@ namespace SKAuto.UI.ViewModels
                     await _unitOfWork.Users.UpdateAsync(_currentUser);
                     await _unitOfWork.CompleteAsync();
                     _logger.LogInfo($"User {_currentUser.Username} changed their own password.");
-                    MessageBox.Show("Password changed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("Password changed successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     Completed?.Invoke(this, true);
                     return;
                 }
@@ -361,7 +361,7 @@ namespace SKAuto.UI.ViewModels
                     var existing = await _unitOfWork.Users.FindAsync(u => u.Username == Username);
                     if (existing.Any())
                     {
-                        MessageBox.Show("Username already exists.", "Duplicate", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show("Username already exists.", "Duplicate", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -388,7 +388,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         if (Password != ConfirmPassword)
                         {
-                            MessageBox.Show("Passwords do not match.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show("Passwords do not match.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                         _editingUser.PasswordHash = PasswordHelper.HashPassword(Password);
@@ -399,13 +399,13 @@ namespace SKAuto.UI.ViewModels
                     _logger.LogInfo($"Admin updated user: {_editingUser.Username} (email: {Email})");
                 }
 
-                MessageBox.Show("Operation completed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("Operation completed successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 Completed?.Invoke(this, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Save user failed: {ex.Message}", ex);
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }

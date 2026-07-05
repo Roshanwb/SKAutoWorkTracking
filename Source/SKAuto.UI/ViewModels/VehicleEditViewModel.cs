@@ -31,7 +31,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow()
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.Close();
@@ -46,7 +46,7 @@ namespace SKAuto.UI.ViewModels
                 // Basic validation
                 if (string.IsNullOrWhiteSpace(Vehicle.ChassisNumber))
                 {
-                    MessageBox.Show("Chassis number is required.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("Chassis number is required.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
@@ -60,13 +60,13 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving vehicle: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error saving vehicle: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void CloseWindow(bool success = false)
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.DialogResult = success;

@@ -20,7 +20,7 @@ using System.Windows;
 
 namespace SKAuto.UI
 {
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         private readonly IHost _host;
         private ILoggingService _logger;
@@ -165,12 +165,12 @@ namespace SKAuto.UI
                         mainWindow.Activate();
                         mainWindow.Focus();
                         _logger.LogInfo("Main window shown and activated.");
-                        Application.Current.MainWindow.WindowState = WindowState.Maximized;
+                        System.Windows.Application.Current.MainWindow.WindowState = WindowState.Maximized;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError("Failed to show main window", ex);
-                        MessageBox.Show($"Fatal error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show($"Fatal error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         Environment.Exit(1);
                     }
                 },
@@ -185,19 +185,26 @@ namespace SKAuto.UI
         {
             _logger?.LogInfo("Application exiting.");
 
-            try
+            if (App.CurrentUser != null)
             {
-                var backupService = _host.Services.GetRequiredService<IBackupService>();
-                var backupFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "SKAuto",
-                    "Backups");
-                var backupPath = await backupService.BackupDatabaseAsync(backupFolder);
-                _logger.LogInfo($"Automatic backup created on exit: {backupPath}");
+                try
+                {
+                    var backupService = _host.Services.GetRequiredService<IBackupService>();
+                    var backupFolder = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "SKAuto",
+                        "Backups");
+                    var backupPath = await backupService.BackupDatabaseAsync(backupFolder);
+                    _logger.LogInfo($"Automatic backup created on exit: {backupPath}");
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError("Automatic backup failed on exit", ex);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                _logger?.LogError("Automatic backup failed on exit", ex);
+                _logger?.LogInfo("No user logged in – skipping backup on exit.");
             }
 
             await _host.StopAsync();

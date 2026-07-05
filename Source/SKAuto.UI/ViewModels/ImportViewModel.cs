@@ -260,7 +260,7 @@ namespace SKAuto.UI.ViewModels
                     });
                 }
 
-                await Application.Current.Dispatcher.InvokeAsync(() => AddOrders(filteredOrders));
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => AddOrders(filteredOrders));
                 _loggingService.LogInfo($"PDF import: {filteredOrders.Count} new orders from {folder}");
                 StatusMessage = $"Added {filteredOrders.Count} new work orders from PDFs.";
             }
@@ -268,7 +268,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _loggingService.LogError("PDF import failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Error running Python extractor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error running Python extractor: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -281,7 +281,7 @@ namespace SKAuto.UI.ViewModels
         // ===== GENERAL CSV/EXCEL IMPORT =====
         private async Task SelectImportFileAsync()
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Select Excel or CSV file (export rdv)",
                 Filter = "Supported files|*.xlsx;*.xls;*.xlsm;*.xltx;*.xltm;*.csv|Excel files|*.xlsx;*.xls;*.xlsm;*.xltx;*.xltm|CSV files|*.csv",
@@ -300,7 +300,7 @@ namespace SKAuto.UI.ViewModels
 
             if (!excelExtensions.Contains(extension) && !csvExtensions.Contains(extension))
             {
-                MessageBox.Show($"Unsupported file type: {extension}", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"Unsupported file type: {extension}", "Invalid File", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -332,7 +332,7 @@ namespace SKAuto.UI.ViewModels
                     }
                 });
 
-                await Application.Current.Dispatcher.InvokeAsync(() => AddOrders(orders));
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => AddOrders(orders));
                 _loggingService.LogInfo($"General import: {orders.Count} orders from {Path.GetFileName(filePath)}");
                 StatusMessage = $"Added {orders.Count} work orders.";
             }
@@ -340,7 +340,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _loggingService.LogError($"General import failed: {filePath}", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Error parsing file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error parsing file: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -353,7 +353,7 @@ namespace SKAuto.UI.ViewModels
         // ===== PARCCARRIÈRES CSV IMPORT =====
         private async Task SelectParcCarrieresAsync()
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Select ParcCarrières CSV file",
                 Filter = "CSV files|*.csv",
@@ -421,7 +421,7 @@ namespace SKAuto.UI.ViewModels
                     });
                 }
 
-                await Application.Current.Dispatcher.InvokeAsync(() => AddOrders(filteredOrders));
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => AddOrders(filteredOrders));
                 _loggingService.LogInfo($"ParcCarrières import: {filteredOrders.Count} new orders from {Path.GetFileName(filePath)}");
                 StatusMessage = $"Added {filteredOrders.Count} new work orders from ParcCarrières.";
             }
@@ -429,7 +429,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _loggingService.LogError($"ParcCarrières import failed: {filePath}", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -631,7 +631,7 @@ namespace SKAuto.UI.ViewModels
 
             if (!selectedRows.Any())
             {
-                MessageBox.Show("No selected rows match the date range.", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("No selected rows match the date range.", "Import", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -639,7 +639,7 @@ namespace SKAuto.UI.ViewModels
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
-            Mouse.OverrideCursor = Cursors.Wait;
+            Mouse.OverrideCursor =  System.Windows.Input.Cursors.Wait;
 
             IProgress<ProgressReport> progress = new Progress<ProgressReport>(p =>
             {
@@ -911,18 +911,18 @@ namespace SKAuto.UI.ViewModels
                     int importedCount = workOrdersToAdd.Count;
                     int vehicleOnlyCount = selectedRows.Count - importedCount - skipped;
                     _loggingService.LogInfo($"Import completed: added {importedCount} work orders, {newClients.Count} new clients, {newVehicles.Count} new vehicles.");
-                    MessageBox.Show($"Successfully imported {importedCount} work orders.\n" +
+                    System.Windows.MessageBox.Show($"Successfully imported {importedCount} work orders.\n" +
                                     $"Vehicle‑only records: {vehicleOnlyCount}\n" +
                                     $"New clients: {newClients.Count}\n" +
                                     $"New vehicles: {newVehicles.Count}",
-                        "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Import Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     CloseWindow(true);
                 }
             }
             catch (Exception ex)
             {
                 _loggingService.LogError("Import failed", ex);
-                MessageBox.Show($"Error during import: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error during import: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -935,7 +935,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow(bool success = false)
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.DialogResult = success;

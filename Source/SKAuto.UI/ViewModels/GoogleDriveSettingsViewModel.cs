@@ -123,7 +123,7 @@ namespace SKAuto.UI.ViewModels
             {
                 StatusMessage = $"Error: {ex.Message}";
                 _logger.LogError("TestConnection failed", ex);
-                MessageBox.Show($"Connection test failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Connection test failed:\n{ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -148,7 +148,7 @@ namespace SKAuto.UI.ViewModels
             if (!IsConnected)
             {
                 StatusMessage = "Not connected to Google Drive.";
-                MessageBox.Show("Please authenticate with Google Drive first.", "Not Connected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Please authenticate with Google Drive first.", "Not Connected", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -179,13 +179,13 @@ namespace SKAuto.UI.ViewModels
 
                 try { File.Delete(backupPath); } catch { }
 
-                MessageBox.Show($"Backup successfully uploaded to Google Drive.\nFile: {fileName}", "Sync Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Backup successfully uploaded to Google Drive.\nFile: {fileName}", "Sync Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 _logger.LogError("Sync failed", ex);
                 StatusMessage = $"Sync failed: {ex.Message}";
-                MessageBox.Show($"Sync failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Sync failed:\n{ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -211,7 +211,7 @@ namespace SKAuto.UI.ViewModels
             {
                 StatusMessage = $"Error browsing folder: {ex.Message}";
                 _logger.LogError("BrowseFolder failed", ex);
-                MessageBox.Show($"Error selecting folder:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error selecting folder:\n{ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }

@@ -126,7 +126,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError("AddClient failed", ex);
-                MessageBox.Show($"Error adding client: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error adding client: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -157,7 +157,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"EditClientAsync failed for client ID {SelectedClient?.Id}", ex);
-                MessageBox.Show($"Error editing client: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error editing client: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -171,10 +171,10 @@ namespace SKAuto.UI.ViewModels
 
             _logger.LogInfo($"DeleteClientAsync started for client ID {SelectedClient.Id}, Name '{SelectedClient.Name}'");
 
-            var result = MessageBox.Show($"Delete client '{SelectedClient.Name}'? This may affect existing work orders.",
-                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = System.Windows.MessageBox.Show($"Delete client '{SelectedClient.Name}'? This may affect existing work orders.",
+                "Confirm Delete", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
 
-            if (result != MessageBoxResult.Yes)
+            if (result != System.Windows.MessageBoxResult.Yes)
             {
                 _logger.LogInfo($"Deletion cancelled for client ID {SelectedClient.Id}");
                 return;
@@ -190,14 +190,14 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"DeleteClientAsync failed for client ID {SelectedClient?.Id}", ex);
-                MessageBox.Show($"Error deleting client: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error deleting client: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void CloseWindow()
         {
             _logger.LogInfo("CloseWindow called");
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.Close();
@@ -223,7 +223,7 @@ namespace SKAuto.UI.ViewModels
             if (SelectedClients == null || SelectedClients.Count < 2)
             {
                 _logger.LogWarning($"MergeClientsAsync called with insufficient selection: {SelectedClients?.Count ?? 0} clients selected");
-                MessageBox.Show("Please select at least two clients to merge.", "Merge Clients", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Please select at least two clients to merge.", "Merge Clients", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -293,7 +293,7 @@ namespace SKAuto.UI.ViewModels
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInfo($"Merge completed successfully: {others.Count} clients merged into '{newName}' (ID {master.Id})");
-                MessageBox.Show($"Successfully merged {others.Count} client(s) into '{newName}'.", "Merge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Successfully merged {others.Count} client(s) into '{newName}'.", "Merge Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 
                 await LoadClientsAsync();
                 SelectedClients.Clear();
@@ -302,7 +302,7 @@ namespace SKAuto.UI.ViewModels
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError($"MergeClientsAsync failed: {ex.Message}", ex);
-                MessageBox.Show($"Error merging clients: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error merging clients: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }

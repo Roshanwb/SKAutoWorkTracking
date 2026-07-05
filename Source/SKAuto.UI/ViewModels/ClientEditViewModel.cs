@@ -31,7 +31,7 @@ namespace SKAuto.UI.ViewModels
         private void CloseWindow()
         {
             // Find and close the window
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
             {
                 if (window.DataContext == this)
                 {
@@ -52,13 +52,13 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving client: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error saving client: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void CloseWindow(bool success = false)
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
             {
                 if (window.DataContext == this)
                 {

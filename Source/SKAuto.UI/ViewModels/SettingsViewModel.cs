@@ -118,11 +118,11 @@ namespace SKAuto.UI.ViewModels
             }
             catch { }
 
-            MessageBox.Show(
+            System.Windows.MessageBox.Show(
                 "Settings saved. Language changes require restart to take full effect.",
                 "Settings Saved",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
 
             CloseWindow();
         }
@@ -147,7 +147,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow()
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.Close();

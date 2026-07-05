@@ -187,7 +187,7 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 StatusMessage = "Generating Excel report...";
-                var saveDialog = new SaveFileDialog
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "Excel Files|*.xlsx",
                     FileName = GetDefaultFileName(".xlsx")
@@ -226,7 +226,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _logger.LogError("Excel report generation failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Failed to generate Excel report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Failed to generate Excel report: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -235,7 +235,7 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 StatusMessage = "Generating PDF report...";
-                var saveDialog = new SaveFileDialog
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "PDF Files|*.pdf",
                     FileName = GetDefaultFileName(".pdf")
@@ -274,7 +274,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _logger.LogError("PDF report generation failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Failed to generate PDF report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Failed to generate PDF report: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -287,7 +287,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow()
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.Close();
