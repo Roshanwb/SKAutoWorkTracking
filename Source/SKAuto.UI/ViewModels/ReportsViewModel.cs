@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;   // For Cursors
 
 namespace SKAuto.UI.ViewModels
 {
@@ -25,7 +26,7 @@ namespace SKAuto.UI.ViewModels
         WorkOrders,
         Clients,
         Vehicles,
-        Tasks   // NEW
+        Tasks
     }
 
     public partial class ReportsViewModel : ObservableObject
@@ -60,10 +61,13 @@ namespace SKAuto.UI.ViewModels
         private bool _summaryOnly;
 
         [ObservableProperty]
-        private bool _groupByTaskType;   // NEW: only for Tasks report
+        private bool _groupByTaskType;
 
         [ObservableProperty]
         private string _statusMessage;
+
+        [ObservableProperty]
+        private bool _isBusy;   // To disable buttons during generation
 
         // Options for dropdowns
         public List<SelectableOption<TaskType?>> TaskTypeOptions { get; }
@@ -142,6 +146,9 @@ namespace SKAuto.UI.ViewModels
             {
                 new SelectableOption<int?> { Value = null, Display = "All" }
             };
+            // Set default selections to "All"
+            SelectedTaskTypeOption = TaskTypeOptions.First();
+            SelectedWorkStatusOption = WorkStatusOptions.First();
             SelectedAccessoryOption = AccessoryOptions.First();
 
             _ = LoadAccessoriesAsync();
@@ -167,6 +174,7 @@ namespace SKAuto.UI.ViewModels
                 AccessoryOptions = newList;
                 OnPropertyChanged(nameof(AccessoryOptions));
 
+                // Keep the "All" selection if it was previously selected
                 if (SelectedAccessoryId == null)
                     SelectedAccessoryOption = AccessoryOptions.First();
                 else
@@ -184,9 +192,13 @@ namespace SKAuto.UI.ViewModels
 
         private async Task GenerateExcelAsync()
         {
+            if (_isBusy) return;
+            _isBusy = true;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            StatusMessage = "Generating Excel report...";
+
             try
             {
-                StatusMessage = "Generating Excel report...";
                 var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "Excel Files|*.xlsx",
@@ -210,7 +222,7 @@ namespace SKAuto.UI.ViewModels
                         ReportType.Tasks => await _excelExport.GenerateTasksReportAsync(new ReportFilter
                         {
                             GroupByTaskType = GroupByTaskType,
-                            SummaryOnly = SummaryOnly   // optional: if true, show only statistics
+                            SummaryOnly = SummaryOnly
                         }),
                         ReportType.Clients => await _excelExport.GenerateClientsReportAsync(),
                         ReportType.Vehicles => await _excelExport.GenerateVehiclesReportAsync(),
@@ -221,20 +233,33 @@ namespace SKAuto.UI.ViewModels
                     StatusMessage = $"Report saved to {saveDialog.FileName}";
                     _logger.LogInfo($"Excel report generated: {saveDialog.FileName}");
                 }
+                else
+                {
+                    StatusMessage = "Report generation cancelled.";
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError("Excel report generation failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                System.Windows.MessageBox.Show($"Failed to generate Excel report: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Failed to generate Excel report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                _isBusy = false;
+                Mouse.OverrideCursor = null;
             }
         }
 
         private async Task GeneratePdfAsync()
         {
+            if (_isBusy) return;
+            _isBusy = true;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            StatusMessage = "Generating PDF report...";
+
             try
             {
-                StatusMessage = "Generating PDF report...";
                 var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "PDF Files|*.pdf",
@@ -269,12 +294,21 @@ namespace SKAuto.UI.ViewModels
                     StatusMessage = $"Report saved to {saveDialog.FileName}";
                     _logger.LogInfo($"PDF report generated: {saveDialog.FileName}");
                 }
+                else
+                {
+                    StatusMessage = "Report generation cancelled.";
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError("PDF report generation failed", ex);
                 StatusMessage = $"Error: {ex.Message}";
-                System.Windows.MessageBox.Show($"Failed to generate PDF report: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Failed to generate PDF report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                _isBusy = false;
+                Mouse.OverrideCursor = null;
             }
         }
 

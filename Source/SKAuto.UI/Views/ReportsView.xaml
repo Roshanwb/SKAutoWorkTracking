@@ -147,9 +147,11 @@
                     <!-- Row 6: Action Buttons -->
                     <StackPanel Grid.Row="6" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                         <Button Content="Generate Excel" Command="{Binding GenerateExcelCommand}"
-                                Style="{StaticResource ActionButton}" Background="#27ae60" Width="120" Margin="5"/>
+                                Style="{StaticResource ActionButton}" Background="#27ae60" Width="120" Margin="5"
+                                IsEnabled="{Binding !IsBusy}"/>
                         <Button Content="Generate PDF" Command="{Binding GeneratePdfCommand}"
-                                Style="{StaticResource ActionButton}" Background="#e67e22" Width="120" Margin="5"/>
+                                Style="{StaticResource ActionButton}" Background="#e67e22" Width="120" Margin="5"
+                                IsEnabled="{Binding !IsBusy}"/>
                         <Button Content="Close" Command="{Binding CloseCommand}"
                                 Style="{StaticResource ActionButton}" Background="#6c757d" Width="80" Margin="5"/>
                     </StackPanel>
