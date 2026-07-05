@@ -6,9 +6,9 @@ namespace SKAuto.Core.Interfaces
 {
     public interface IBackupService
     {
-        Task<string> BackupDatabaseAsync(string backupFolder);
-        Task<string> ExportDataAsync(string exportFolder);
-        Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options);
+        Task<string> BackupDatabaseAsync(string backupFolder, IProgress<BackupProgress>? progress = null);
+        Task<string> ExportDataAsync(string exportFolder, IProgress<BackupProgress>? progress = null);
+        Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options, IProgress<BackupProgress>? progress = null);
         Task<List<BackupFileInfo>> GetBackupFilesAsync(string backupFolder);
         Task<string> RestoreDatabaseAsync(string backupFilePath);
     }
