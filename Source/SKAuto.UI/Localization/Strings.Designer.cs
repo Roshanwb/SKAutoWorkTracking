@@ -59,5 +59,3128 @@ namespace SKAuto.UI.Localization {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Actions.
+        /// </summary>
+        internal static string AccessoryManagementView_Actions {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_Actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add New Task.
+        /// </summary>
+        internal static string AccessoryManagementView_AddNewTask {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_AddNewTask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Description.
+        /// </summary>
+        internal static string AccessoryManagementView_Description {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Description:.
+        /// </summary>
+        internal static string AccessoryManagementView_DescriptionLabel {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_DescriptionLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Is Active.
+        /// </summary>
+        internal static string AccessoryManagementView_IsActive {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_IsActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string AccessoryManagementView_Name {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name:*.
+        /// </summary>
+        internal static string AccessoryManagementView_NameRequired {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Part #.
+        /// </summary>
+        internal static string AccessoryManagementView_PartNumber {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_PartNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Part #:.
+        /// </summary>
+        internal static string AccessoryManagementView_PartNumberLabel {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_PartNumberLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Price (€).
+        /// </summary>
+        internal static string AccessoryManagementView_Price {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_Price", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Price (€):.
+        /// </summary>
+        internal static string AccessoryManagementView_PriceLabel {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_PriceLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requires Password Protection.
+        /// </summary>
+        internal static string AccessoryManagementView_RequiresPassword {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_RequiresPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search by name, part number, or description.
+        /// </summary>
+        internal static string AccessoryManagementView_SearchHint {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_SearchHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time (min).
+        /// </summary>
+        internal static string AccessoryManagementView_TimeMin {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_TimeMin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time (min):.
+        /// </summary>
+        internal static string AccessoryManagementView_TimeMinLabel {
+            get {
+                return ResourceManager.GetString("AccessoryManagementView_TimeMinLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup Database.
+        /// </summary>
+        internal static string BackupView_BackupDatabase {
+            get {
+                return ResourceManager.GetString("BackupView_BackupDatabase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup &amp; Restore.
+        /// </summary>
+        internal static string BackupView_BackupRestore {
+            get {
+                return ResourceManager.GetString("BackupView_BackupRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (Skip = ignore, Overwrite = replace).
+        /// </summary>
+        internal static string BackupView_ConflictHelp {
+            get {
+                return ResourceManager.GetString("BackupView_ConflictHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Conflict resolution:.
+        /// </summary>
+        internal static string BackupView_ConflictResolution {
+            get {
+                return ResourceManager.GetString("BackupView_ConflictResolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create Backup.
+        /// </summary>
+        internal static string BackupView_CreateBackup {
+            get {
+                return ResourceManager.GetString("BackupView_CreateBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Created.
+        /// </summary>
+        internal static string BackupView_Created {
+            get {
+                return ResourceManager.GetString("BackupView_Created", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dry Run (preview only).
+        /// </summary>
+        internal static string BackupView_DryRun {
+            get {
+                return ResourceManager.GetString("BackupView_DryRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export Data.
+        /// </summary>
+        internal static string BackupView_ExportData {
+            get {
+                return ResourceManager.GetString("BackupView_ExportData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export Data to CSV/ZIP.
+        /// </summary>
+        internal static string BackupView_ExportDataCsvZip {
+            get {
+                return ResourceManager.GetString("BackupView_ExportDataCsvZip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File Name.
+        /// </summary>
+        internal static string BackupView_FileName {
+            get {
+                return ResourceManager.GetString("BackupView_FileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Google Drive.
+        /// </summary>
+        internal static string BackupView_GoogleDrive {
+            get {
+                return ResourceManager.GetString("BackupView_GoogleDrive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import.
+        /// </summary>
+        internal static string BackupView_Import {
+            get {
+                return ResourceManager.GetString("BackupView_Import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import from ZIP.
+        /// </summary>
+        internal static string BackupView_ImportFromZip {
+            get {
+                return ResourceManager.GetString("BackupView_ImportFromZip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local Backups.
+        /// </summary>
+        internal static string BackupView_LocalBackups {
+            get {
+                return ResourceManager.GetString("BackupView_LocalBackups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Drive List.
+        /// </summary>
+        internal static string BackupView_RefreshDriveList {
+            get {
+                return ResourceManager.GetString("BackupView_RefreshDriveList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh List.
+        /// </summary>
+        internal static string BackupView_RefreshList {
+            get {
+                return ResourceManager.GetString("BackupView_RefreshList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore from Drive.
+        /// </summary>
+        internal static string BackupView_RestoreFromDrive {
+            get {
+                return ResourceManager.GetString("BackupView_RestoreFromDrive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore Selected.
+        /// </summary>
+        internal static string BackupView_RestoreSelected {
+            get {
+                return ResourceManager.GetString("BackupView_RestoreSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Result.
+        /// </summary>
+        internal static string BackupView_Result {
+            get {
+                return ResourceManager.GetString("BackupView_Result", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Size.
+        /// </summary>
+        internal static string BackupView_Size {
+            get {
+                return ResourceManager.GetString("BackupView_Size", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active:.
+        /// </summary>
+        internal static string ClientEditWindow_Active {
+            get {
+                return ResourceManager.GetString("ClientEditWindow_Active", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Address:.
+        /// </summary>
+        internal static string ClientEditWindow_Address {
+            get {
+                return ResourceManager.GetString("ClientEditWindow_Address", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client Code:.
+        /// </summary>
+        internal static string ClientEditWindow_ClientCode {
+            get {
+                return ResourceManager.GetString("ClientEditWindow_ClientCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit Client.
+        /// </summary>
+        internal static string ClientEditWindow_EditClient {
+            get {
+                return ResourceManager.GetString("ClientEditWindow_EditClient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type:.
+        /// </summary>
+        internal static string ClientEditWindow_Type {
+            get {
+                return ResourceManager.GetString("ClientEditWindow_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        internal static string ClientManagementView_Close {
+            get {
+                return ResourceManager.GetString("ClientManagementView_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        internal static string ClientManagementView_Delete {
+            get {
+                return ResourceManager.GetString("ClientManagementView_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        internal static string ClientManagementView_Email {
+            get {
+                return ResourceManager.GetString("ClientManagementView_Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Clients.
+        /// </summary>
+        internal static string ClientManagementView_ManageClients {
+            get {
+                return ResourceManager.GetString("ClientManagementView_ManageClients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge Selected.
+        /// </summary>
+        internal static string ClientManagementView_MergeSelected {
+            get {
+                return ResourceManager.GetString("ClientManagementView_MergeSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone.
+        /// </summary>
+        internal static string ClientManagementView_Phone {
+            get {
+                return ResourceManager.GetString("ClientManagementView_Phone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Client Name:.
+        /// </summary>
+        internal static string ClientManagementView_SearchClientName {
+            get {
+                return ResourceManager.GetString("ClientManagementView_SearchClientName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        internal static string ClientManagementView_Type {
+            get {
+                return ResourceManager.GetString("ClientManagementView_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (type to filter).
+        /// </summary>
+        internal static string ClientManagementView_TypeToFilter {
+            get {
+                return ResourceManager.GetString("ClientManagementView_TypeToFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit Master Client Details.
+        /// </summary>
+        internal static string ClientMergeDialog_EditMasterClient {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_EditMasterClient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email:.
+        /// </summary>
+        internal static string ClientMergeDialog_Email {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge Clients.
+        /// </summary>
+        internal static string ClientMergeDialog_MergeClients {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_MergeClients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name:.
+        /// </summary>
+        internal static string ClientMergeDialog_Name {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notes:.
+        /// </summary>
+        internal static string ClientMergeDialog_Notes {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_Notes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string ClientMergeDialog_OK {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone:.
+        /// </summary>
+        internal static string ClientMergeDialog_Phone {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_Phone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authenticate.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_Authenticate {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_Authenticate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Browse.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_Browse {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client ID:.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_ClientID {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_ClientID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client Secret:.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_ClientSecret {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_ClientSecret", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder ID:.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_FolderID {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_FolderID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Get from Google Cloud Console.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_GetFromCloudConsole {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_GetFromCloudConsole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Google Drive Settings.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_GoogleDriveSettings {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_GoogleDriveSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Sync:.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_LastSync {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_LastSync", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save Settings.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_SaveSettings {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_SaveSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sync Now.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_SyncNow {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_SyncNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Test Connection.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_TestConnection {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_TestConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Email:.
+        /// </summary>
+        internal static string GoogleDriveSettingsView_UserEmail {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsView_UserEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Accessories (Tasks).
+        /// </summary>
+        internal static string HelpView_AccessoriesTopic {
+            get {
+                return ResourceManager.GetString("HelpView_AccessoriesTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add notes or travel records as needed..
+        /// </summary>
+        internal static string HelpView_AddNotesTravel {
+            get {
+                return ResourceManager.GetString("HelpView_AddNotesTravel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add tasks (accessories) – type, quantity, price, and time..
+        /// </summary>
+        internal static string HelpView_AddTasksDescription {
+            get {
+                return ResourceManager.GetString("HelpView_AddTasksDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add travel records (destination, distance, cost) if applicable..
+        /// </summary>
+        internal static string HelpView_AddTravelDescription {
+            get {
+                return ResourceManager.GetString("HelpView_AddTravelDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Admin Only.
+        /// </summary>
+        internal static string HelpView_AdminOnlyTopic {
+            get {
+                return ResourceManager.GetString("HelpView_AdminOnlyTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Admin – full access (manage users, settings, backup, all data)..
+        /// </summary>
+        internal static string HelpView_AdminRoleDescription {
+            get {
+                return ResourceManager.GetString("HelpView_AdminRoleDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto-authenticate on startup (if configured)..
+        /// </summary>
+        internal static string HelpView_AutoAuthenticate {
+            get {
+                return ResourceManager.GetString("HelpView_AutoAuthenticate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatic backup on application exit (if user was logged in)..
+        /// </summary>
+        internal static string HelpView_AutoBackupOnExit {
+            get {
+                return ResourceManager.GetString("HelpView_AutoBackupOnExit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Backup &amp; Restore window offers multiple ways to safeguard your database..
+        /// </summary>
+        internal static string HelpView_BackupRestoreOverview {
+            get {
+                return ResourceManager.GetString("HelpView_BackupRestoreOverview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💾 Backup &amp; Restore.
+        /// </summary>
+        internal static string HelpView_BackupRestoreTab {
+            get {
+                return ResourceManager.GetString("HelpView_BackupRestoreTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bulk Price Update: change the price for a specific accessory across a date range..
+        /// </summary>
+        internal static string HelpView_BulkPriceUpdateDescription {
+            get {
+                return ResourceManager.GetString("HelpView_BulkPriceUpdateDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Bulk Price Update.
+        /// </summary>
+        internal static string HelpView_BulkPriceUpdateTopic {
+            get {
+                return ResourceManager.GetString("HelpView_BulkPriceUpdateTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use File → Change Password from the main menu..
+        /// </summary>
+        internal static string HelpView_ChangePasswordMenu {
+            get {
+                return ResourceManager.GetString("HelpView_ChangePasswordMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Changing Password.
+        /// </summary>
+        internal static string HelpView_ChangePasswordTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ChangePasswordTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Check today&apos;s planned work (dashboard)..
+        /// </summary>
+        internal static string HelpView_CheckPlannedWork {
+            get {
+                return ResourceManager.GetString("HelpView_CheckPlannedWork", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose a local .db backup, a ZIP file, or a Drive backup..
+        /// </summary>
+        internal static string HelpView_ChooseBackupSource {
+            get {
+                return ResourceManager.GetString("HelpView_ChooseBackupSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click the &apos;✏️&apos; button in the main grid to edit a work order..
+        /// </summary>
+        internal static string HelpView_ClickEditButton {
+            get {
+                return ResourceManager.GetString("HelpView_ClickEditButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click &apos;New Work Order&apos; on the dashboard..
+        /// </summary>
+        internal static string HelpView_ClickNewWorkOrder {
+            get {
+                return ResourceManager.GetString("HelpView_ClickNewWorkOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clients – list of all clients with contact details..
+        /// </summary>
+        internal static string HelpView_ClientsReportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ClientsReportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Clients.
+        /// </summary>
+        internal static string HelpView_ClientsTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ClientsTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Common Errors.
+        /// </summary>
+        internal static string HelpView_CommonErrorsTopic {
+            get {
+                return ResourceManager.GetString("HelpView_CommonErrorsTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configure your Google Drive Client ID and Secret in Settings..
+        /// </summary>
+        internal static string HelpView_ConfigureDriveCredentials {
+            get {
+                return ResourceManager.GetString("HelpView_ConfigureDriveCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configure Google Drive settings..
+        /// </summary>
+        internal static string HelpView_ConfigureDriveSettings {
+            get {
+                return ResourceManager.GetString("HelpView_ConfigureDriveSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Conflict resolution: Skip or Overwrite existing records..
+        /// </summary>
+        internal static string HelpView_ConflictResolutionDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ConflictResolutionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Creating a Work Order.
+        /// </summary>
+        internal static string HelpView_CreateWorkOrderTopic {
+            get {
+                return ResourceManager.GetString("HelpView_CreateWorkOrderTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must know your current password to change it..
+        /// </summary>
+        internal static string HelpView_CurrentPasswordRequired {
+            get {
+                return ResourceManager.GetString("HelpView_CurrentPasswordRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Daily automatic backups are saved in %AppData%\SKAuto\Backups..
+        /// </summary>
+        internal static string HelpView_DailyBackupLocation {
+            get {
+                return ResourceManager.GetString("HelpView_DailyBackupLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Daily Workflow.
+        /// </summary>
+        internal static string HelpView_DailyWorkflowTopic {
+            get {
+                return ResourceManager.GetString("HelpView_DailyWorkflowTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The database is stored in AppData – ensure enough disk space..
+        /// </summary>
+        internal static string HelpView_DatabaseStorage {
+            get {
+                return ResourceManager.GetString("HelpView_DatabaseStorage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ⚙️ Data Management.
+        /// </summary>
+        internal static string HelpView_DataManagement {
+            get {
+                return ResourceManager.GetString("HelpView_DataManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Data Recovery.
+        /// </summary>
+        internal static string HelpView_DataRecoveryTopic {
+            get {
+                return ResourceManager.GetString("HelpView_DataRecoveryTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Define tasks with name, part number, price, time, and task type (Fit, Sell, Remove, Preparation, Travel, Other)..
+        /// </summary>
+        internal static string HelpView_DefineTasksDescription {
+            get {
+                return ResourceManager.GetString("HelpView_DefineTasksDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete from the work order detail window or via the &apos;Delete&apos; button (admin only)..
+        /// </summary>
+        internal static string HelpView_DeleteWorkOrderDescription {
+            get {
+                return ResourceManager.GetString("HelpView_DeleteWorkOrderDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List, upload, and restore backups directly from Drive..
+        /// </summary>
+        internal static string HelpView_DriveBackupOperations {
+            get {
+                return ResourceManager.GetString("HelpView_DriveBackupOperations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;Dry Run&apos; mode to preview changes without committing..
+        /// </summary>
+        internal static string HelpView_DryRunDescription {
+            get {
+                return ResourceManager.GetString("HelpView_DryRunDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to During the Day.
+        /// </summary>
+        internal static string HelpView_DuringTheDay {
+            get {
+                return ResourceManager.GetString("HelpView_DuringTheDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Editing &amp; Deleting.
+        /// </summary>
+        internal static string HelpView_EditDeleteTopic {
+            get {
+                return ResourceManager.GetString("HelpView_EditDeleteTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;Email not configured&apos; – admin must set up SMTP settings in AppConfig.json for password reset..
+        /// </summary>
+        internal static string HelpView_EmailNotConfigured {
+            get {
+                return ResourceManager.GetString("HelpView_EmailNotConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End of Day (16:00–17:00).
+        /// </summary>
+        internal static string HelpView_EndOfDay {
+            get {
+                return ResourceManager.GetString("HelpView_EndOfDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Excel / CSV (General).
+        /// </summary>
+        internal static string HelpView_ExcelCSVTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ExcelCSVTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excel (.xlsx) – editable, pivot‑ready..
+        /// </summary>
+        internal static string HelpView_ExcelExportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ExcelExportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Export Options.
+        /// </summary>
+        internal static string HelpView_ExportOptionsTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ExportOptionsTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exports all tables as CSV files in a ZIP archive..
+        /// </summary>
+        internal static string HelpView_ExportZipDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ExportZipDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Export to ZIP (CSV).
+        /// </summary>
+        internal static string HelpView_ExportZipTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ExportZipTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Filters (Work Orders &amp; Tasks).
+        /// </summary>
+        internal static string HelpView_FiltersTopic {
+            get {
+                return ResourceManager.GetString("HelpView_FiltersTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;Foreign key constraint failed&apos; – missing client or vehicle. Import clients/vehicles first..
+        /// </summary>
+        internal static string HelpView_ForeignKeyError {
+            get {
+                return ResourceManager.GetString("HelpView_ForeignKeyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forgot password? Click &apos;Forgot Password?&apos; – a verification code will be sent to your registered email..
+        /// </summary>
+        internal static string HelpView_ForgotPasswordDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ForgotPasswordDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate daily reports (Excel/PDF)..
+        /// </summary>
+        internal static string HelpView_GenerateDailyReports {
+            get {
+                return ResourceManager.GetString("HelpView_GenerateDailyReports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generating Reports.
+        /// </summary>
+        internal static string HelpView_GeneratingReports {
+            get {
+                return ResourceManager.GetString("HelpView_GeneratingReports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🚀 Getting Started.
+        /// </summary>
+        internal static string HelpView_GettingStartedTab {
+            get {
+                return ResourceManager.GetString("HelpView_GettingStartedTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Google Drive Sync.
+        /// </summary>
+        internal static string HelpView_GoogleDriveTopic {
+            get {
+                return ResourceManager.GetString("HelpView_GoogleDriveTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group by Task Type (for Tasks report)..
+        /// </summary>
+        internal static string HelpView_GroupByTaskTypeDescription {
+            get {
+                return ResourceManager.GetString("HelpView_GroupByTaskTypeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group by Week (combines orders by week)..
+        /// </summary>
+        internal static string HelpView_GroupByWeekDescription {
+            get {
+                return ResourceManager.GetString("HelpView_GroupByWeekDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 📘 Help &amp; Documentation.
+        /// </summary>
+        internal static string HelpView_HelpDocumentationTab {
+            get {
+                return ResourceManager.GetString("HelpView_HelpDocumentationTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All vehicles and clients are imported regardless of Etat or date..
+        /// </summary>
+        internal static string HelpView_ImportAllVehiclesClients {
+            get {
+                return ResourceManager.GetString("HelpView_ImportAllVehiclesClients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Supports columns: N° (VIN), Client, Modèle, Fin prép., Etat..
+        /// </summary>
+        internal static string HelpView_ImportCSVColumns {
+            get {
+                return ResourceManager.GetString("HelpView_ImportCSVColumns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 📥 Importing Data.
+        /// </summary>
+        internal static string HelpView_ImportingDataTab {
+            get {
+                return ResourceManager.GetString("HelpView_ImportingDataTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The system supports several import methods. Each has specific use cases..
+        /// </summary>
+        internal static string HelpView_ImportMethodsOverview {
+            get {
+                return ResourceManager.GetString("HelpView_ImportMethodsOverview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import any new files (Excel/CSV, ParcCarrières, or PDF folder)..
+        /// </summary>
+        internal static string HelpView_ImportNewFiles {
+            get {
+                return ResourceManager.GetString("HelpView_ImportNewFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to For large imports, uncheck &apos;Vehicles&apos; and &apos;Clients&apos; if they already exist – speeds up processing..
+        /// </summary>
+        internal static string HelpView_ImportPerformanceTip {
+            get {
+                return ResourceManager.GetString("HelpView_ImportPerformanceTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Creates new clients (cleaned name) and links vehicles to them..
+        /// </summary>
+        internal static string HelpView_ImportVehiclesCreatesClients {
+            get {
+                return ResourceManager.GetString("HelpView_ImportVehiclesCreatesClients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import vehicles directly from CSV using the &apos;Import Vehicles&apos; button..
+        /// </summary>
+        internal static string HelpView_ImportVehiclesDirect {
+            get {
+                return ResourceManager.GetString("HelpView_ImportVehiclesDirect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Imports VIN, Model, and Client from the same CSV format..
+        /// </summary>
+        internal static string HelpView_ImportVehiclesFormat {
+            get {
+                return ResourceManager.GetString("HelpView_ImportVehiclesFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skips existing VINs. Date and Etat are ignored..
+        /// </summary>
+        internal static string HelpView_ImportVehiclesSkipExisting {
+            get {
+                return ResourceManager.GetString("HelpView_ImportVehiclesSkipExisting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Import Vehicles Only.
+        /// </summary>
+        internal static string HelpView_ImportVehiclesTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ImportVehiclesTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep only the latest N backups (configurable)..
+        /// </summary>
+        internal static string HelpView_KeepLatestBackups {
+            get {
+                return ResourceManager.GetString("HelpView_KeepLatestBackups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Launch the app from desktop or system tray..
+        /// </summary>
+        internal static string HelpView_LaunchApp {
+            get {
+                return ResourceManager.GetString("HelpView_LaunchApp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Creates a .db copy in your chosen folder..
+        /// </summary>
+        internal static string HelpView_LocalBackupDescription {
+            get {
+                return ResourceManager.GetString("HelpView_LocalBackupDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Local Backup.
+        /// </summary>
+        internal static string HelpView_LocalBackupTopic {
+            get {
+                return ResourceManager.GetString("HelpView_LocalBackupTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter your username and password to access the system..
+        /// </summary>
+        internal static string HelpView_LoginInstructions {
+            get {
+                return ResourceManager.GetString("HelpView_LoginInstructions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Login.
+        /// </summary>
+        internal static string HelpView_LoginTopic {
+            get {
+                return ResourceManager.GetString("HelpView_LoginTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add, edit, or delete clients in the Client Management window..
+        /// </summary>
+        internal static string HelpView_ManageClientsDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ManageClientsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage users (add, edit, delete, reset passwords)..
+        /// </summary>
+        internal static string HelpView_ManageUsersDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ManageUsersDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search, add, edit, or delete vehicles..
+        /// </summary>
+        internal static string HelpView_ManageVehiclesDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ManageVehiclesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Managing Clients, Vehicles, and Accessories.
+        /// </summary>
+        internal static string HelpView_ManagingData {
+            get {
+                return ResourceManager.GetString("HelpView_ManagingData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Managing Work Orders.
+        /// </summary>
+        internal static string HelpView_ManagingWorkOrders {
+            get {
+                return ResourceManager.GetString("HelpView_ManagingWorkOrders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can manually export to ZIP for portability..
+        /// </summary>
+        internal static string HelpView_ManualExportZip {
+            get {
+                return ResourceManager.GetString("HelpView_ManualExportZip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mark all completed work as &apos;Done&apos;..
+        /// </summary>
+        internal static string HelpView_MarkDone {
+            get {
+                return ResourceManager.GetString("HelpView_MarkDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Marking as &apos;Done&apos; automatically sets the completion date..
+        /// </summary>
+        internal static string HelpView_MarkDoneAutoComplete {
+            get {
+                return ResourceManager.GetString("HelpView_MarkDoneAutoComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge duplicate clients: select multiple clients and click &apos;Merge&apos;..
+        /// </summary>
+        internal static string HelpView_MergeClientsDescription {
+            get {
+                return ResourceManager.GetString("HelpView_MergeClientsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All vehicles linked to the source clients are automatically reassigned to the master client..
+        /// </summary>
+        internal static string HelpView_MergeVehiclesReassigned {
+            get {
+                return ResourceManager.GetString("HelpView_MergeVehiclesReassigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Morning (8:00–9:00).
+        /// </summary>
+        internal static string HelpView_Morning {
+            get {
+                return ResourceManager.GetString("HelpView_Morning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open from the main menu → Bulk Price Update..
+        /// </summary>
+        internal static string HelpView_OpenBulkPriceUpdate {
+            get {
+                return ResourceManager.GetString("HelpView_OpenBulkPriceUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dedicated parser for the standard ParcCarrières export. Same logic as above but optimized for that format..
+        /// </summary>
+        internal static string HelpView_ParcCarrieresParserDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ParcCarrieresParserDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 ParcCarrières CSV.
+        /// </summary>
+        internal static string HelpView_ParcCarrieresTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ParcCarrieresTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PDF (.pdf) – printable, client‑friendly..
+        /// </summary>
+        internal static string HelpView_PdfExportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_PdfExportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 PDF Folder.
+        /// </summary>
+        internal static string HelpView_PDFFolderTopic {
+            get {
+                return ResourceManager.GetString("HelpView_PDFFolderTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Imports all rows; work orders are created with status = Planned..
+        /// </summary>
+        internal static string HelpView_PdfImportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_PdfImportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Performance.
+        /// </summary>
+        internal static string HelpView_PerformanceTopic {
+            get {
+                return ResourceManager.GetString("HelpView_PerformanceTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Portable – can be restored on any machine..
+        /// </summary>
+        internal static string HelpView_PortableBackup {
+            get {
+                return ResourceManager.GetString("HelpView_PortableBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Print work sheets for mechanics (via reports)..
+        /// </summary>
+        internal static string HelpView_PrintWorkSheets {
+            get {
+                return ResourceManager.GetString("HelpView_PrintWorkSheets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Protect Your Data.
+        /// </summary>
+        internal static string HelpView_ProtectData {
+            get {
+                return ResourceManager.GetString("HelpView_ProtectData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Quick Start.
+        /// </summary>
+        internal static string HelpView_QuickStartTopic {
+            get {
+                return ResourceManager.GetString("HelpView_QuickStartTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quick Tips.
+        /// </summary>
+        internal static string HelpView_QuickTips {
+            get {
+                return ResourceManager.GetString("HelpView_QuickTips", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date range, task type, work status, specific accessory..
+        /// </summary>
+        internal static string HelpView_ReportFiltersDescription {
+            get {
+                return ResourceManager.GetString("HelpView_ReportFiltersDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 📊 Reporting.
+        /// </summary>
+        internal static string HelpView_ReportingTab {
+            get {
+                return ResourceManager.GetString("HelpView_ReportingTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Reports window provides powerful filtering and export to Excel or PDF..
+        /// </summary>
+        internal static string HelpView_ReportsOverview {
+            get {
+                return ResourceManager.GetString("HelpView_ReportsOverview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Report Types.
+        /// </summary>
+        internal static string HelpView_ReportTypesTopic {
+            get {
+                return ResourceManager.GetString("HelpView_ReportTypesTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requires pdf_accessories_extractor.py in the app folder..
+        /// </summary>
+        internal static string HelpView_RequiresPythonScript {
+            get {
+                return ResourceManager.GetString("HelpView_RequiresPythonScript", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Restore.
+        /// </summary>
+        internal static string HelpView_RestoreTopic {
+            get {
+                return ResourceManager.GetString("HelpView_RestoreTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Roles.
+        /// </summary>
+        internal static string HelpView_RolesTopic {
+            get {
+                return ResourceManager.GetString("HelpView_RolesTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for a vehicle by chassis number or register a new one..
+        /// </summary>
+        internal static string HelpView_SearchVehicle {
+            get {
+                return ResourceManager.GetString("HelpView_SearchVehicle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select an accessory, date range, and new price..
+        /// </summary>
+        internal static string HelpView_SelectAccessoryForBulkUpdate {
+            get {
+                return ResourceManager.GetString("HelpView_SelectAccessoryForBulkUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a folder containing PDF work orders. The built‑in Python extractor reads the data..
+        /// </summary>
+        internal static string HelpView_SelectPDFFolderDescription {
+            get {
+                return ResourceManager.GetString("HelpView_SelectPDFFolderDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set report styles (colors, fonts) in Settings..
+        /// </summary>
+        internal static string HelpView_SetReportStyles {
+            get {
+                return ResourceManager.GetString("HelpView_SetReportStyles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;SQLite Error 19: UNIQUE constraint failed&apos; – duplicate client/vehicle/accessory. Use &apos;Overwrite&apos; conflict resolution or skip duplicates..
+        /// </summary>
+        internal static string HelpView_SQLiteUniqueError {
+            get {
+                return ResourceManager.GetString("HelpView_SQLiteUniqueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Planned → In Progress → Blocked → Done..
+        /// </summary>
+        internal static string HelpView_StatusFlow {
+            get {
+                return ResourceManager.GetString("HelpView_StatusFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Status Tracking.
+        /// </summary>
+        internal static string HelpView_StatusTrackingTopic {
+            get {
+                return ResourceManager.GetString("HelpView_StatusTrackingTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Summary Only – hides task-level details, shows only totals..
+        /// </summary>
+        internal static string HelpView_SummaryOnlyDescription {
+            get {
+                return ResourceManager.GetString("HelpView_SummaryOnlyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to For technical issues, contact: roshanwb@gmail.com.
+        /// </summary>
+        internal static string HelpView_SupportContact {
+            get {
+                return ResourceManager.GetString("HelpView_SupportContact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Support.
+        /// </summary>
+        internal static string HelpView_SupportTopic {
+            get {
+                return ResourceManager.GetString("HelpView_SupportTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tasks – all accessories with type, price, and usage count..
+        /// </summary>
+        internal static string HelpView_TasksReportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_TasksReportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💡 Tip: Passwords are hashed using BCrypt – never stored in plain text..
+        /// </summary>
+        internal static string HelpView_TipBCrypt {
+            get {
+                return ResourceManager.GetString("HelpView_TipBCrypt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💡 Tip: Use the &apos;Dry Run&apos; checkbox to preview what will be imported without making changes..
+        /// </summary>
+        internal static string HelpView_TipDryRun {
+            get {
+                return ResourceManager.GetString("HelpView_TipDryRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💡 Tip: You can quickly mark a work order as &apos;Done&apos; directly from the main grid using the green button..
+        /// </summary>
+        internal static string HelpView_TipMarkDone {
+            get {
+                return ResourceManager.GetString("HelpView_TipMarkDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💡 Tip: PDF reports use your custom colors and fonts (set in Settings)..
+        /// </summary>
+        internal static string HelpView_TipPDFReports {
+            get {
+                return ResourceManager.GetString("HelpView_TipPDFReports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💡 Tip: The progress bar shows the current step, and the mouse cursor changes to a wait icon during long operations..
+        /// </summary>
+        internal static string HelpView_TipProgressBar {
+            get {
+                return ResourceManager.GetString("HelpView_TipProgressBar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 📌 Tips &amp; Troubleshooting.
+        /// </summary>
+        internal static string HelpView_TipsTab {
+            get {
+                return ResourceManager.GetString("HelpView_TipsTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help – SKAuto Work Tracking.
+        /// </summary>
+        internal static string HelpView_Title {
+            get {
+                return ResourceManager.GetString("HelpView_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Today&apos;s work orders load automatically..
+        /// </summary>
+        internal static string HelpView_TodayWorkOrders {
+            get {
+                return ResourceManager.GetString("HelpView_TodayWorkOrders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Optionally update the accessory&apos;s default price..
+        /// </summary>
+        internal static string HelpView_UpdateDefaultPriceOption {
+            get {
+                return ResourceManager.GetString("HelpView_UpdateDefaultPriceOption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update work order status (Planned → In Progress → Done)..
+        /// </summary>
+        internal static string HelpView_UpdateStatusDescription {
+            get {
+                return ResourceManager.GetString("HelpView_UpdateStatusDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Optionally upload reports to Google Drive..
+        /// </summary>
+        internal static string HelpView_UploadReportsToDrive {
+            get {
+                return ResourceManager.GetString("HelpView_UploadReportsToDrive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use Google Drive to keep off‑site backups..
+        /// </summary>
+        internal static string HelpView_UseDriveOffsite {
+            get {
+                return ResourceManager.GetString("HelpView_UseDriveOffsite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use this for most imports. It reads the ParcCarrières or similar CSV format..
+        /// </summary>
+        internal static string HelpView_UseGeneralImport {
+            get {
+                return ResourceManager.GetString("HelpView_UseGeneralImport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the &apos;Import Vehicles&apos; button in the Vehicle Management window..
+        /// </summary>
+        internal static string HelpView_UseImportVehiclesButton {
+            get {
+                return ResourceManager.GetString("HelpView_UseImportVehiclesButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the main menu to import data, manage clients/vehicles, or generate reports..
+        /// </summary>
+        internal static string HelpView_UseMainMenu {
+            get {
+                return ResourceManager.GetString("HelpView_UseMainMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to –  User Guide.
+        /// </summary>
+        internal static string HelpView_UserGuide {
+            get {
+                return ResourceManager.GetString("HelpView_UserGuide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Management &amp; Security.
+        /// </summary>
+        internal static string HelpView_UserManagementSecurity {
+            get {
+                return ResourceManager.GetString("HelpView_UserManagementSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User – limited access: create work orders, import data, update status, generate reports (prices are hidden)..
+        /// </summary>
+        internal static string HelpView_UserRoleDescription {
+            get {
+                return ResourceManager.GetString("HelpView_UserRoleDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔒 User &amp; Security.
+        /// </summary>
+        internal static string HelpView_UserSecurityTab {
+            get {
+                return ResourceManager.GetString("HelpView_UserSecurityTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vehicles – list of all vehicles with client association..
+        /// </summary>
+        internal static string HelpView_VehiclesReportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_VehiclesReportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔹 Vehicles.
+        /// </summary>
+        internal static string HelpView_VehiclesTopic {
+            get {
+                return ResourceManager.GetString("HelpView_VehiclesTopic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version: 1.0.0 (latest).
+        /// </summary>
+        internal static string HelpView_Version {
+            get {
+                return ResourceManager.GetString("HelpView_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Welcome to SKAuto Work Tracking.
+        /// </summary>
+        internal static string HelpView_Welcome {
+            get {
+                return ResourceManager.GetString("HelpView_Welcome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This system helps you manage work orders for vehicle accessory fitting and preparation. Below is a quick overview of the main workflows..
+        /// </summary>
+        internal static string HelpView_WelcomeDescription {
+            get {
+                return ResourceManager.GetString("HelpView_WelcomeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work orders are the core of the system. Each work order represents all work for a specific vehicle on a specific date..
+        /// </summary>
+        internal static string HelpView_WorkOrdersCore {
+            get {
+                return ResourceManager.GetString("HelpView_WorkOrdersCore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work orders are created only for rows with Etat = &apos;Prêt&apos; and date within the selected range..
+        /// </summary>
+        internal static string HelpView_WorkOrdersCreatedCondition {
+            get {
+                return ResourceManager.GetString("HelpView_WorkOrdersCreatedCondition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Orders – detailed list with tasks and travel..
+        /// </summary>
+        internal static string HelpView_WorkOrdersReportDescription {
+            get {
+                return ResourceManager.GetString("HelpView_WorkOrdersReportDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 📋 Work Orders.
+        /// </summary>
+        internal static string HelpView_WorkOrdersTab {
+            get {
+                return ResourceManager.GetString("HelpView_WorkOrdersTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear All.
+        /// </summary>
+        internal static string ImportView_ClearAll {
+            get {
+                return ResourceManager.GetString("ImportView_ClearAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clients.
+        /// </summary>
+        internal static string ImportView_Clients {
+            get {
+                return ResourceManager.GetString("ImportView_Clients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        internal static string ImportView_Date {
+            get {
+                return ResourceManager.GetString("ImportView_Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date From:.
+        /// </summary>
+        internal static string ImportView_DateFrom {
+            get {
+                return ResourceManager.GetString("ImportView_DateFrom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import Options.
+        /// </summary>
+        internal static string ImportView_ImportOptions {
+            get {
+                return ResourceManager.GetString("ImportView_ImportOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import Work Orders.
+        /// </summary>
+        internal static string ImportView_ImportWorkOrders {
+            get {
+                return ResourceManager.GetString("ImportView_ImportWorkOrders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mark Selected.
+        /// </summary>
+        internal static string ImportView_MarkSelected {
+            get {
+                return ResourceManager.GetString("ImportView_MarkSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select.
+        /// </summary>
+        internal static string ImportView_Select {
+            get {
+                return ResourceManager.GetString("ImportView_Select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All.
+        /// </summary>
+        internal static string ImportView_SelectAll {
+            get {
+                return ResourceManager.GetString("ImportView_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Excel/CSV File.
+        /// </summary>
+        internal static string ImportView_SelectExcelCsv {
+            get {
+                return ResourceManager.GetString("ImportView_SelectExcelCsv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select PDF Folder.
+        /// </summary>
+        internal static string ImportView_SelectPDFFolder {
+            get {
+                return ResourceManager.GetString("ImportView_SelectPDFFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        internal static string ImportView_Source {
+            get {
+                return ResourceManager.GetString("ImportView_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forgot Password?.
+        /// </summary>
+        internal static string LoginView_ForgotPassword {
+            get {
+                return ResourceManager.GetString("LoginView_ForgotPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login.
+        /// </summary>
+        internal static string LoginView_Login {
+            get {
+                return ResourceManager.GetString("LoginView_Login", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        internal static string LoginView_Password {
+            get {
+                return ResourceManager.GetString("LoginView_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign in to continue.
+        /// </summary>
+        internal static string LoginView_SignInToContinue {
+            get {
+                return ResourceManager.GetString("LoginView_SignInToContinue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        internal static string LoginView_Username {
+            get {
+                return ResourceManager.GetString("LoginView_Username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Tracking.
+        /// </summary>
+        internal static string LoginView_WorkTracking {
+            get {
+                return ResourceManager.GetString("LoginView_WorkTracking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to About.
+        /// </summary>
+        internal static string MainWindow_About {
+            get {
+                return ResourceManager.GetString("MainWindow_About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Admin.
+        /// </summary>
+        internal static string MainWindow_Admin {
+            get {
+                return ResourceManager.GetString("MainWindow_Admin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Backup/Restore.
+        /// </summary>
+        internal static string MainWindow_BackupRestore {
+            get {
+                return ResourceManager.GetString("MainWindow_BackupRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Blocked.
+        /// </summary>
+        internal static string MainWindow_Blocked {
+            get {
+                return ResourceManager.GetString("MainWindow_Blocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bulk Price Update.
+        /// </summary>
+        internal static string MainWindow_BulkPriceUpdate {
+            get {
+                return ResourceManager.GetString("MainWindow_BulkPriceUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change Password.
+        /// </summary>
+        internal static string MainWindow_ChangePassword {
+            get {
+                return ResourceManager.GetString("MainWindow_ChangePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chassis.
+        /// </summary>
+        internal static string MainWindow_Chassis {
+            get {
+                return ResourceManager.GetString("MainWindow_Chassis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client.
+        /// </summary>
+        internal static string MainWindow_Client {
+            get {
+                return ResourceManager.GetString("MainWindow_Client", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Clients.
+        /// </summary>
+        internal static string MainWindow_Clients {
+            get {
+                return ResourceManager.GetString("MainWindow_Clients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Danger.
+        /// </summary>
+        internal static string MainWindow_Danger {
+            get {
+                return ResourceManager.GetString("MainWindow_Danger", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete Work Order.
+        /// </summary>
+        internal static string MainWindow_DeleteWorkOrder {
+            get {
+                return ResourceManager.GetString("MainWindow_DeleteWorkOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Done.
+        /// </summary>
+        internal static string MainWindow_Done {
+            get {
+                return ResourceManager.GetString("MainWindow_Done", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Drive.
+        /// </summary>
+        internal static string MainWindow_Drive {
+            get {
+                return ResourceManager.GetString("MainWindow_Drive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit.
+        /// </summary>
+        internal static string MainWindow_Edit {
+            get {
+                return ResourceManager.GetString("MainWindow_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✏️.
+        /// </summary>
+        internal static string MainWindow_EditIcon {
+            get {
+                return ResourceManager.GetString("MainWindow_EditIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Exit.
+        /// </summary>
+        internal static string MainWindow_Exit {
+            get {
+                return ResourceManager.GetString("MainWindow_Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _File.
+        /// </summary>
+        internal static string MainWindow_File {
+            get {
+                return ResourceManager.GetString("MainWindow_File", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SK Auto Work Tracking v1.0 – © 2026 Insights®.
+        /// </summary>
+        internal static string MainWindow_Footer {
+            get {
+                return ResourceManager.GetString("MainWindow_Footer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Generate Report.
+        /// </summary>
+        internal static string MainWindow_GenerateReport {
+            get {
+                return ResourceManager.GetString("MainWindow_GenerateReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help.
+        /// </summary>
+        internal static string MainWindow_Help {
+            get {
+                return ResourceManager.GetString("MainWindow_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID.
+        /// </summary>
+        internal static string MainWindow_ID {
+            get {
+                return ResourceManager.GetString("MainWindow_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Import.
+        /// </summary>
+        internal static string MainWindow_Import {
+            get {
+                return ResourceManager.GetString("MainWindow_Import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import Data.
+        /// </summary>
+        internal static string MainWindow_ImportData {
+            get {
+                return ResourceManager.GetString("MainWindow_ImportData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In Progress.
+        /// </summary>
+        internal static string MainWindow_InProgress {
+            get {
+                return ResourceManager.GetString("MainWindow_InProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MainWindow.
+        /// </summary>
+        internal static string MainWindow_MainWindow {
+            get {
+                return ResourceManager.GetString("MainWindow_MainWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Manage.
+        /// </summary>
+        internal static string MainWindow_Manage {
+            get {
+                return ResourceManager.GetString("MainWindow_Manage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Work Order.
+        /// </summary>
+        internal static string MainWindow_NewWorkOrder {
+            get {
+                return ResourceManager.GetString("MainWindow_NewWorkOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Next Day.
+        /// </summary>
+        internal static string MainWindow_NextDay {
+            get {
+                return ResourceManager.GetString("MainWindow_NextDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Next Week.
+        /// </summary>
+        internal static string MainWindow_NextWeek {
+            get {
+                return ResourceManager.GetString("MainWindow_NextWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notes.
+        /// </summary>
+        internal static string MainWindow_Notes {
+            get {
+                return ResourceManager.GetString("MainWindow_Notes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Previous Day.
+        /// </summary>
+        internal static string MainWindow_PreviousDay {
+            get {
+                return ResourceManager.GetString("MainWindow_PreviousDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Previous Week.
+        /// </summary>
+        internal static string MainWindow_PreviousWeek {
+            get {
+                return ResourceManager.GetString("MainWindow_PreviousWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        internal static string MainWindow_Refresh {
+            get {
+                return ResourceManager.GetString("MainWindow_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Reports.
+        /// </summary>
+        internal static string MainWindow_Reports {
+            get {
+                return ResourceManager.GetString("MainWindow_Reports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        internal static string MainWindow_Settings {
+            get {
+                return ResourceManager.GetString("MainWindow_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Tasks.
+        /// </summary>
+        internal static string MainWindow_Tasks {
+            get {
+                return ResourceManager.GetString("MainWindow_Tasks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SK Auto Work Tracking.
+        /// </summary>
+        internal static string MainWindow_Title {
+            get {
+                return ResourceManager.GetString("MainWindow_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Today.
+        /// </summary>
+        internal static string MainWindow_Today {
+            get {
+                return ResourceManager.GetString("MainWindow_Today", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Top Clients.
+        /// </summary>
+        internal static string MainWindow_TopClients {
+            get {
+                return ResourceManager.GetString("MainWindow_TopClients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total.
+        /// </summary>
+        internal static string MainWindow_Total {
+            get {
+                return ResourceManager.GetString("MainWindow_Total", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update Status.
+        /// </summary>
+        internal static string MainWindow_UpdateStatus {
+            get {
+                return ResourceManager.GetString("MainWindow_UpdateStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Users.
+        /// </summary>
+        internal static string MainWindow_Users {
+            get {
+                return ResourceManager.GetString("MainWindow_Users", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vehicle.
+        /// </summary>
+        internal static string MainWindow_Vehicle {
+            get {
+                return ResourceManager.GetString("MainWindow_Vehicle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Vehicles.
+        /// </summary>
+        internal static string MainWindow_Vehicles {
+            get {
+                return ResourceManager.GetString("MainWindow_Vehicles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Week.
+        /// </summary>
+        internal static string MainWindow_Week {
+            get {
+                return ResourceManager.GetString("MainWindow_Week", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Also update default price of the accessory.
+        /// </summary>
+        internal static string PriceUpdateView_AlsoUpdateDefaultPrice {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_AlsoUpdateDefaultPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date Range.
+        /// </summary>
+        internal static string PriceUpdateView_DateRange {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_DateRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to From:.
+        /// </summary>
+        internal static string PriceUpdateView_From {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_From", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Leave empty to keep current price.
+        /// </summary>
+        internal static string PriceUpdateView_LeaveEmptyKeepPrice {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_LeaveEmptyKeepPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Price (€).
+        /// </summary>
+        internal static string PriceUpdateView_NewPrice {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_NewPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task.
+        /// </summary>
+        internal static string PriceUpdateView_Task {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_Task", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To:.
+        /// </summary>
+        internal static string PriceUpdateView_To {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_To", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update Prices.
+        /// </summary>
+        internal static string PriceUpdateView_UpdatePrices {
+            get {
+                return ResourceManager.GetString("PriceUpdateView_UpdatePrices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filters.
+        /// </summary>
+        internal static string ReportsView_Filters {
+            get {
+                return ResourceManager.GetString("ReportsView_Filters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate Excel.
+        /// </summary>
+        internal static string ReportsView_GenerateExcel {
+            get {
+                return ResourceManager.GetString("ReportsView_GenerateExcel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate PDF.
+        /// </summary>
+        internal static string ReportsView_GeneratePDF {
+            get {
+                return ResourceManager.GetString("ReportsView_GeneratePDF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate Reports.
+        /// </summary>
+        internal static string ReportsView_GenerateReports {
+            get {
+                return ResourceManager.GetString("ReportsView_GenerateReports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group by Task Type.
+        /// </summary>
+        internal static string ReportsView_GroupByTaskType {
+            get {
+                return ResourceManager.GetString("ReportsView_GroupByTaskType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group by Week.
+        /// </summary>
+        internal static string ReportsView_GroupByWeek {
+            get {
+                return ResourceManager.GetString("ReportsView_GroupByWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reports.
+        /// </summary>
+        internal static string ReportsView_Reports {
+            get {
+                return ResourceManager.GetString("ReportsView_Reports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report Type.
+        /// </summary>
+        internal static string ReportsView_ReportType {
+            get {
+                return ResourceManager.GetString("ReportsView_ReportType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status:.
+        /// </summary>
+        internal static string ReportsView_Status {
+            get {
+                return ResourceManager.GetString("ReportsView_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Summary Only (hide details).
+        /// </summary>
+        internal static string ReportsView_SummaryOnly {
+            get {
+                return ResourceManager.GetString("ReportsView_SummaryOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tasks.
+        /// </summary>
+        internal static string ReportsView_Tasks {
+            get {
+                return ResourceManager.GetString("ReportsView_Tasks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task Type:.
+        /// </summary>
+        internal static string ReportsView_TaskType {
+            get {
+                return ResourceManager.GetString("ReportsView_TaskType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vehicles.
+        /// </summary>
+        internal static string ReportsView_Vehicles {
+            get {
+                return ResourceManager.GetString("ReportsView_Vehicles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Orders.
+        /// </summary>
+        internal static string ReportsView_WorkOrders {
+            get {
+                return ResourceManager.GetString("ReportsView_WorkOrders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 2026 - Insights®.
+        /// </summary>
+        internal static string Splash_Copyright {
+            get {
+                return ResourceManager.GetString("Splash_Copyright", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initializing....
+        /// </summary>
+        internal static string Splash_Initializing {
+            get {
+                return ResourceManager.GetString("Splash_Initializing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PSA Certified Partner.
+        /// </summary>
+        internal static string Splash_PSACertifiedPartner {
+            get {
+                return ResourceManager.GetString("Splash_PSACertifiedPartner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKAuto Work Tracking.
+        /// </summary>
+        internal static string Splash_Title {
+            get {
+                return ResourceManager.GetString("Splash_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Tracking System.
+        /// </summary>
+        internal static string Splash_WorkTrackingSystem {
+            get {
+                return ResourceManager.GetString("Splash_WorkTrackingSystem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date:.
+        /// </summary>
+        internal static string TravelDialog_Date {
+            get {
+                return ResourceManager.GetString("TravelDialog_Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Destination:.
+        /// </summary>
+        internal static string TravelDialog_Destination {
+            get {
+                return ResourceManager.GetString("TravelDialog_Destination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Distance (km):.
+        /// </summary>
+        internal static string TravelDialog_DistanceKm {
+            get {
+                return ResourceManager.GetString("TravelDialog_DistanceKm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Travel Cost (€):.
+        /// </summary>
+        internal static string TravelDialog_TravelCost {
+            get {
+                return ResourceManager.GetString("TravelDialog_TravelCost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Travel Details.
+        /// </summary>
+        internal static string TravelDialog_TravelDetails {
+            get {
+                return ResourceManager.GetString("TravelDialog_TravelDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role:.
+        /// </summary>
+        internal static string UserEditView_Role {
+            get {
+                return ResourceManager.GetString("UserEditView_Role", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username:.
+        /// </summary>
+        internal static string UserEditView_Username {
+            get {
+                return ResourceManager.GetString("UserEditView_Username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification Code:.
+        /// </summary>
+        internal static string UserEditView_VerificationCode {
+            get {
+                return ResourceManager.GetString("UserEditView_VerificationCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add.
+        /// </summary>
+        internal static string UserManagementView_Add {
+            get {
+                return ResourceManager.GetString("UserManagementView_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Users.
+        /// </summary>
+        internal static string UserManagementView_ManageUsers {
+            get {
+                return ResourceManager.GetString("UserManagementView_ManageUsers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role.
+        /// </summary>
+        internal static string UserManagementView_Role {
+            get {
+                return ResourceManager.GetString("UserManagementView_Role", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string VehicleEditWindow_Cancel {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chassis Number:.
+        /// </summary>
+        internal static string VehicleEditWindow_ChassisNumber {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_ChassisNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Is Active:.
+        /// </summary>
+        internal static string VehicleEditWindow_IsActive {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_IsActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Make:.
+        /// </summary>
+        internal static string VehicleEditWindow_Make {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_Make", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model:.
+        /// </summary>
+        internal static string VehicleEditWindow_Model {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_Model", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration:.
+        /// </summary>
+        internal static string VehicleEditWindow_Registration {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_Registration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save.
+        /// </summary>
+        internal static string VehicleEditWindow_Save {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Year:.
+        /// </summary>
+        internal static string VehicleEditWindow_Year {
+            get {
+                return ResourceManager.GetString("VehicleEditWindow_Year", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vehicle Lookup.
+        /// </summary>
+        internal static string VehicleLookupView_VehicleLookup {
+            get {
+                return ResourceManager.GetString("VehicleLookupView_VehicleLookup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active.
+        /// </summary>
+        internal static string VehicleManagementView_Active {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_Active", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import Vehicles.
+        /// </summary>
+        internal static string VehicleManagementView_ImportVehicles {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_ImportVehicles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Make.
+        /// </summary>
+        internal static string VehicleManagementView_Make {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_Make", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Vehicles.
+        /// </summary>
+        internal static string VehicleManagementView_ManageVehicles {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_ManageVehicles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model.
+        /// </summary>
+        internal static string VehicleManagementView_Model {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_Model", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reg.
+        /// </summary>
+        internal static string VehicleManagementView_Reg {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_Reg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Chassis:.
+        /// </summary>
+        internal static string VehicleManagementView_SearchChassis {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_SearchChassis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Year.
+        /// </summary>
+        internal static string VehicleManagementView_Year {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_Year", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Accessory.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Accessory {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Accessory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Task.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_AddTask {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_AddTask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Travel.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_AddTravel {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_AddTravel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cost.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Cost {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Cost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Destination.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Destination {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Destination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Distance.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Distance {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Distance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Est. Min.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_EstMin {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_EstMin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Task.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_NewTask {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_NewTask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Order Date.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_OrderDate {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_OrderDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Order Type.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_OrderType {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_OrderType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Price.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Price {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Price", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qty.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Qty {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Qty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Remove {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Search {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected Vehicle.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_SelectedVehicle {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_SelectedVehicle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Status {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task:.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Task {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Task", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TRAVELS.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Travels {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Travels", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Order Details.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_WorkOrderDetails {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_WorkOrderDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WORK ORDER INFO.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_WorkOrderInfo {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_WorkOrderInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Order.
+        /// </summary>
+        internal static string WorkOrderView_WorkOrder {
+            get {
+                return ResourceManager.GetString("WorkOrderView_WorkOrder", resourceCulture);
+            }
+        }
     }
 }
