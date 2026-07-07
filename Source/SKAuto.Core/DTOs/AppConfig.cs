@@ -8,6 +8,7 @@
         public int MaxBackupsToKeep { get; set; } = 20;   // Number of backups to keep
                                                           // NEW: Email settings for password reset
         public EmailConfig Email { get; set; } = new();
+        public string Theme { get; set; } = "Light";
     }
 
     public class EmailConfig

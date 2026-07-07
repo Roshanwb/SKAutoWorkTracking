@@ -10,6 +10,7 @@ using SKAuto.Export.Excel;
 using SKAuto.Export.Pdf;
 using SKAuto.Import.Parsers;
 using SKAuto.Import.Validators;
+using SKAuto.UI.Localization;
 using SKAuto.UI.ViewModels;
 using SKAuto.UI.Views;
 using System;
@@ -24,6 +25,7 @@ namespace SKAuto.UI
     {
         private readonly IHost _host;
         private ILoggingService _logger;
+        private AppConfig _currentAppConfig; // ADDED: to store config for later use
 
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
@@ -83,6 +85,7 @@ namespace SKAuto.UI
                             configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
                             _logger.LogInfo("Created default configuration.");
                         }
+                        _currentAppConfig = appConfig; // STORE IT
                         CurrentConfig = appConfig;
 
                         string fixedLanguage = appConfig.Language;
@@ -152,6 +155,13 @@ namespace SKAuto.UI
                                 return;
                             }
                             loggedInUser = App.CurrentUser;
+                        }
+
+                        // ---- APPLY THEME HERE (after login, before showing main window) ----
+                        if (_currentAppConfig != null)
+                        {
+                            ApplicationThemeManager.ApplyTheme(_currentAppConfig.Theme ?? "Light");
+                            _logger.LogInfo($"Applied theme: {_currentAppConfig.Theme ?? "Light"}");
                         }
 
                         var mainWindow = _host.Services.GetRequiredService<MainWindow>();

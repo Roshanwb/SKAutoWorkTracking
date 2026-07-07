@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>SKAuto Suivi des Travaux</value>
+  </data>
+  <data name="MainWindow_NewWorkOrder" xml:space="preserve">
+    <value>Nouveau Bon de Travail</value>
+  </data>
+  <data name="MainWindow_Import" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="MainWindow_ManageClients" xml:space="preserve">
+    <value>Gérer les Clients</value>
+  </data>
+  <data name="MainWindow_ManageVehicles" xml:space="preserve">
+    <value>Gérer les Véhicules</value>
+  </data>
+  <data name="MainWindow_GenerateReports" xml:space="preserve">
+    <value>Générer des Rapports</value>
+  </data>
+  <data name="MainWindow_Backup" xml:space="preserve">
+    <value>Sauvegarde</value>
+  </data>
+  <data name="MainWindow_Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="MainWindow_Help" xml:space="preserve">
+    <value>Aide</value>
+  </data>
+  <data name="MainWindow_Exit" xml:space="preserve">
+    <value>Quitter</value>
+  </data>
+  <data name="MainWindow_StatusReady" xml:space="preserve">
+    <value>Prêt</value>
+  </data>
+
+  <!-- Login -->
+  <data name="Login_Title" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Login_Username" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Login_LoginButton" xml:space="preserve">
+    <value>Se connecter</value>
+  </data>
+  <data name="Login_ForgotPassword" xml:space="preserve">
+    <value>Mot de passe oublié ?</value>
+  </data>
+
+  <!-- Backup -->
+  <data name="Backup_Title" xml:space="preserve">
+    <value>Sauvegarde &amp; Restauration</value>
+  </data>
+  <data name="Backup_BackupDatabase" xml:space="preserve">
+    <value>Sauvegarder la Base de Données</value>
+  </data>
+  <data name="Backup_CreateBackup" xml:space="preserve">
+    <value>Créer une Sauvegarde</value>
+  </data>
+  <data name="Backup_ExportData" xml:space="preserve">
+    <value>Exporter les Données vers CSV/ZIP</value>
+  </data>
+  <data name="Backup_Export" xml:space="preserve">
+    <value>Exporter les Données</value>
+  </data>
+  <data name="Backup_Import" xml:space="preserve">
+    <value>Importer depuis ZIP</value>
+  </data>
+  <data name="Backup_ImportButton" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="Backup_DryRun" xml:space="preserve">
+    <value>Simulation (aperçu uniquement)</value>
+  </data>
+  <data name="Backup_ConflictResolution" xml:space="preserve">
+    <value>Résolution des conflits :</value>
+  </data>
+  <data name="Backup_Skip" xml:space="preserve">
+    <value>Ignorer</value>
+  </data>
+  <data name="Backup_Overwrite" xml:space="preserve">
+    <value>Écraser</value>
+  </data>
+  <data name="Backup_GoogleDrive" xml:space="preserve">
+    <value>Google Drive</value>
+  </data>
+  <data name="Backup_LocalBackups" xml:space="preserve">
+    <value>Sauvegardes Locales</value>
+  </data>
+  <data name="Backup_Refresh" xml:space="preserve">
+    <value>Rafraîchir la Liste</value>
+  </data>
+  <data name="Backup_Restore" xml:space="preserve">
+    <value>Restaurer la Sélection</value>
+  </data>
+  <data name="Backup_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Backup_Browse" xml:space="preserve">
+    <value>Parcourir</value>
+  </data>
+  <data name="Backup_Result" xml:space="preserve">
+    <value>Résultat</value>
+  </data>
+
+  <!-- Import -->
+  <data name="Import_Title" xml:space="preserve">
+    <value>Importer les Bons de Travail</value>
+  </data>
+  <data name="Import_SelectPDFFolder" xml:space="preserve">
+    <value>Sélectionner un Dossier PDF</value>
+  </data>
+  <data name="Import_SelectExcelCSV" xml:space="preserve">
+    <value>Sélectionner un Fichier Excel/CSV</value>
+  </data>
+  <data name="Import_ClearAll" xml:space="preserve">
+    <value>Tout Effacer</value>
+  </data>
+  <data name="Import_ImportOptions" xml:space="preserve">
+    <value>Options d'Import</value>
+  </data>
+  <data name="Import_WorkOrders" xml:space="preserve">
+    <value>Bons de Travail</value>
+  </data>
+  <data name="Import_Vehicles" xml:space="preserve">
+    <value>Véhicules</value>
+  </data>
+  <data name="Import_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="Import_DateFrom" xml:space="preserve">
+    <value>Date du :</value>
+  </data>
+  <data name="Import_DateTo" xml:space="preserve">
+    <value>Au :</value>
+  </data>
+  <data name="Import_SelectAll" xml:space="preserve">
+    <value>Tout Sélectionner</value>
+  </data>
+  <data name="Import_MarkSelected" xml:space="preserve">
+    <value>Marquer la Sélection</value>
+  </data>
+  <data name="Import_ImportButton" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="Import_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Import_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Import_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Import_Chassis" xml:space="preserve">
+    <value>Châssis</value>
+  </data>
+  <data name="Import_Model" xml:space="preserve">
+    <value>Modèle</value>
+  </data>
+  <data name="Import_Client" xml:space="preserve">
+    <value>Client</value>
+  </data>
+
+  <!-- Settings -->
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Thème</value>
+  </data>
+  <data name="Settings_ReportColors" xml:space="preserve">
+    <value>Couleurs des Rapports</value>
+  </data>
+  <data name="Settings_HeaderBackground" xml:space="preserve">
+    <value>Arrière-plan de l'En-tête :</value>
+  </data>
+  <data name="Settings_HeaderText" xml:space="preserve">
+    <value>Texte de l'En-tête :</value>
+  </data>
+  <data name="Settings_AlternateRow" xml:space="preserve">
+    <value>Ligne Alternative :</value>
+  </data>
+  <data name="Settings_Border" xml:space="preserve">
+    <value>Bordure :</value>
+  </data>
+  <data name="Settings_TotalBackground" xml:space="preserve">
+    <value>Arrière-plan Total :</value>
+  </data>
+  <data name="Settings_Accent" xml:space="preserve">
+    <value>Accent :</value>
+  </data>
+  <data name="Settings_ReportFonts" xml:space="preserve">
+    <value>Polices des Rapports</value>
+  </data>
+  <data name="Settings_FontFamily" xml:space="preserve">
+    <value>Famille de Polices :</value>
+  </data>
+  <data name="Settings_HeaderSize" xml:space="preserve">
+    <value>Taille de l'En-tête :</value>
+  </data>
+  <data name="Settings_NormalSize" xml:space="preserve">
+    <value>Taille Normale :</value>
+  </data>
+  <data name="Settings_TitleSize" xml:space="preserve">
+    <value>Taille du Titre :</value>
+  </data>
+  <data name="Settings_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Settings_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+
+  <!-- Reports -->
+  <data name="Reports_Title" xml:space="preserve">
+    <value>Générer des Rapports</value>
+  </data>
+  <data name="Reports_ReportType" xml:space="preserve">
+    <value>Type de Rapport</value>
+  </data>
+  <data name="Reports_DateRange" xml:space="preserve">
+    <value>Plage de Dates</value>
+  </data>
+  <data name="Reports_From" xml:space="preserve">
+    <value>Du :</value>
+  </data>
+  <data name="Reports_To" xml:space="preserve">
+    <value>Au :</value>
+  </data>
+  <data name="Reports_Filters" xml:space="preserve">
+    <value>Filtres</value>
+  </data>
+  <data name="Reports_TaskType" xml:space="preserve">
+    <value>Type de Tâche :</value>
+  </data>
+  <data name="Reports_Status" xml:space="preserve">
+    <value>Statut :</value>
+  </data>
+  <data name="Reports_Task" xml:space="preserve">
+    <value>Tâche :</value>
+  </data>
+  <data name="Reports_GroupByWeek" xml:space="preserve">
+    <value>Grouper par Semaine</value>
+  </data>
+  <data name="Reports_GroupByTaskType" xml:space="preserve">
+    <value>Grouper par Type de Tâche</value>
+  </data>
+  <data name="Reports_SummaryOnly" xml:space="preserve">
+    <value>Résumé Uniquement (cacher les détails)</value>
+  </data>
+  <data name="Reports_GenerateExcel" xml:space="preserve">
+    <value>Générer Excel</value>
+  </data>
+  <data name="Reports_GeneratePDF" xml:space="preserve">
+    <value>Générer PDF</value>
+  </data>
+  <data name="Reports_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+
+  <!-- Common -->
+  <data name="Common_All" xml:space="preserve">
+    <value>Tous</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Common_Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+</root>

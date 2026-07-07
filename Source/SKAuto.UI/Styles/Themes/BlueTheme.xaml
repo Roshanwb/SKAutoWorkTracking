@@ -1,0 +1,49 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Backgrounds -->
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="AlternateRowBackgroundBrush" Color="#E8F0FE"/>
+    <SolidColorBrush x:Key="TotalBackgroundBrush" Color="#D6EEF0"/>
+
+    <!-- Foregrounds -->
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#1A365D"/>
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#2C5282"/>
+    <SolidColorBrush x:Key="HeaderForegroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#A0AEC0"/>
+
+    <!-- Accents -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#2B6CB0"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#38A169"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#D69E2E"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#E53E3E"/>
+
+    <!-- Borders -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#CBD5E0"/>
+    <SolidColorBrush x:Key="LightBorderBrush" Color="#E2E8F0"/>
+
+    <!-- Card -->
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#CBD5E0"/>
+    <CornerRadius x:Key="CardCornerRadius">4</CornerRadius>
+    <Thickness x:Key="CardPadding">12</Thickness>
+    <Thickness x:Key="CardMargin">0,0,0,12</Thickness>
+
+    <!-- Buttons -->
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#3182CE"/>
+    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#38A169"/>
+    <SolidColorBrush x:Key="ButtonWarningBackground" Color="#D69E2E"/>
+    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#E53E3E"/>
+    <SolidColorBrush x:Key="ButtonSecondaryBackground" Color="#718096"/>
+
+    <!-- Fonts -->
+    <FontFamily x:Key="DefaultFontFamily">Segoe UI, Verdana, Arial</FontFamily>
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI, Verdana, Arial</FontFamily>
+    <FontFamily x:Key="TitleFontFamily">Segoe UI, Verdana, Arial</FontFamily>
+
+    <sys:Double x:Key="HeaderFontSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">14</sys:Double>
+    <sys:Double x:Key="NormalFontSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">12</sys:Double>
+    <sys:Double x:Key="SmallFontSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">10</sys:Double>
+    <sys:Double x:Key="TitleFontSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">18</sys:Double>
+</ResourceDictionary>

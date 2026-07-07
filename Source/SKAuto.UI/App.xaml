@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="Styles/Controls.xaml"/>
                 <ResourceDictionary Source="Styles/Shared.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
 
             <!-- Converters -->
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
