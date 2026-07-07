@@ -1,7 +1,7 @@
-﻿<Window x:Class="SKAuto.UI.Views.VehicleEditWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="SKAuto.UI.Views.VehicleEditWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Vehicle" Height="350" Width="500"
+        Title="{loc:Translate MainWindow_Vehicle}" Height="350" Width="500"
         WindowStartupLocation="CenterOwner">
 
     <Grid Margin="10">
@@ -20,30 +20,30 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Content="Chassis Number:" VerticalAlignment="Center"/>
+        <Label Grid.Row="0" Grid.Column="0" Content="{loc:Translate VehicleEditWindow_ChassisNumber}" VerticalAlignment="Center"/>
         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Vehicle.ChassisNumber}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <Label Grid.Row="1" Grid.Column="0" Content="Make:" VerticalAlignment="Center"/>
+        <Label Grid.Row="1" Grid.Column="0" Content="{loc:Translate VehicleEditWindow_Make}" VerticalAlignment="Center"/>
         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Vehicle.Make}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <Label Grid.Row="2" Grid.Column="0" Content="Model:" VerticalAlignment="Center"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="{loc:Translate VehicleEditWindow_Model}" VerticalAlignment="Center"/>
         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Vehicle.Model}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <Label Grid.Row="3" Grid.Column="0" Content="Year:" VerticalAlignment="Center"/>
+        <Label Grid.Row="3" Grid.Column="0" Content="{loc:Translate VehicleEditWindow_Year}" VerticalAlignment="Center"/>
         <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Vehicle.Year, TargetNullValue=''}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <Label Grid.Row="4" Grid.Column="0" Content="Registration:" VerticalAlignment="Center"/>
+        <Label Grid.Row="4" Grid.Column="0" Content="{loc:Translate VehicleEditWindow_Registration}" VerticalAlignment="Center"/>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Vehicle.Registration}" Margin="5" Padding="3" BorderBrush="#dee2e6"/>
 
-        <Label Grid.Row="5" Grid.Column="0" Content="Is Active:" VerticalAlignment="Center"/>
+        <Label Grid.Row="5" Grid.Column="0" Content="{loc:Translate VehicleEditWindow_IsActive}" VerticalAlignment="Center"/>
         <CheckBox Grid.Row="5" Grid.Column="1" IsChecked="{Binding Vehicle.IsActive}" Margin="5" VerticalAlignment="Center"/>
 
         <!-- Buttons -->
         <StackPanel Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-            <Button Content="Save" Command="{Binding SaveCommand}" 
+            <Button Content="{loc:Translate VehicleEditWindow_Save}" Command="{Binding SaveCommand}" 
                     Style="{StaticResource ActionButton}" Background="#4CAF50"
                     Width="80" Height="30" Margin="5"/>
-            <Button Content="Cancel" Command="{Binding CancelCommand}" 
+            <Button Content="{loc:Translate VehicleEditWindow_Cancel}" Command="{Binding CancelCommand}" 
                     Style="{StaticResource ActionButton}" Background="#6c757d"
                     Width="80" Height="30" Margin="5"/>
         </StackPanel>

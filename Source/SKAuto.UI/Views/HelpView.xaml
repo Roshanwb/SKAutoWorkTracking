@@ -1,7 +1,7 @@
-﻿<Window x:Class="SKAuto.UI.Views.HelpView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="SKAuto.UI.Views.HelpView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Help – SKAuto Work Tracking" Height="650" Width="850"
+        Title="{loc:Translate HelpView_Title}" Height="650" Width="850"
         WindowStartupLocation="CenterOwner" 
         Background="#F8F9FA"
         ResizeMode="CanResize">
@@ -47,621 +47,621 @@
 
         <!-- Title -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="📘 Help &amp; Documentation" FontSize="20" FontWeight="Bold" Foreground="#2C3E50"/>
-            <TextBlock Text="  –  User Guide" FontSize="16" Foreground="#7F8C8D" VerticalAlignment="Bottom" Margin="10,0,0,4"/>
+            <TextBlock Text="{loc:Translate HelpView_HelpDocumentationTab}" FontSize="20" FontWeight="Bold" Foreground="#2C3E50"/>
+            <TextBlock Text="{loc:Translate HelpView_UserGuide}" FontSize="16" Foreground="#7F8C8D" VerticalAlignment="Bottom" Margin="10,0,0,4"/>
         </StackPanel>
 
         <!-- Tab Control -->
         <TabControl Grid.Row="1" BorderBrush="#DEE2E6" BorderThickness="1" Background="White" Margin="0,0,0,10">
-            <TabItem Header="🚀 Getting Started">
+            <TabItem Header="{loc:Translate HelpView_GettingStartedTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Welcome to SKAuto Work Tracking" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="This system helps you manage work orders for vehicle accessory fitting and preparation. Below is a quick overview of the main workflows." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_Welcome}" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_WelcomeDescription}" Style="{StaticResource BodyText}"/>
 
-                        <TextBlock Text="🔹 Quick Start" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_QuickStartTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Launch the app from desktop or system tray." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_LaunchApp}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Today's work orders load automatically." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TodayWorkOrders}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Use the main menu to import data, manage clients/vehicles, or generate reports." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Daily Workflow" Style="{StaticResource SubHeader}"/>
-                        <TextBlock Text="Morning (8:00–9:00)" FontWeight="SemiBold" Margin="10,8,0,2"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Check today's planned work (dashboard)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Import any new files (Excel/CSV, ParcCarrières, or PDF folder)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Print work sheets for mechanics (via reports)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_UseMainMenu}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="During the Day" FontWeight="SemiBold" Margin="10,8,0,2"/>
+                        <TextBlock Text="{loc:Translate HelpView_DailyWorkflowTopic}" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_Morning}" FontWeight="SemiBold" Margin="10,8,0,2"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Update work order status (Planned → In Progress → Done)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_CheckPlannedWork}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Add notes or travel records as needed." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ImportNewFiles}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_PrintWorkSheets}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="End of Day (16:00–17:00)" FontWeight="SemiBold" Margin="10,8,0,2"/>
+                        <TextBlock Text="{loc:Translate HelpView_DuringTheDay}" FontWeight="SemiBold" Margin="10,8,0,2"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Mark all completed work as 'Done'." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_UpdateStatusDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Generate daily reports (Excel/PDF)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_AddNotesTravel}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_EndOfDay}" FontWeight="SemiBold" Margin="10,8,0,2"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_MarkDone}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Optionally upload reports to Google Drive." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_GenerateDailyReports}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_UploadReportsToDrive}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="📥 Importing Data">
+            <TabItem Header="{loc:Translate HelpView_ImportingDataTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Import Work Orders" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="The system supports several import methods. Each has specific use cases." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate ImportView_ImportWorkOrders}" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ImportMethodsOverview}" Style="{StaticResource BodyText}"/>
 
-                        <TextBlock Text="🔹 Excel / CSV (General)" Style="{StaticResource SubHeader}"/>
-                        <TextBlock Text="Use this for most imports. It reads the ParcCarrières or similar CSV format." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ExcelCSVTopic}" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_UseGeneralImport}" Style="{StaticResource BodyText}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Supports columns: N° (VIN), Client, Modèle, Fin prép., Etat." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ImportCSVColumns}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="All vehicles and clients are imported regardless of Etat or date." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ImportAllVehiclesClients}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Work orders are created only for rows with Etat = 'Prêt' and date within the selected range." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 ParcCarrières CSV" Style="{StaticResource SubHeader}"/>
-                        <TextBlock Text="Dedicated parser for the standard ParcCarrières export. Same logic as above but optimized for that format." Style="{StaticResource BodyText}"/>
-
-                        <TextBlock Text="🔹 PDF Folder" Style="{StaticResource SubHeader}"/>
-                        <TextBlock Text="Select a folder containing PDF work orders. The built‑in Python extractor reads the data." Style="{StaticResource BodyText}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Requires pdf_accessories_extractor.py in the app folder." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Imports all rows; work orders are created with status = Planned." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_WorkOrdersCreatedCondition}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Import Vehicles Only" Style="{StaticResource SubHeader}"/>
-                        <TextBlock Text="Use the 'Import Vehicles' button in the Vehicle Management window." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ParcCarrieresTopic}" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ParcCarrieresParserDescription}" Style="{StaticResource BodyText}"/>
+
+                        <TextBlock Text="{loc:Translate HelpView_PDFFolderTopic}" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_SelectPDFFolderDescription}" Style="{StaticResource BodyText}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Imports VIN, Model, and Client from the same CSV format." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_RequiresPythonScript}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Creates new clients (cleaned name) and links vehicles to them." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_PdfImportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_ImportVehiclesTopic}" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_UseImportVehiclesButton}" Style="{StaticResource BodyText}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ImportVehiclesFormat}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Skips existing VINs. Date and Etat are ignored." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ImportVehiclesCreatesClients}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ImportVehiclesSkipExisting}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
                         <Border Style="{StaticResource TipBox}">
-                            <TextBlock Text="💡 Tip: Use the 'Dry Run' checkbox to preview what will be imported without making changes." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TipDryRun}" Style="{StaticResource BodyText}" Margin="0"/>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="📋 Work Orders">
+            <TabItem Header="{loc:Translate HelpView_WorkOrdersTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Managing Work Orders" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="Work orders are the core of the system. Each work order represents all work for a specific vehicle on a specific date." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ManagingWorkOrders}" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_WorkOrdersCore}" Style="{StaticResource BodyText}"/>
 
-                        <TextBlock Text="🔹 Creating a Work Order" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_CreateWorkOrderTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Click 'New Work Order' on the dashboard." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ClickNewWorkOrder}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Search for a vehicle by chassis number or register a new one." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_SearchVehicle}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Add tasks (accessories) – type, quantity, price, and time." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_AddTasksDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Add travel records (destination, distance, cost) if applicable." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Editing &amp; Deleting" Style="{StaticResource SubHeader}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Click the '✏️' button in the main grid to edit a work order." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Delete from the work order detail window or via the 'Delete' button (admin only)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_AddTravelDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Status Tracking" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_EditDeleteTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Planned → In Progress → Blocked → Done." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ClickEditButton}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Marking as 'Done' automatically sets the completion date." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_DeleteWorkOrderDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_StatusTrackingTopic}" Style="{StaticResource SubHeader}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_StatusFlow}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_MarkDoneAutoComplete}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
                         <Border Style="{StaticResource TipBox}">
-                            <TextBlock Text="💡 Tip: You can quickly mark a work order as 'Done' directly from the main grid using the green button." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TipMarkDone}" Style="{StaticResource BodyText}" Margin="0"/>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="📊 Reporting">
+            <TabItem Header="{loc:Translate HelpView_ReportingTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Generating Reports" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="The Reports window provides powerful filtering and export to Excel or PDF." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_GeneratingReports}" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ReportsOverview}" Style="{StaticResource BodyText}"/>
 
-                        <TextBlock Text="🔹 Report Types" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ReportTypesTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Work Orders – detailed list with tasks and travel." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_WorkOrdersReportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Tasks – all accessories with type, price, and usage count." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TasksReportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Clients – list of all clients with contact details." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ClientsReportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Vehicles – list of all vehicles with client association." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Filters (Work Orders &amp; Tasks)" Style="{StaticResource SubHeader}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Date range, task type, work status, specific accessory." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Group by Week (combines orders by week)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Group by Task Type (for Tasks report)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Summary Only – hides task-level details, shows only totals." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_VehiclesReportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Export Options" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_FiltersTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Excel (.xlsx) – editable, pivot‑ready." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ReportFiltersDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="PDF (.pdf) – printable, client‑friendly." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_GroupByWeekDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_GroupByTaskTypeDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_SummaryOnlyDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_ExportOptionsTopic}" Style="{StaticResource SubHeader}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ExcelExportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_PdfExportDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
                         <Border Style="{StaticResource TipBox}">
-                            <TextBlock Text="💡 Tip: PDF reports use your custom colors and fonts (set in Settings)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TipPDFReports}" Style="{StaticResource BodyText}" Margin="0"/>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="⚙️ Data Management">
+            <TabItem Header="{loc:Translate HelpView_DataManagement}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Managing Clients, Vehicles, and Accessories" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ManagingData}" Style="{StaticResource SectionHeader}"/>
 
-                        <TextBlock Text="🔹 Clients" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ClientsTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Add, edit, or delete clients in the Client Management window." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ManageClientsDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Merge duplicate clients: select multiple clients and click 'Merge'." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_MergeClientsDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="All vehicles linked to the source clients are automatically reassigned to the master client." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Vehicles" Style="{StaticResource SubHeader}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Search, add, edit, or delete vehicles." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Import vehicles directly from CSV using the 'Import Vehicles' button." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_MergeVehiclesReassigned}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Accessories (Tasks)" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_VehiclesTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Define tasks with name, part number, price, time, and task type (Fit, Sell, Remove, Preparation, Travel, Other)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ManageVehiclesDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Bulk Price Update: change the price for a specific accessory across a date range." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ImportVehiclesDirect}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Bulk Price Update" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_AccessoriesTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Open from the main menu → Bulk Price Update." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_DefineTasksDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Select an accessory, date range, and new price." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_BulkPriceUpdateDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_BulkPriceUpdateTopic}" Style="{StaticResource SubHeader}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_OpenBulkPriceUpdate}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Optionally update the accessory's default price." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_SelectAccessoryForBulkUpdate}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_UpdateDefaultPriceOption}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="💾 Backup &amp; Restore">
+            <TabItem Header="{loc:Translate HelpView_BackupRestoreTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Protect Your Data" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="The Backup &amp; Restore window offers multiple ways to safeguard your database." Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ProtectData}" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_BackupRestoreOverview}" Style="{StaticResource BodyText}"/>
 
-                        <TextBlock Text="🔹 Local Backup" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_LocalBackupTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Creates a .db copy in your chosen folder." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_LocalBackupDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Automatic backup on application exit (if user was logged in)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_AutoBackupOnExit}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Keep only the latest N backups (configurable)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Export to ZIP (CSV)" Style="{StaticResource SubHeader}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Exports all tables as CSV files in a ZIP archive." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Portable – can be restored on any machine." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_KeepLatestBackups}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Google Drive Sync" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ExportZipTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Configure your Google Drive Client ID and Secret in Settings." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ExportZipDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Auto-authenticate on startup (if configured)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="List, upload, and restore backups directly from Drive." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_PortableBackup}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Restore" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_GoogleDriveTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Choose a local .db backup, a ZIP file, or a Drive backup." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ConfigureDriveCredentials}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Conflict resolution: Skip or Overwrite existing records." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_AutoAuthenticate}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="'Dry Run' mode to preview changes without committing." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_DriveBackupOperations}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_RestoreTopic}" Style="{StaticResource SubHeader}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ChooseBackupSource}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ConflictResolutionDescription}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_DryRunDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
                         <Border Style="{StaticResource TipBox}">
-                            <TextBlock Text="💡 Tip: The progress bar shows the current step, and the mouse cursor changes to a wait icon during long operations." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TipProgressBar}" Style="{StaticResource BodyText}" Margin="0"/>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="🔒 User &amp; Security">
+            <TabItem Header="{loc:Translate HelpView_UserSecurityTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="User Management &amp; Security" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_UserManagementSecurity}" Style="{StaticResource SectionHeader}"/>
 
-                        <TextBlock Text="🔹 Login" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_LoginTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Enter your username and password to access the system." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_LoginInstructions}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Forgot password? Click 'Forgot Password?' – a verification code will be sent to your registered email." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Roles" Style="{StaticResource SubHeader}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="Admin – full access (manage users, settings, backup, all data)." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="User – limited access: create work orders, import data, update status, generate reports (prices are hidden)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ForgotPasswordDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Changing Password" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_RolesTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Use File → Change Password from the main menu." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_AdminRoleDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="You must know your current password to change it." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_UserRoleDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Admin Only" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_ChangePasswordTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Manage users (add, edit, delete, reset passwords)." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ChangePasswordMenu}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Configure Google Drive settings." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_CurrentPasswordRequired}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_AdminOnlyTopic}" Style="{StaticResource SubHeader}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ManageUsersDescription}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Set report styles (colors, fonts) in Settings." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ConfigureDriveSettings}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_SetReportStyles}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
                         <Border Style="{StaticResource TipBox}">
-                            <TextBlock Text="💡 Tip: Passwords are hashed using BCrypt – never stored in plain text." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_TipBCrypt}" Style="{StaticResource BodyText}" Margin="0"/>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="📌 Tips &amp; Troubleshooting">
+            <TabItem Header="{loc:Translate HelpView_TipsTab}">
                 <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Quick Tips" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_QuickTips}" Style="{StaticResource SectionHeader}"/>
 
-                        <TextBlock Text="🔹 Performance" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_PerformanceTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="For large imports, uncheck 'Vehicles' and 'Clients' if they already exist – speeds up processing." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ImportPerformanceTip}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="The database is stored in AppData – ensure enough disk space." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-
-                        <TextBlock Text="🔹 Common Errors" Style="{StaticResource SubHeader}"/>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="'SQLite Error 19: UNIQUE constraint failed' – duplicate client/vehicle/accessory. Use 'Overwrite' conflict resolution or skip duplicates." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="'Foreign key constraint failed' – missing client or vehicle. Import clients/vehicles first." Style="{StaticResource BodyText}" Margin="0"/>
-                        </BulletDecorator>
-                        <BulletDecorator Style="{StaticResource BulletItem}">
-                            <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
-                            </BulletDecorator.Bullet>
-                            <TextBlock Text="'Email not configured' – admin must set up SMTP settings in AppConfig.json for password reset." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_DatabaseStorage}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Data Recovery" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_CommonErrorsTopic}" Style="{StaticResource SubHeader}"/>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Daily automatic backups are saved in %AppData%\SKAuto\Backups." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_SQLiteUniqueError}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="You can manually export to ZIP for portability." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_ForeignKeyError}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
                         <BulletDecorator Style="{StaticResource BulletItem}">
                             <BulletDecorator.Bullet>
-                                <TextBlock Text="• " FontWeight="Bold"/>
+                                <TextBlock Text=". " FontWeight="Bold"/>
                             </BulletDecorator.Bullet>
-                            <TextBlock Text="Use Google Drive to keep off‑site backups." Style="{StaticResource BodyText}" Margin="0"/>
+                            <TextBlock Text="{loc:Translate HelpView_EmailNotConfigured}" Style="{StaticResource BodyText}" Margin="0"/>
                         </BulletDecorator>
 
-                        <TextBlock Text="🔹 Support" Style="{StaticResource SubHeader}"/>
-                        <TextBlock Text="For technical issues, contact: roshanwb@gmail.com" Style="{StaticResource BodyText}"/>
-                        <TextBlock Text="Version: 1.0.0 (latest)" Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_DataRecoveryTopic}" Style="{StaticResource SubHeader}"/>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_DailyBackupLocation}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_ManualExportZip}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+                        <BulletDecorator Style="{StaticResource BulletItem}">
+                            <BulletDecorator.Bullet>
+                                <TextBlock Text=". " FontWeight="Bold"/>
+                            </BulletDecorator.Bullet>
+                            <TextBlock Text="{loc:Translate HelpView_UseDriveOffsite}" Style="{StaticResource BodyText}" Margin="0"/>
+                        </BulletDecorator>
+
+                        <TextBlock Text="{loc:Translate HelpView_SupportTopic}" Style="{StaticResource SubHeader}"/>
+                        <TextBlock Text="{loc:Translate HelpView_SupportContact}" Style="{StaticResource BodyText}"/>
+                        <TextBlock Text="{loc:Translate HelpView_Version}" Style="{StaticResource BodyText}"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
         </TabControl>
 
         <!-- Close Button -->
-        <Button Grid.Row="2" Content="Close" Width="100" Height="34" HorizontalAlignment="Right" Margin="0,15,0,0"
+        <Button Grid.Row="2" Content="{loc:Translate ClientManagementView_Close}" Width="100" Height="34" HorizontalAlignment="Right" Margin="0,15,0,0"
                 Click="CloseButton_Click" Style="{StaticResource ActionButton}" Background="#6C757D" Foreground="White"/>
     </Grid>
 </Window>

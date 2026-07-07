@@ -1,7 +1,7 @@
-﻿<Window x:Class="SKAuto.UI.Views.BackupView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="SKAuto.UI.Views.BackupView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Backup &amp; Restore" Height="680" Width="550"
+        Title="{loc:Translate BackupView_BackupRestore}" Height="680" Width="550"
         WindowStartupLocation="CenterOwner">
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -15,48 +15,48 @@
         </Grid.RowDefinitions>
 
         <!-- Backup & Export sections remain at top -->
-        <GroupBox Header="Backup Database" Grid.Row="0" Margin="0,0,0,10" Padding="10">
+        <GroupBox Header="{loc:Translate BackupView_BackupDatabase}" Grid.Row="0" Margin="0,0,0,10" Padding="10">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBox Text="{Binding BackupFolder}" Width="300" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                    <Button Content="Browse" Command="{Binding SelectBackupFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                    <Button Content="Create Backup" Command="{Binding BackupCommand}" 
+                    <Button Content="{loc:Translate GoogleDriveSettingsView_Browse}" Command="{Binding SelectBackupFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
+                    <Button Content="{loc:Translate BackupView_CreateBackup}" Command="{Binding BackupCommand}" 
                             Style="{StaticResource ActionButton}" Background="#4CAF50" Width="100" IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>
 
-        <GroupBox Header="Export Data to CSV/ZIP" Grid.Row="1" Margin="0,0,0,10" Padding="10">
+        <GroupBox Header="{loc:Translate BackupView_ExportDataCsvZip}" Grid.Row="1" Margin="0,0,0,10" Padding="10">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBox Text="{Binding ExportFolder}" Width="300" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                    <Button Content="Browse" Command="{Binding SelectExportFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                    <Button Content="Export Data" Command="{Binding ExportCommand}" 
+                    <Button Content="{loc:Translate GoogleDriveSettingsView_Browse}" Command="{Binding SelectExportFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
+                    <Button Content="{loc:Translate BackupView_ExportData}" Command="{Binding ExportCommand}" 
                             Style="{StaticResource ActionButton}" Background="#3498db" Width="100" IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>
 
         <!-- Import from ZIP -->
-        <GroupBox Header="Import from ZIP" Grid.Row="2" Margin="0,0,0,10" Padding="10">
+        <GroupBox Header="{loc:Translate BackupView_ImportFromZip}" Grid.Row="2" Margin="0,0,0,10" Padding="10">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBox Text="{Binding ImportFilePath}" Width="300" Margin="0,0,10,0" IsReadOnly="True" IsEnabled="{Binding !IsBusy}"/>
-                    <Button Content="Browse" Command="{Binding SelectImportFileCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                    <Button Content="Import" Command="{Binding ImportCommand}" 
+                    <Button Content="{loc:Translate GoogleDriveSettingsView_Browse}" Command="{Binding SelectImportFileCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
+                    <Button Content="{loc:Translate BackupView_Import}" Command="{Binding ImportCommand}" 
                             Style="{StaticResource ActionButton}" Background="#f39c12" Width="100" IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
 
-                <CheckBox Content="Dry Run (preview only)" IsChecked="{Binding IsDryRun}" Margin="0,0,0,10" IsEnabled="{Binding !IsBusy}"/>
+                <CheckBox Content="{loc:Translate BackupView_DryRun}" IsChecked="{Binding IsDryRun}" Margin="0,0,0,10" IsEnabled="{Binding !IsBusy}"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock Text="Conflict resolution:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="{loc:Translate BackupView_ConflictResolution}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <ComboBox ItemsSource="{Binding ConflictResolutions}" 
                               SelectedItem="{Binding Conflict}" Width="100" IsEnabled="{Binding !IsBusy}">
                         <ComboBoxItem>Skip</ComboBoxItem>
                         <ComboBoxItem>Overwrite</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="(Skip = ignore, Overwrite = replace)" 
+                    <TextBlock Text="{loc:Translate BackupView_ConflictHelp}" 
                                FontSize="10" Foreground="Gray" Margin="10,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
             </StackPanel>
@@ -64,13 +64,13 @@
 
         <!-- TABS: Drive Backups (first) | Local Backups -->
         <TabControl Grid.Row="3" Margin="0,0,0,10">
-            <TabItem Header="Google Drive">
+            <TabItem Header="{loc:Translate BackupView_GoogleDrive}">
                 <StackPanel Margin="0,10,0,0">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="Refresh Drive List" Command="{Binding RefreshDriveBackupsCommand}" 
+                        <Button Content="{loc:Translate BackupView_RefreshDriveList}" Command="{Binding RefreshDriveBackupsCommand}" 
                                 Style="{StaticResource ActionButton}" Background="#17A2B8"
                                 Width="120" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                        <Button Content="Restore from Drive" Command="{Binding RestoreSelectedDriveBackupCommand}" 
+                        <Button Content="{loc:Translate BackupView_RestoreFromDrive}" Command="{Binding RestoreSelectedDriveBackupCommand}" 
                                 Style="{StaticResource ActionButton}" Background="#E67E22"
                                 Width="140" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
                         <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Foreground="Gray"/>
@@ -80,22 +80,22 @@
                               BorderBrush="#dee2e6" BorderThickness="1"
                               RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
-                            <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
-                            <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" Width="80"/>
+                            <DataGridTextColumn Header="{loc:Translate BackupView_FileName}" Binding="{Binding FileName}" Width="*"/>
+                            <DataGridTextColumn Header="{loc:Translate BackupView_Created}" Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
+                            <DataGridTextColumn Header="{loc:Translate BackupView_Size}" Binding="{Binding SizeDisplay}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
             </TabItem>
 
             <!-- Local Tab -->
-            <TabItem Header="Local Backups">
+            <TabItem Header="{loc:Translate BackupView_LocalBackups}">
                 <StackPanel Margin="0,10,0,0">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="Refresh List" Command="{Binding RefreshBackupsCommand}" 
+                        <Button Content="{loc:Translate BackupView_RefreshList}" Command="{Binding RefreshBackupsCommand}" 
                                 Style="{StaticResource ActionButton}" Background="#3498db"
                                 Width="100" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
-                        <Button Content="Restore Selected" Command="{Binding RestoreSelectedBackupCommand}" 
+                        <Button Content="{loc:Translate BackupView_RestoreSelected}" Command="{Binding RestoreSelectedBackupCommand}" 
                                 Style="{StaticResource ActionButton}" Background="#E67E22"
                                 Width="120" Margin="0,0,10,0" IsEnabled="{Binding !IsBusy}"/>
                         <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Foreground="Gray"/>
@@ -105,9 +105,9 @@
                               BorderBrush="#dee2e6" BorderThickness="1"
                               RowBackground="#ffffff" AlternatingRowBackground="#f8f9fa">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
-                            <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
-                            <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" Width="80"/>
+                            <DataGridTextColumn Header="{loc:Translate BackupView_FileName}" Binding="{Binding FileName}" Width="*"/>
+                            <DataGridTextColumn Header="{loc:Translate BackupView_Created}" Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
+                            <DataGridTextColumn Header="{loc:Translate BackupView_Size}" Binding="{Binding SizeDisplay}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -120,14 +120,14 @@
                      IsIndeterminate="True" Background="#E0E0E0" Foreground="#4CAF50"/>
 
         <!-- Result / Log -->
-        <GroupBox Header="Result" Grid.Row="5" Margin="0,0,0,10" Padding="10">
+        <GroupBox Header="{loc:Translate BackupView_Result}" Grid.Row="5" Margin="0,0,0,10" Padding="10">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
             </ScrollViewer>
         </GroupBox>
 
         <!-- Close Button -->
-        <Button Content="Close" Command="{Binding CloseCommand}" 
+        <Button Content="{loc:Translate ClientManagementView_Close}" Command="{Binding CloseCommand}" 
                 Style="{StaticResource ActionButton}" Background="#6c757d" 
                 HorizontalAlignment="Right" Width="80" Grid.Row="6"/>
     </Grid>
