@@ -101,13 +101,17 @@ namespace SKAuto.UI
                             var culture = new CultureInfo(fixedLanguage);
                             CultureInfo.DefaultThreadCurrentCulture = culture;
                             CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            LocalizationManager.Instance.CurrentCulture = culture;
                             _logger.LogInfo($"Culture set to {fixedLanguage}");
                         }
                         catch
                         {
+                            // fallback
+                            var culture = new CultureInfo("fr-FR");
+                            CultureInfo.DefaultThreadCurrentCulture = culture;
+                            CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            LocalizationManager.Instance.CurrentCulture = culture;
                             _logger.LogWarning($"Invalid culture, falling back to fr-FR");
-                            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
-                            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
                         }
 
                         // ---- GOOGLE DRIVE AUTO-AUTH ----

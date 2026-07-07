@@ -1,0 +1,347 @@
+﻿HelpView.xaml | –  User Guide
+BackupView.xaml | (Skip = ignore, Overwrite = replace)
+ClientManagementView.xaml | (type to filter)
+MainWindow.xaml | _Admin
+MainWindow.xaml | _Backup/Restore
+MainWindow.xaml | _Clients
+MainWindow.xaml | _Exit
+MainWindow.xaml | _File
+MainWindow.xaml | _Generate Report
+MainWindow.xaml | _Import
+MainWindow.xaml | _Manage
+MainWindow.xaml | _Reports
+MainWindow.xaml | _Tasks
+MainWindow.xaml | _Users
+MainWindow.xaml | _Vehicles
+MainWindow.xaml | ✏️
+HelpView.xaml | ⚙️ Data Management
+Splash.xaml | 2026 - Insights®
+MainWindow.xaml | About
+WorkOrderDetailWindow.xaml | Accessory
+AccessoryManagementView.xaml | Actions
+VehicleManagementView.xaml | Active
+ClientEditWindow.xaml | Active:
+UserManagementView.xaml | Add
+AccessoryManagementView.xaml | Add New Task
+HelpView.xaml | Add notes or travel records as needed.
+WorkOrderDetailWindow.xaml | Add Task
+HelpView.xaml | Add tasks (accessories) – type, quantity, price, and time.
+WorkOrderDetailWindow.xaml | Add Travel
+HelpView.xaml | Add travel records (destination, distance, cost) if applicable.
+HelpView.xaml | Add, edit, or delete clients in the Client Management window.
+ClientEditWindow.xaml | Address:
+HelpView.xaml | Admin – full access (manage users, settings, backup, all data).
+HelpView.xaml | All vehicles and clients are imported regardless of Etat or date.
+HelpView.xaml | All vehicles linked to the source clients are automatically reassigned to the master client.
+PriceUpdateView.xaml | Also update default price of the accessory
+GoogleDriveSettingsView.xaml | Authenticate
+HelpView.xaml | Auto-authenticate on startup (if configured).
+HelpView.xaml | Automatic backup on application exit (if user was logged in).
+BackupView.xaml | Backup &amp; Restore
+BackupView.xaml | Backup Database
+MainWindow.xaml | Blocked
+GoogleDriveSettingsView.xaml | Browse
+MainWindow.xaml | Bulk Price Update
+HelpView.xaml | Bulk Price Update: change the price for a specific accessory across a date range.
+VehicleEditWindow.xaml | Cancel
+MainWindow.xaml | Change Password
+MainWindow.xaml | Chassis
+VehicleEditWindow.xaml | Chassis Number:
+HelpView.xaml | Check today's planned work (dashboard).
+HelpView.xaml | Choose a local .db backup, a ZIP file, or a Drive backup.
+ImportView.xaml | Clear All
+HelpView.xaml | Click 'New Work Order' on the dashboard.
+HelpView.xaml | Click the '✏️' button in the main grid to edit a work order.
+MainWindow.xaml | Client
+ClientEditWindow.xaml | Client Code:
+GoogleDriveSettingsView.xaml | Client ID:
+GoogleDriveSettingsView.xaml | Client Secret:
+ImportView.xaml | Clients
+HelpView.xaml | Clients – list of all clients with contact details.
+ClientManagementView.xaml | Close
+HelpView.xaml | Configure Google Drive settings.
+HelpView.xaml | Configure your Google Drive Client ID and Secret in Settings.
+BackupView.xaml | Conflict resolution:
+HelpView.xaml | Conflict resolution: Skip or Overwrite existing records.
+WorkOrderDetailWindow.xaml | Cost
+BackupView.xaml | Create Backup
+BackupView.xaml | Created
+HelpView.xaml | Creates a .db copy in your chosen folder.
+HelpView.xaml | Creates new clients (cleaned name) and links vehicles to them.
+HelpView.xaml | Daily automatic backups are saved in %AppData%\SKAuto\Backups.
+MainWindow.xaml | Danger
+ImportView.xaml | Date
+ImportView.xaml | Date From:
+PriceUpdateView.xaml | Date Range
+HelpView.xaml | Date range, task type, work status, specific accessory.
+TravelDialog.xaml | Date:
+HelpView.xaml | Dedicated parser for the standard ParcCarrières export. Same logic as above but optimized for that format.
+HelpView.xaml | Define tasks with name, part number, price, time, and task type (Fit, Sell, Remove, Preparation, Travel, Other).
+ClientManagementView.xaml | Delete
+HelpView.xaml | Delete from the work order detail window or via the 'Delete' button (admin only).
+MainWindow.xaml | Delete Work Order
+AccessoryManagementView.xaml | Description
+AccessoryManagementView.xaml | Description:
+WorkOrderDetailWindow.xaml | Destination
+TravelDialog.xaml | Destination:
+WorkOrderDetailWindow.xaml | Distance
+TravelDialog.xaml | Distance (km):
+MainWindow.xaml | Done
+MainWindow.xaml | Drive
+BackupView.xaml | Dry Run (preview only)
+HelpView.xaml | 'Dry Run' mode to preview changes without committing.
+HelpView.xaml | During the Day
+MainWindow.xaml | Edit
+ClientEditWindow.xaml | Edit Client
+ClientMergeDialog.xaml | Edit Master Client Details
+ClientManagementView.xaml | Email
+HelpView.xaml | 'Email not configured' – admin must set up SMTP settings in AppConfig.json for password reset.
+ClientMergeDialog.xaml | Email:
+HelpView.xaml | End of Day (16:00–17:00)
+HelpView.xaml | Enter your username and password to access the system.
+WorkOrderDetailWindow.xaml | Est. Min
+HelpView.xaml | Excel (.xlsx) – editable, pivot‑ready.
+BackupView.xaml | Export Data
+BackupView.xaml | Export Data to CSV/ZIP
+HelpView.xaml | Exports all tables as CSV files in a ZIP archive.
+BackupView.xaml | File Name
+ReportsView.xaml | Filters
+GoogleDriveSettingsView.xaml | Folder ID:
+HelpView.xaml | For large imports, uncheck 'Vehicles' and 'Clients' if they already exist – speeds up processing.
+HelpView.xaml | For technical issues, contact: roshanwb@gmail.com
+HelpView.xaml | 'Foreign key constraint failed' – missing client or vehicle. Import clients/vehicles first.
+LoginView.xaml | Forgot Password?
+HelpView.xaml | Forgot password? Click 'Forgot Password?' – a verification code will be sent to your registered email.
+PriceUpdateView.xaml | From:
+HelpView.xaml | Generate daily reports (Excel/PDF).
+ReportsView.xaml | Generate Excel
+ReportsView.xaml | Generate PDF
+ReportsView.xaml | Generate Reports
+HelpView.xaml | Generating Reports
+GoogleDriveSettingsView.xaml | Get from Google Cloud Console
+BackupView.xaml | Google Drive
+GoogleDriveSettingsView.xaml | Google Drive Settings
+ReportsView.xaml | Group by Task Type
+HelpView.xaml | Group by Task Type (for Tasks report).
+ReportsView.xaml | Group by Week
+HelpView.xaml | Group by Week (combines orders by week).
+MainWindow.xaml | Help
+HelpView.xaml | Help – SKAuto Work Tracking
+MainWindow.xaml | ID
+BackupView.xaml | Import
+HelpView.xaml | Import any new files (Excel/CSV, ParcCarrières, or PDF folder).
+MainWindow.xaml | Import Data
+BackupView.xaml | Import from ZIP
+ImportView.xaml | Import Options
+VehicleManagementView.xaml | Import Vehicles
+HelpView.xaml | Import vehicles directly from CSV using the 'Import Vehicles' button.
+ImportView.xaml | Import Work Orders
+HelpView.xaml | Imports all rows; work orders are created with status = Planned.
+HelpView.xaml | Imports VIN, Model, and Client from the same CSV format.
+MainWindow.xaml | In Progress
+Splash.xaml | Initializing...
+AccessoryManagementView.xaml | Is Active
+VehicleEditWindow.xaml | Is Active:
+HelpView.xaml | Keep only the latest N backups (configurable).
+GoogleDriveSettingsView.xaml | Last Sync:
+HelpView.xaml | Launch the app from desktop or system tray.
+PriceUpdateView.xaml | Leave empty to keep current price
+HelpView.xaml | List, upload, and restore backups directly from Drive.
+BackupView.xaml | Local Backups
+LoginView.xaml | Login
+MainWindow.xaml | MainWindow
+VehicleManagementView.xaml | Make
+VehicleEditWindow.xaml | Make:
+ClientManagementView.xaml | Manage Clients
+UserManagementView.xaml | Manage Users
+HelpView.xaml | Manage users (add, edit, delete, reset passwords).
+VehicleManagementView.xaml | Manage Vehicles
+HelpView.xaml | Managing Clients, Vehicles, and Accessories
+HelpView.xaml | Managing Work Orders
+HelpView.xaml | Mark all completed work as 'Done'.
+ImportView.xaml | Mark Selected
+HelpView.xaml | Marking as 'Done' automatically sets the completion date.
+ClientMergeDialog.xaml | Merge Clients
+HelpView.xaml | Merge duplicate clients: select multiple clients and click 'Merge'.
+ClientManagementView.xaml | Merge Selected
+VehicleManagementView.xaml | Model
+VehicleEditWindow.xaml | Model:
+HelpView.xaml | Morning (8:00–9:00)
+AccessoryManagementView.xaml | Name
+ClientMergeDialog.xaml | Name:
+AccessoryManagementView.xaml | Name:*
+PriceUpdateView.xaml | New Price (€)
+WorkOrderDetailWindow.xaml | New Task
+MainWindow.xaml | New Work Order
+MainWindow.xaml | Next Day
+MainWindow.xaml | Next Week
+MainWindow.xaml | Notes
+ClientMergeDialog.xaml | Notes:
+ClientMergeDialog.xaml | OK
+HelpView.xaml | Open from the main menu → Bulk Price Update.
+HelpView.xaml | Optionally update the accessory's default price.
+HelpView.xaml | Optionally upload reports to Google Drive.
+WorkOrderDetailWindow.xaml | Order Date
+WorkOrderDetailWindow.xaml | Order Type
+AccessoryManagementView.xaml | Part #
+AccessoryManagementView.xaml | Part #:
+LoginView.xaml | Password
+HelpView.xaml | PDF (.pdf) – printable, client‑friendly.
+ClientManagementView.xaml | Phone
+ClientMergeDialog.xaml | Phone:
+HelpView.xaml | Planned → In Progress → Blocked → Done.
+HelpView.xaml | Portable – can be restored on any machine.
+MainWindow.xaml | Previous Day
+MainWindow.xaml | Previous Week
+WorkOrderDetailWindow.xaml | Price
+AccessoryManagementView.xaml | Price (€)
+AccessoryManagementView.xaml | Price (€):
+HelpView.xaml | Print work sheets for mechanics (via reports).
+HelpView.xaml | Protect Your Data
+Splash.xaml | PSA Certified Partner
+WorkOrderDetailWindow.xaml | Qty
+HelpView.xaml | Quick Tips
+MainWindow.xaml | Refresh
+BackupView.xaml | Refresh Drive List
+BackupView.xaml | Refresh List
+VehicleManagementView.xaml | Reg
+VehicleEditWindow.xaml | Registration:
+WorkOrderDetailWindow.xaml | Remove
+ReportsView.xaml | Report Type
+ReportsView.xaml | Reports
+AccessoryManagementView.xaml | Requires Password Protection
+HelpView.xaml | Requires pdf_accessories_extractor.py in the app folder.
+BackupView.xaml | Restore from Drive
+BackupView.xaml | Restore Selected
+BackupView.xaml | Result
+UserManagementView.xaml | Role
+UserEditView.xaml | Role:
+VehicleEditWindow.xaml | Save
+GoogleDriveSettingsView.xaml | Save Settings
+WorkOrderDetailWindow.xaml | Search
+AccessoryManagementView.xaml | Search by name, part number, or description
+VehicleManagementView.xaml | Search Chassis:
+ClientManagementView.xaml | Search Client Name:
+HelpView.xaml | Search for a vehicle by chassis number or register a new one.
+HelpView.xaml | Search, add, edit, or delete vehicles.
+ImportView.xaml | Select
+HelpView.xaml | Select a folder containing PDF work orders. The built‑in Python extractor reads the data.
+ImportView.xaml | Select All
+HelpView.xaml | Select an accessory, date range, and new price.
+ImportView.xaml | Select Excel/CSV File
+ImportView.xaml | Select PDF Folder
+WorkOrderDetailWindow.xaml | Selected Vehicle
+HelpView.xaml | Set report styles (colors, fonts) in Settings.
+MainWindow.xaml | Settings
+LoginView.xaml | Sign in to continue
+BackupView.xaml | Size
+MainWindow.xaml | SK Auto Work Tracking
+MainWindow.xaml | SK Auto Work Tracking v1.0 – © 2026 Insights®
+Splash.xaml | SKAuto Work Tracking
+HelpView.xaml | Skips existing VINs. Date and Etat are ignored.
+ImportView.xaml | Source
+HelpView.xaml | 'SQLite Error 19: UNIQUE constraint failed' – duplicate client/vehicle/accessory. Use 'Overwrite' conflict resolution or skip duplicates.
+WorkOrderDetailWindow.xaml | Status
+ReportsView.xaml | Status:
+HelpView.xaml | Summary Only – hides task-level details, shows only totals.
+ReportsView.xaml | Summary Only (hide details)
+HelpView.xaml | Supports columns: N° (VIN), Client, Modèle, Fin prép., Etat.
+GoogleDriveSettingsView.xaml | Sync Now
+PriceUpdateView.xaml | Task
+ReportsView.xaml | Task Type:
+WorkOrderDetailWindow.xaml | Task:
+ReportsView.xaml | Tasks
+HelpView.xaml | Tasks – all accessories with type, price, and usage count.
+GoogleDriveSettingsView.xaml | Test Connection
+HelpView.xaml | The Backup &amp; Restore window offers multiple ways to safeguard your database.
+HelpView.xaml | The database is stored in AppData – ensure enough disk space.
+HelpView.xaml | The Reports window provides powerful filtering and export to Excel or PDF.
+HelpView.xaml | The system supports several import methods. Each has specific use cases.
+HelpView.xaml | This system helps you manage work orders for vehicle accessory fitting and preparation. Below is a quick overview of the main workflows.
+AccessoryManagementView.xaml | Time (min)
+AccessoryManagementView.xaml | Time (min):
+PriceUpdateView.xaml | To:
+MainWindow.xaml | Today
+HelpView.xaml | Today's work orders load automatically.
+MainWindow.xaml | Top Clients
+MainWindow.xaml | Total
+TravelDialog.xaml | Travel Cost (€):
+TravelDialog.xaml | Travel Details
+WorkOrderDetailWindow.xaml | TRAVELS
+ClientManagementView.xaml | Type
+ClientEditWindow.xaml | Type:
+PriceUpdateView.xaml | Update Prices
+MainWindow.xaml | Update Status
+HelpView.xaml | Update work order status (Planned → In Progress → Done).
+HelpView.xaml | Use File → Change Password from the main menu.
+HelpView.xaml | Use Google Drive to keep off‑site backups.
+HelpView.xaml | Use the 'Import Vehicles' button in the Vehicle Management window.
+HelpView.xaml | Use the main menu to import data, manage clients/vehicles, or generate reports.
+HelpView.xaml | Use this for most imports. It reads the ParcCarrières or similar CSV format.
+HelpView.xaml | User – limited access: create work orders, import data, update status, generate reports (prices are hidden).
+GoogleDriveSettingsView.xaml | User Email:
+HelpView.xaml | User Management &amp; Security
+LoginView.xaml | Username
+UserEditView.xaml | Username:
+MainWindow.xaml | Vehicle
+VehicleLookupView.xaml | Vehicle Lookup
+ReportsView.xaml | Vehicles
+HelpView.xaml | Vehicles – list of all vehicles with client association.
+UserEditView.xaml | Verification Code:
+HelpView.xaml | Version: 1.0.0 (latest)
+MainWindow.xaml | Week
+HelpView.xaml | Welcome to SKAuto Work Tracking
+WorkOrderView.xaml | Work Order
+WorkOrderDetailWindow.xaml | Work Order Details
+WorkOrderDetailWindow.xaml | WORK ORDER INFO
+ReportsView.xaml | Work Orders
+HelpView.xaml | Work Orders – detailed list with tasks and travel.
+HelpView.xaml | Work orders are created only for rows with Etat = 'Prêt' and date within the selected range.
+HelpView.xaml | Work orders are the core of the system. Each work order represents all work for a specific vehicle on a specific date.
+LoginView.xaml | Work Tracking
+Splash.xaml | Work Tracking System
+VehicleManagementView.xaml | Year
+VehicleEditWindow.xaml | Year:
+HelpView.xaml | You can manually export to ZIP for portability.
+HelpView.xaml | You must know your current password to change it.
+HelpView.xaml | 💡 Tip: Passwords are hashed using BCrypt – never stored in plain text.
+HelpView.xaml | 💡 Tip: PDF reports use your custom colors and fonts (set in Settings).
+HelpView.xaml | 💡 Tip: The progress bar shows the current step, and the mouse cursor changes to a wait icon during long operations.
+HelpView.xaml | 💡 Tip: Use the 'Dry Run' checkbox to preview what will be imported without making changes.
+HelpView.xaml | 💡 Tip: You can quickly mark a work order as 'Done' directly from the main grid using the green button.
+HelpView.xaml | 💾 Backup &amp; Restore
+HelpView.xaml | 📊 Reporting
+HelpView.xaml | 📋 Work Orders
+HelpView.xaml | 📌 Tips &amp; Troubleshooting
+HelpView.xaml | 📘 Help &amp; Documentation
+HelpView.xaml | 📥 Importing Data
+HelpView.xaml | 🔒 User &amp; Security
+HelpView.xaml | 🔹 Accessories (Tasks)
+HelpView.xaml | 🔹 Admin Only
+HelpView.xaml | 🔹 Bulk Price Update
+HelpView.xaml | 🔹 Changing Password
+HelpView.xaml | 🔹 Clients
+HelpView.xaml | 🔹 Common Errors
+HelpView.xaml | 🔹 Creating a Work Order
+HelpView.xaml | 🔹 Daily Workflow
+HelpView.xaml | 🔹 Data Recovery
+HelpView.xaml | 🔹 Editing &amp; Deleting
+HelpView.xaml | 🔹 Excel / CSV (General)
+HelpView.xaml | 🔹 Export Options
+HelpView.xaml | 🔹 Export to ZIP (CSV)
+HelpView.xaml | 🔹 Filters (Work Orders &amp; Tasks)
+HelpView.xaml | 🔹 Google Drive Sync
+HelpView.xaml | 🔹 Import Vehicles Only
+HelpView.xaml | 🔹 Local Backup
+HelpView.xaml | 🔹 Login
+HelpView.xaml | 🔹 ParcCarrières CSV
+HelpView.xaml | 🔹 PDF Folder
+HelpView.xaml | 🔹 Performance
+HelpView.xaml | 🔹 Quick Start
+HelpView.xaml | 🔹 Report Types
+HelpView.xaml | 🔹 Restore
+HelpView.xaml | 🔹 Roles
+HelpView.xaml | 🔹 Status Tracking
+HelpView.xaml | 🔹 Support
+HelpView.xaml | 🔹 Vehicles
+HelpView.xaml | 🚀 Getting Started

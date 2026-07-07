@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
+        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         mc:Ignorable="d"
         Title="SK Auto Work Tracking" 
         Height="700" Width="1200"
@@ -258,8 +259,15 @@
             <!-- ===== FOOTER ===== -->
             <Border Grid.Row="2" Background="#F8F9FA" Padding="6,4" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
                 <Grid>
-                    <TextBlock Text="SK Auto Work Tracking v1.0 – © 2026 Insights®" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Column="0">
+                        <TextBlock Text="SK Auto Work Tracking v1.0 – © 2026 Insights®" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <TextBlock Text="{loc:Translate MainWindow_Title}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <TextBlock Text="{Binding SyncStatus}" Margin="0,0,8,0" FontSize="11" Foreground="#7F8C8D"/>
                         <Button Content="Drive" Command="{Binding OpenDriveSettingsCommand}" Background="Transparent" BorderThickness="0" Foreground="#3498DB" Cursor="Hand" FontSize="11"/>
                     </StackPanel>
