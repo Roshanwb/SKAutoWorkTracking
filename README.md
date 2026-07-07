@@ -1,86 +1,168 @@
+# SKAuto Work Tracking System – User Guide
 
-# SK Auto Work Tracking System - User Guide
 ![.net](https://img.shields.io/badge/.NET-C%23-007396?style=flat)
+
 ## Quick Start
-1. **Launch the application** from desktop shortcut
-2. **View today's work** - automatically loaded on startup
-3. **Create new work orders** - click "New Work Order"
-4. **Import PSA plans** - click "Import Data"
-5. **Generate reports** - click "Generate Reports"
+
+1. **Launch the application** from the desktop shortcut.
+2. **Log in** with your username and password.
+3. **View today's work** – automatically loaded on the main dashboard.
+4. **Create a work order** – click "New Work Order".
+5. **Import data** – use the "Import" button or menu.
+6. **Generate reports** – from the Reports window.
+
+---
 
 ## Daily Workflow
 
-### Morning (8:00-9:00)
-1. Open the application
-2. Check today's planned work
-3. Import any PSA daily plans received
-4. Print work sheets for mechanics
+### Morning (8:00–9:00)
+
+- Open the application and check today's planned work.
+- Import any new data (Excel/CSV, ParcCarrières, PDF folder, or Vehicles-only).
+- Print work sheets for mechanics (via Reports → PDF).
 
 ### During the Day
-1. Update work status as progress is made
-2. Add notes for any issues
-3. Record travel if required
 
-### End of Day (16:00-17:00)
-1. Update all work to "Done" or appropriate status
-2. Run EOD validation
-3. Generate daily reports
-4. Upload reports to Google Drive
+- Update work order status as progress is made.
+- Add notes and travel records to work orders.
+- Use the **Client Management** and **Vehicle Management** windows to maintain data.
+
+### End of Day (16:00–17:00)
+
+- Mark all work as "Done" (or appropriate status).
+- Generate daily reports (Excel/PDF) with filters.
+- Optionally upload reports to Google Drive.
+- The application automatically creates a backup on exit (if a user is logged in).
+
+---
 
 ## Key Features
 
 ### 1. Work Order Management
-- Create work orders for PSA and direct clients
-- Add multiple accessories per vehicle
-- Track work status (Planned → In Progress → Done)
-- Add travel records for mobile service
-  
 
-> #### Understanding Work Orders and Tasks
->- A Work Order represents all work performed for a specific vehicle on a specific date.
->- All tasks (accessories fitted, services performed) under that Work Order share the same date.
->- If the same vehicle returns for work on another day, you create a new Work Order for that new date.
->- This keeps your records organized and accurately reflects daily work schedules.
+- Create work orders for PSA and direct clients.
+- Add multiple tasks (accessories) per work order.
+- Track status: Planned → In Progress → Blocked → Done.
+- Add travel records (destination, distance, cost).
+- Edit or delete work orders directly from the main grid.
 
+> **Understanding Work Orders & Tasks**  
+> - A Work Order represents **all work for one vehicle on one date**.  
+> - All tasks under the same work order share that date.  
+> - If the same vehicle returns on another day, create a new work order.  
+> - This ensures accurate daily scheduling and reporting.
 
-### 2. Vehicle Lookup
-- Search by chassis number
-- Auto-complete suggestions
-- Create new vehicles if not found
+---
 
-### 3. Import/Export
-- Import PSA Excel/PDF plans
-- Import direct client orders
-- Export to Excel, PDF, CSV
-- Automatic validation
+### 2. Importing Data
 
-### 4. Reporting
-- Daily work reports
-- Client invoices
-- Monthly summaries
-- PSA performance reports
+The system offers **four import methods**:
 
-## Data Security
-- PSA rates are password protected
-- Database backups daily
-- No internet connectivity required
-- Local storage only
+| Method | When to Use |
+|--------|-------------|
+| **Excel / CSV** | Standard ParcCarrières files (or similar). All vehicles and clients are imported; work orders are only created for rows with `Etat = "Prêt"` and within the selected date range. |
+| **ParcCarrières CSV** | Dedicated parser for the exact ParcCarrières format – same logic as above. |
+| **PDF Folder** | Select a folder of PDF work orders. The built‑in Python extractor reads the data; work orders are created with status = Planned. |
+| **Import Vehicles Only** | Available in the Vehicle Management window. Imports VIN, Model, and Client; creates clients and vehicles; skips existing VINs; ignores date and Etat. |
+
+> 💡 **Tip:** Use the **"Dry Run"** checkbox to preview what will be imported without making changes.
+
+---
+
+### 3. Reporting
+
+Generate **Excel** or **PDF** reports with powerful filters.
+
+**Report Types:**
+- **Work Orders** – full list with tasks, travel, and totals.
+- **Tasks** – all accessories grouped by type, with usage and total price.
+- **Clients** – list of all clients with contact details.
+- **Vehicles** – list of all vehicles with associated client.
+
+**Filters (for Work Orders & Tasks):**
+- Date range, task type, work status, specific accessory.
+- **Group by Week** – combines orders by week.
+- **Group by Task Type** – for the Tasks report.
+- **Summary Only** – hides task-level details, shows totals only.
+
+> 💡 **Tip:** PDF reports use your custom colors and fonts (configured in Settings).
+
+---
+
+### 4. Data Management
+
+#### Clients
+- Add, edit, delete clients.
+- **Merge duplicate clients** – select multiple clients in Client Management and click "Merge". All vehicles are reassigned to the master client.
+
+#### Vehicles
+- Search, add, edit, delete vehicles.
+- **Import Vehicles** directly from CSV using the dedicated button.
+
+#### Accessories (Tasks)
+- Define tasks with part number, price, time, and task type (Fit, Sell, Remove, Preparation, Travel, Other).
+- **Bulk Price Update** – change the price for a specific accessory across a date range, optionally updating the accessory's default price.
+
+---
+
+### 5. Backup & Restore
+
+Protect your data with **multiple backup options**:
+
+| Type | Description |
+|------|-------------|
+| **Local Backup** | One‑click copy of the `.db` file. Automatic backup on exit (if logged in). Keeps only the latest N backups (configurable). |
+| **Export to ZIP (CSV)** | Exports all tables as CSV files in a ZIP archive – portable and restorable on any machine. |
+| **Google Drive Sync** | Connect your Drive account to upload backups and restore from Drive backups. Auto‑authenticates on startup if configured. |
+
+**Restore features:**
+- Choose a local `.db`, a ZIP file, or a Drive backup.
+- Conflict resolution: **Skip** or **Overwrite** existing records.
+- **Dry Run** mode to preview changes.
+- **Progress bar** and **busy cursor** during long operations.
+
+---
+
+### 6. User & Security
+
+- **Roles:** Admin (full access) and User (limited – no price visibility, no admin menus).
+- **Login:** Secure login with BCrypt password hashing.
+- **Forgot Password:** Click "Forgot Password?" – a verification code is sent to your registered email.
+- **Change Password:** From the main menu (File → Change Password).
+- **Admin Only:** Manage users, configure Google Drive, set report styles.
+
+---
+
+### 7. System Tray
+
+- When logged in, closing the main window **minimizes the app to the system tray** instead of exiting.
+- Right‑click the tray icon to **Show** (restore) or **Exit** (creates a backup and shuts down).
+- This allows the app to run in the background for quick access.
+
+---
 
 ## Troubleshooting
 
-### Common Issues
-1. **Chassis not found** - Check format (17 characters for VIN)
-2. **Import fails** - Ensure file format matches PSA template
-3. **Report generation fails** - Check write permissions
-4. **Application crashes** - Restart and check error log
+### Common Errors
+
+| Error | Cause / Fix |
+|-------|-------------|
+| `SQLite Error 19: UNIQUE constraint failed` | Duplicate client/vehicle/accessory. Use "Overwrite" conflict resolution or skip duplicates. |
+| `Foreign key constraint failed` | Missing client or vehicle. Import clients and vehicles first. |
+| `Email not configured` | Admin must set up SMTP settings in `AppConfig.json` for password reset. |
+| `Chassis not found` | Check that the VIN format is correct (17 characters). |
 
 ### Data Recovery
-- Daily backups in Documents\SKAuto\Backups
-- Manual backup option in Admin menu
-- Export all data to Excel for backup
+
+- Daily backups: `%AppData%\SKAuto\Backups`.
+- Manual backup: use the Backup window.
+- Export all data as CSV/ZIP for portability.
+
+---
 
 ## Support
-For technical issues, contact: roshanwb@gmail.com 
 
-Version: 1.0.0
-Last Updated: 20/02/2026
+For technical issues: **roshanwb@gmail.com**
+
+**Version:** 1.0.0  
+**Last Updated:** 07/07/2026
