@@ -178,7 +178,7 @@ namespace SKAuto.UI.ViewModels
         {
             var helpWindow = new HelpView();
             helpWindow.Owner = System.Windows.Application.Current.MainWindow;
-            helpWindow.ShowDialog();
+            helpWindow.Show();
         }
 
         private void OpenAbout()
