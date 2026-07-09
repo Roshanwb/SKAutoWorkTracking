@@ -10,6 +10,8 @@
 	<UseWindowsForms>true</UseWindowsForms>
 	<Copyright>Insights</Copyright>
 	<PackageIcon>logo.ico</PackageIcon>
+	<AssemblyVersion>2.0.0.0</AssemblyVersion>
+	<FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Views\VehicleLookupView.xaml.cs" />

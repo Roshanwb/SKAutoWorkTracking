@@ -264,8 +264,9 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" Grid.Column="0">
-                        <TextBlock Text="{loc:Translate MainWindow_Footer}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                        <TextBlock Text="{loc:Translate MainWindow_Title}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Translate MainWindow_Title}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <TextBlock x:Name="VersionTextBlock" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Translate Insights}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <TextBlock Text="{Binding SyncStatus}" Margin="0,0,8,0" FontSize="11" Foreground="#7F8C8D"/>

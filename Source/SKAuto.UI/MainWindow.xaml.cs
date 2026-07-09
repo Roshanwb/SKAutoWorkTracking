@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using WinForms = System.Windows.Forms;
@@ -21,7 +22,7 @@ namespace SKAuto.UI
             DataContext = viewModel;
             System.Windows.Application.Current.MainWindow.WindowState = WindowState.Maximized;
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
-
+            VersionTextBlock.Text = $"{Assembly.GetExecutingAssembly().GetName().Version.ToString()} ";
             _trayIcon = new WinForms.NotifyIcon
             {
                 Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.GetCommandLineArgs()[0]),

@@ -831,8 +831,8 @@
   <data name="MainWindow_Title" xml:space="preserve">
     <value>SK Auto Work Tracking</value>
   </data>
-  <data name="MainWindow_Footer" xml:space="preserve">
-    <value>SK Auto Work Tracking v1.0 – © 2026 Insights®</value>
+  <data name="Insights" xml:space="preserve">
+    <value>© 2026 Insights®</value>
   </data>
   <data name="Splash_Title" xml:space="preserve">
     <value>SKAuto Work Tracking</value>
@@ -987,8 +987,8 @@
   <data name="UserEditView_VerificationCode" xml:space="preserve">
     <value>Verification Code:</value>
   </data>
-  <data name="HelpView_Version" xml:space="preserve">
-    <value>Version: 1.0.0 (latest)</value>
+  <data name="Version" xml:space="preserve">
+    <value>Version: 1.0.0 (Latest)</value>
   </data>
   <data name="MainWindow_Week" xml:space="preserve">
     <value>Week</value>
