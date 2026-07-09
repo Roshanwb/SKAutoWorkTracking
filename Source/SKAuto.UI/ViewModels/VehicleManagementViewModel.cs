@@ -1,4 +1,4 @@
-ï»¿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleManagementViewModel : ObservableObject
@@ -96,7 +97,7 @@ namespace SKAuto.UI.ViewModels
 
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "Select ParcCarriÃ¨res CSV file",
+                Title = "Select ParcCarrières CSV file",
                 Filter = "CSV files|*.csv",
                 Multiselect = false
             };
@@ -123,7 +124,7 @@ namespace SKAuto.UI.ViewModels
 
                 if (!importDtos.Any())
                 {
-                    System.Windows.MessageBox.Show("No valid vehicle data found in the file.", "Import", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["NoValidVehicleDataInFile"], LocalizationManager.Instance["BackupView_Import"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
@@ -240,7 +241,7 @@ namespace SKAuto.UI.ViewModels
                     CurrentOperation = "Import complete!";
                     logger.LogInfo($"Vehicle import: {newVehicles.Count} added, {skipped} skipped, {newClients.Count} new clients.");
                     System.Windows.MessageBox.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
-                        "Import Vehicles", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        LocalizationManager.Instance["VehicleManagementView_ImportVehicles"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 
                     await LoadVehiclesAsync();
                 }
@@ -248,7 +249,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 logger.LogError("Vehicle import failed", ex);
-                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Import Failed", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", LocalizationManager.Instance["ImportFailed"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
             finally
             {
@@ -266,7 +267,7 @@ namespace SKAuto.UI.ViewModels
             "66", "11", "68", "31", "10", "tapis", "relavage","relavag", "gravage", "pose", "camera",
             "ecran", "sk", "bois", "serrure", "cradel", "grille", "barre", "toit", "balisage",
             "alarme", "antivol", "crochet", "attelage", "boitier", "controle", "housse", "tea", "MQ", "ct", "X","JK","LAUTO","LAUTO*","TRANS","COMPET","COMPAGNE",
-            "*","dr","le","atelier","Relavage","11Relavage","Nettoyage","PrÃ©paration"
+            "*","dr","le","atelier","Relavage","11Relavage","Nettoyage","Préparation"
         };
         private static readonly HashSet<string> CompanySuffixes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -275,7 +276,7 @@ namespace SKAuto.UI.ViewModels
         private static readonly Regex CodePattern = new Regex(@"^[A-Z]{2,}\d+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex NumericPattern = new Regex(@"^\d+$", RegexOptions.Compiled);
         private static readonly Regex HeaderWordsPattern = new Regex(
-            @"^(heure|type|rapide|normale|site|livr|client|modÃ¨le|modele|vin)$",
+            @"^(heure|type|rapide|normale|site|livr|client|modèle|modele|vin)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly char[] SplitChars = new[] { ' ', '/', '\\', '-', '_', '(', ')', '[', ']', ',', ';' };
 

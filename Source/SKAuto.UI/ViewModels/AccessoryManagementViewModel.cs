@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class AccessoryManagementViewModel : ObservableObject
@@ -74,7 +75,7 @@ namespace SKAuto.UI.ViewModels
             _unitOfWork = unitOfWork;
             _logger = logger;
 
-            _logger.LogInfo("AccessoryManagementViewModel initializing");
+            _logger.LogInfo(LocalizationManager.Instance["AccessoryManagementInitializing"]);
 
             LoadAccessoriesCommand = new AsyncRelayCommand(LoadAccessoriesAsync);
             AddAccessoryCommand = new RelayCommand(AddAccessory);
@@ -83,7 +84,7 @@ namespace SKAuto.UI.ViewModels
             _saveAccessoryCommand = new AsyncRelayCommand(SaveAccessoryAsync, () => !string.IsNullOrWhiteSpace(EditName));
             CancelEditCommand = new RelayCommand(CancelEdit);
 
-            _logger.LogInfo("AccessoryManagementViewModel initialization complete, loading accessories");
+            _logger.LogInfo(LocalizationManager.Instance["AccessoryManagementInitializationComplete"]);
             LoadAccessoriesCommand.Execute(null);
         }
 
@@ -92,7 +93,7 @@ namespace SKAuto.UI.ViewModels
             if (value != null)
                 _logger.LogInfo($"Selected accessory changed to ID {value.Id}, Name '{value.Name}'");
             else
-                _logger.LogInfo("Selected accessory changed to null");
+                _logger.LogInfo(LocalizationManager.Instance["SelectedAccessoryChangedToNull"]);
             _editAccessoryCommand?.NotifyCanExecuteChanged();
             _deleteAccessoryCommand?.NotifyCanExecuteChanged();
         }
@@ -123,7 +124,7 @@ namespace SKAuto.UI.ViewModels
                 EditPrice = null;
                 EditRequiresPassword = false;
                 EditIsActive = true;
-                _logger.LogInfo("Edit fields cleared");
+                _logger.LogInfo(LocalizationManager.Instance["EditFieldsCleared"]);
             }
             _saveAccessoryCommand?.NotifyCanExecuteChanged();
         }
@@ -135,7 +136,7 @@ namespace SKAuto.UI.ViewModels
 
         private async Task LoadAccessoriesAsync()
         {
-            _logger.LogInfo("LoadAccessoriesAsync started");
+            _logger.LogInfo(LocalizationManager.Instance["LoadAccessoriesAsyncStarted"]);
             try
             {
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
@@ -152,14 +153,14 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("LoadAccessoriesAsync failed", ex);
+                _logger.LogError(LocalizationManager.Instance["LoadAccessoriesAsyncFailed"], ex);
                 System.Windows.MessageBox.Show($"Error loading accessories: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void AddAccessory()
         {
-            _logger.LogInfo("AddAccessory called - creating new accessory");
+            _logger.LogInfo(LocalizationManager.Instance["AddAccessoryCalled"]);
             CurrentEditAccessory = new Accessory
             {
                 Name = "",
@@ -172,28 +173,28 @@ namespace SKAuto.UI.ViewModels
                 TaskType = TaskType.Fit
             };
             IsEditMode = true;
-            _logger.LogInfo("New accessory created, edit mode activated");
+            _logger.LogInfo(LocalizationManager.Instance["NewAccessoryCreatedEditModeActivated"]);
         }
 
         private void EditAccessory(Accessory? accessory)
         {
             if (accessory == null)
             {
-                _logger.LogWarning("EditAccessory called with null accessory");
+                _logger.LogWarning(LocalizationManager.Instance["EditAccessoryCalledWithNull"]);
                 return;
             }
 
             _logger.LogInfo($"EditAccessory called for accessory ID {accessory.Id}, Name '{accessory.Name}'");
             CurrentEditAccessory = accessory;
             IsEditMode = true;
-            _logger.LogInfo("Edit mode activated for accessory");
+            _logger.LogInfo(LocalizationManager.Instance["EditModeActivatedForAccessory"]);
         }
 
         private async Task DeleteAccessoryAsync()
         {
             if (SelectedAccessory == null)
             {
-                _logger.LogWarning("DeleteAccessoryAsync called with no accessory selected");
+                _logger.LogWarning(LocalizationManager.Instance["DeleteAccessoryNoAccessorySelected"]);
                 return;
             }
 
@@ -232,7 +233,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (CurrentEditAccessory == null)
             {
-                _logger.LogWarning("SaveAccessoryAsync called with no accessory to save");
+                _logger.LogWarning(LocalizationManager.Instance["SaveAccessoryNoAccessoryToSave"]);
                 return;
             }
 
@@ -243,8 +244,8 @@ namespace SKAuto.UI.ViewModels
 
             if (string.IsNullOrWhiteSpace(newName))
             {
-                _logger.LogWarning("Save attempted with empty accessory name");
-                System.Windows.MessageBox.Show("Accessory name cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                _logger.LogWarning(LocalizationManager.Instance["SaveAttemptedWithEmptyAccessoryName"]);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["AccessoryNameEmptyError"], "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -257,7 +258,7 @@ namespace SKAuto.UI.ViewModels
                     var existing = (await _unitOfWork.Accessories.FindAsync(a => a.Name.ToLower() == newName.ToLower())).FirstOrDefault();
                     if (existing != null && (isNew || existing.Id != accessoryToSave.Id))
                     {
-                        _logger.LogWarning($"Duplicate accessory name '{newName}' – existing ID {existing.Id}");
+                        _logger.LogWarning($"Duplicate accessory name '{newName}' � existing ID {existing.Id}");
                         System.Windows.MessageBox.Show($"An accessory with the name '{newName}' already exists. Please use a different name.", "Duplicate Name", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
@@ -299,10 +300,10 @@ namespace SKAuto.UI.ViewModels
 
         private void CancelEdit()
         {
-            _logger.LogInfo("CancelEdit called - clearing edit mode");
+            _logger.LogInfo(LocalizationManager.Instance["CancelEditCalled"]);
             IsEditMode = false;
             CurrentEditAccessory = null;
-            _logger.LogInfo("Edit mode cancelled");
+            _logger.LogInfo(LocalizationManager.Instance["EditModeCancelled"]);
         }
 
         partial void OnSearchTextChanged(string value)
@@ -313,11 +314,11 @@ namespace SKAuto.UI.ViewModels
 
         private void FilterAccessories()
         {
-            _logger.LogInfo("FilterAccessories started");
+            _logger.LogInfo(LocalizationManager.Instance["FilterAccessoriesStarted"]);
 
             if (string.IsNullOrWhiteSpace(SearchText))
             {
-                _logger.LogInfo("Search text empty, reloading all accessories");
+                _logger.LogInfo(LocalizationManager.Instance["SearchTextEmptyReloadingAccessories"]);
                 _ = LoadAccessoriesAsync();
                 return;
             }

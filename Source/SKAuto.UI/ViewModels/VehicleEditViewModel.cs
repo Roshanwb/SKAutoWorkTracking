@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleEditViewModel : ObservableObject
@@ -46,7 +47,7 @@ namespace SKAuto.UI.ViewModels
                 // Basic validation
                 if (string.IsNullOrWhiteSpace(Vehicle.ChassisNumber))
                 {
-                    System.Windows.MessageBox.Show("Chassis number is required.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["ChassisNumberRequired"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DocumentFormat.OpenXml.Spreadsheet;
 using SKAuto.Core.Entities;
@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class UserManagementViewModel : ObservableObject
@@ -60,14 +61,14 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to load users", ex);
+                _logger.LogError(LocalizationManager.Instance["FailedToLoadUsers"], ex);
                 System.Windows.MessageBox.Show($"Error loading users: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void AddUser()
         {
-            _logger.LogInfo("AddUser called.");
+            _logger.LogInfo(LocalizationManager.Instance["AddUserCalled"]);
             var vm = new UserEditViewModel(_unitOfWork, _logger, _currentUser, null, UserEditMode.Add);
             var win = new UserEditView(vm);
             if (win.ShowDialog() == true)
@@ -93,7 +94,7 @@ namespace SKAuto.UI.ViewModels
             if (SelectedUser == null) return;
             if (SelectedUser.Id == _currentUser.Id)
             {
-                System.Windows.MessageBox.Show("You cannot delete your own account.", "Delete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["CannotDeleteOwnAccount"], LocalizationManager.Instance["ClientManagementView_Delete"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
             var result = System.Windows.MessageBox.Show($"Delete user '{SelectedUser.Username}'? This action cannot be undone.", "Confirm Delete", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);

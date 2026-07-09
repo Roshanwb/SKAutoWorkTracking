@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class BackupViewModel : ObservableObject
@@ -125,7 +126,7 @@ namespace SKAuto.UI.ViewModels
             IsBusy = true;
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             ImportProgress = 0;
-            StatusMessage = "Starting backup...";
+            StatusMessage = LocalizationManager.Instance["StartingBackup"];
 
             try
             {
@@ -138,7 +139,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Backup failed", ex);
+                _loggingService.LogError(LocalizationManager.Instance["BackupFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Backup failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -157,7 +158,7 @@ namespace SKAuto.UI.ViewModels
             IsBusy = true;
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             ImportProgress = 0;
-            StatusMessage = "Starting export...";
+            StatusMessage = LocalizationManager.Instance["StartingExport"];
 
             try
             {
@@ -169,7 +170,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Export failed", ex);
+                _loggingService.LogError(LocalizationManager.Instance["ExportFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -187,14 +188,14 @@ namespace SKAuto.UI.ViewModels
             if (IsBusy) return;
             if (string.IsNullOrEmpty(ImportFilePath))
             {
-                System.Windows.MessageBox.Show("Please select an import file first.", "No File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectImportFileFirst"], "No File", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             IsBusy = true;
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             ImportProgress = 0;
-            StatusMessage = "Starting import...";
+            StatusMessage = LocalizationManager.Instance["StartingImport"];
 
             var options = new BackupImportOptions
             {
@@ -227,7 +228,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Import exception", ex);
+                _loggingService.LogError(LocalizationManager.Instance["ImportException"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Import error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -250,7 +251,7 @@ namespace SKAuto.UI.ViewModels
                 IsDriveConnected = await driveService.TestConnectionAsync();
                 if (!IsDriveConnected)
                 {
-                    StatusMessage = "Google Drive not connected. Please authenticate first.";
+                    StatusMessage = LocalizationManager.Instance["GoogleDriveNotConnected"];
                     return;
                 }
                 var files = await driveService.ListDriveBackupsAsync();
@@ -262,7 +263,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Failed to list Drive backups", ex);
+                _loggingService.LogError(LocalizationManager.Instance["FailedToListDriveBackups"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Error listing Drive backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -277,7 +278,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedDriveBackupFile == null)
             {
-                System.Windows.MessageBox.Show("Please select a Drive backup to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectDriveBackupToRestore"], "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -305,14 +306,14 @@ namespace SKAuto.UI.ViewModels
                 StatusMessage = $"Local backup saved to: {localBackupPath}";
 
                 // Step 2: Download Drive backup to a temporary folder
-                StatusMessage = "Step 2: Downloading Drive backup...";
+                StatusMessage = LocalizationManager.Instance["StepDownloadingDriveBackup"];
                 var driveService = App.GetService<IGoogleDriveService>();
                 string driveFileId = SelectedDriveBackupFile.FilePath;
                 string downloadedPath = await driveService.DownloadDriveBackupAsync(driveFileId);
                 _loggingService.LogInfo($"Drive backup downloaded to: {downloadedPath}");
 
                 // Step 3: Import the downloaded ZIP
-                StatusMessage = "Step 3: Importing backup...";
+                StatusMessage = LocalizationManager.Instance["StepImportingBackup"];
                 var options = new BackupImportOptions
                 {
                     DryRun = IsDryRun,
@@ -342,7 +343,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Restore from Drive failed", ex);
+                _loggingService.LogError(LocalizationManager.Instance["RestoreFromDriveFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Restore from Drive failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -404,7 +405,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Failed to list backup files", ex);
+                _loggingService.LogError(LocalizationManager.Instance["FailedToListBackupFiles"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Error listing backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -419,7 +420,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedBackupFile == null)
             {
-                System.Windows.MessageBox.Show("Please select a backup file to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectBackupFileToRestore"], "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -432,7 +433,7 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                StatusMessage = "Restoring database...";
+                StatusMessage = LocalizationManager.Instance["RestoringDatabase"];
                 var currentBackupPath = await _backupService.RestoreDatabaseAsync(SelectedBackupFile.FilePath);
                 StatusMessage = $"Database restored from {SelectedBackupFile.FileName}. Previous database backed up to {currentBackupPath}";
                 _loggingService.LogInfo(StatusMessage);
@@ -441,7 +442,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Restore failed", ex);
+                _loggingService.LogError(LocalizationManager.Instance["RestoreFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Restore failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

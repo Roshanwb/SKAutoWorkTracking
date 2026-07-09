@@ -1,19 +1,96 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
@@ -1080,5 +1157,498 @@
   </data>
   <data name="HelpView_GettingStartedTab" xml:space="preserve">
     <value>🚀 Getting Started</value>
+  </data>
+  <data name="AccessoryNameEmptyError" xml:space="preserve">
+    <value>Accessory name cannot be empty.</value>
+  </data>
+  <data name="AccessoryManagementInitializationComplete" xml:space="preserve">
+    <value>AccessoryManagementViewModel initialization complete, loading accessories</value>
+  </data>
+  <data name="AccessoryManagementInitializing" xml:space="preserve">
+    <value>AccessoryManagementViewModel initializing</value>
+  </data>
+  <data name="AddTravelCancelledByUser" xml:space="preserve">
+    <value>Add travel cancelled by user</value>
+  </data>
+  <data name="AddAccessoryCalled" xml:space="preserve">
+    <value>AddAccessory called - creating new accessory</value>
+  </data>
+  <data name="AddClientFailed" xml:space="preserve">
+    <value>AddClient failed</value>
+  </data>
+  <data name="AddClientStarted" xml:space="preserve">
+    <value>AddClient started</value>
+  </data>
+  <data name="AddTaskNoAccessorySelected" xml:space="preserve">
+    <value>AddTask called with no accessory selected</value>
+  </data>
+  <data name="AddTravelCalled" xml:space="preserve">
+    <value>AddTravel called</value>
+  </data>
+  <data name="AddUserCalled" xml:space="preserve">
+    <value>AddUser called.</value>
+  </data>
+  <data name="ApplicationStarting" xml:space="preserve">
+    <value>Application starting...</value>
+  </data>
+  <data name="AuthenticationFailed" xml:space="preserve">
+    <value>Authentication failed.</value>
+  </data>
+  <data name="AuthenticationSuccessful" xml:space="preserve">
+    <value>Authentication successful.</value>
+  </data>
+  <data name="BackupFailed" xml:space="preserve">
+    <value>Backup failed</value>
+  </data>
+  <data name="BrowseFolderFailed" xml:space="preserve">
+    <value>BrowseFolder failed</value>
+  </data>
+  <data name="BulkPriceUpdateFailed" xml:space="preserve">
+    <value>Bulk price update failed</value>
+  </data>
+  <data name="CancelEditCalled" xml:space="preserve">
+    <value>CancelEdit called - clearing edit mode</value>
+  </data>
+  <data name="ChassisNumberRequired" xml:space="preserve">
+    <value>Chassis number is required.</value>
+  </data>
+  <data name="ClearedAllItems" xml:space="preserve">
+    <value>Cleared all items.</value>
+  </data>
+  <data name="ClientAddedSuccessfully" xml:space="preserve">
+    <value>Client added successfully, refreshing list</value>
+  </data>
+  <data name="ClientAdditionCancelledByUser" xml:space="preserve">
+    <value>Client addition cancelled by user</value>
+  </data>
+  <data name="ClientUpdatedSuccessfully" xml:space="preserve">
+    <value>Client updated successfully</value>
+  </data>
+  <data name="ClientManagementInitializationComplete" xml:space="preserve">
+    <value>ClientManagementViewModel initialization complete, loading clients</value>
+  </data>
+  <data name="ClientManagementInitializing" xml:space="preserve">
+    <value>ClientManagementViewModel initializing</value>
+  </data>
+  <data name="CloseWindowCalled" xml:space="preserve">
+    <value>CloseWindow called</value>
+  </data>
+  <data name="ConnectionFailedUnknownReason" xml:space="preserve">
+    <value>Connection failed (unknown reason).</value>
+  </data>
+  <data name="ConnectionOK" xml:space="preserve">
+    <value>Connection OK.</value>
+  </data>
+  <data name="CouldNotFindOrCreateFolder" xml:space="preserve">
+    <value>Could not find or create folder.</value>
+  </data>
+  <data name="CreatedDefaultConfiguration" xml:space="preserve">
+    <value>Created default configuration.</value>
+  </data>
+  <data name="CreatedNewWorkOrder" xml:space="preserve">
+    <value>Created new work order</value>
+  </data>
+  <data name="CreatingBackup" xml:space="preserve">
+    <value>Creating backup...</value>
+  </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>Current password is incorrect.</value>
+  </data>
+  <data name="DatabaseInitialized" xml:space="preserve">
+    <value>Database initialized.</value>
+  </data>
+  <data name="DeleteAccessoryNoAccessorySelected" xml:space="preserve">
+    <value>DeleteAccessoryAsync called with no accessory selected</value>
+  </data>
+  <data name="DeleteClientNoClientSelected" xml:space="preserve">
+    <value>DeleteClientAsync called with no client selected</value>
+  </data>
+  <data name="EditFieldsCleared" xml:space="preserve">
+    <value>Edit fields cleared</value>
+  </data>
+  <data name="EditModeActivatedForAccessory" xml:space="preserve">
+    <value>Edit mode activated for accessory</value>
+  </data>
+  <data name="EditModeCancelled" xml:space="preserve">
+    <value>Edit mode cancelled</value>
+  </data>
+  <data name="EditAccessoryCalledWithNull" xml:space="preserve">
+    <value>EditAccessory called with null accessory</value>
+  </data>
+  <data name="EditClientNoClientSelected" xml:space="preserve">
+    <value>EditClientAsync called with no client selected</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Email is required.</value>
+  </data>
+  <data name="ErrorLoadingAccessories" xml:space="preserve">
+    <value>Error loading accessories.</value>
+  </data>
+  <data name="ExcelReportGenerationFailed" xml:space="preserve">
+    <value>Excel report generation failed</value>
+  </data>
+  <data name="ExportFailed" xml:space="preserve">
+    <value>Export failed</value>
+  </data>
+  <data name="FailedToAddTravel" xml:space="preserve">
+    <value>Failed to add travel</value>
+  </data>
+  <data name="FailedToListBackupFiles" xml:space="preserve">
+    <value>Failed to list backup files</value>
+  </data>
+  <data name="FailedToListDriveBackups" xml:space="preserve">
+    <value>Failed to list Drive backups</value>
+  </data>
+  <data name="FailedToLoadAccessoriesForBulkPriceUpdate" xml:space="preserve">
+    <value>Failed to load accessories for bulk price update</value>
+  </data>
+  <data name="FailedToLoadAccessoriesForReportFilter" xml:space="preserve">
+    <value>Failed to load accessories for report filter</value>
+  </data>
+  <data name="FailedToLoadUsers" xml:space="preserve">
+    <value>Failed to load users</value>
+  </data>
+  <data name="FailedToShowMainWindow" xml:space="preserve">
+    <value>Failed to show main window</value>
+  </data>
+  <data name="FilterAccessoriesStarted" xml:space="preserve">
+    <value>FilterAccessories started</value>
+  </data>
+  <data name="GeneratingExcelReport" xml:space="preserve">
+    <value>Generating Excel report...</value>
+  </data>
+  <data name="GeneratingPDFReport" xml:space="preserve">
+    <value>Generating PDF report...</value>
+  </data>
+  <data name="GoogleDriveAutoAuthenticatedSuccessfully" xml:space="preserve">
+    <value>Google Drive auto-authenticated successfully on startup.</value>
+  </data>
+  <data name="GoogleDriveAutoAuthenticationFailed" xml:space="preserve">
+    <value>Google Drive auto-authentication failed.</value>
+  </data>
+  <data name="GoogleDriveNotConnected" xml:space="preserve">
+    <value>Google Drive not connected. Please authenticate first.</value>
+  </data>
+  <data name="GoogleDriveSettingsSaved" xml:space="preserve">
+    <value>Google Drive settings saved.</value>
+  </data>
+  <data name="ImportException" xml:space="preserve">
+    <value>Import exception</value>
+  </data>
+  <data name="ImportFailed" xml:space="preserve">
+    <value>Import failed</value>
+  </data>
+  <data name="InitializeAsyncFailed" xml:space="preserve">
+    <value>InitializeAsync failed</value>
+  </data>
+  <data name="InitializeAsyncStarted" xml:space="preserve">
+    <value>InitializeAsync started</value>
+  </data>
+  <data name="InvalidEmailFormat" xml:space="preserve">
+    <value>Invalid email format.</value>
+  </data>
+  <data name="InvalidOrExpiredVerificationCode" xml:space="preserve">
+    <value>Invalid or expired verification code.</value>
+  </data>
+  <data name="LoadAccessoriesAsyncFailed" xml:space="preserve">
+    <value>LoadAccessoriesAsync failed</value>
+  </data>
+  <data name="LoadAccessoriesAsyncStarted" xml:space="preserve">
+    <value>LoadAccessoriesAsync started</value>
+  </data>
+  <data name="LoadClientsAsyncFailed" xml:space="preserve">
+    <value>LoadClientsAsync failed</value>
+  </data>
+  <data name="LoadClientsAsyncStarted" xml:space="preserve">
+    <value>LoadClientsAsync started</value>
+  </data>
+  <data name="LoadSettingsFailed" xml:space="preserve">
+    <value>LoadSettings failed</value>
+  </data>
+  <data name="LoginCancelledOrFailed" xml:space="preserve">
+    <value>Login cancelled or failed. Exiting.</value>
+  </data>
+  <data name="MainWindowShownAndActivated" xml:space="preserve">
+    <value>Main window shown and activated.</value>
+  </data>
+  <data name="MergeCancelledByUser" xml:space="preserve">
+    <value>Merge cancelled by user</value>
+  </data>
+  <data name="MergeClientsAsyncStarted" xml:space="preserve">
+    <value>MergeClientsAsync started</value>
+  </data>
+  <data name="NewAccessoryCreatedEditModeActivated" xml:space="preserve">
+    <value>New accessory created, edit mode activated</value>
+  </data>
+  <data name="NewPasswordMinimumLength" xml:space="preserve">
+    <value>New password must be at least 6 characters.</value>
+  </data>
+  <data name="NewPasswordsDoNotMatchOrEmpty" xml:space="preserve">
+    <value>New passwords do not match or are empty.</value>
+  </data>
+  <data name="NoClientAvailableCannotCreateVehicle" xml:space="preserve">
+    <value>No client available – cannot create vehicle</value>
+  </data>
+  <data name="NoClientExists" xml:space="preserve">
+    <value>No client exists. Please create a client first using 'Manage Clients'.</value>
+  </data>
+  <data name="NoEmailAddressConfigured" xml:space="preserve">
+    <value>No email address configured for this user. Please contact an administrator.</value>
+  </data>
+  <data name="NoSelectedRowsMatchDateRange" xml:space="preserve">
+    <value>No selected rows match the date range.</value>
+  </data>
+  <data name="NoValidVehicleDataInFile" xml:space="preserve">
+    <value>No valid vehicle data found in the file.</value>
+  </data>
+  <data name="NoWorkOrdersFound" xml:space="preserve">
+    <value>No work orders found for the selected accessory and date range.</value>
+  </data>
+  <data name="NotConnectedToGoogleDrive" xml:space="preserve">
+    <value>Not connected to Google Drive.</value>
+  </data>
+  <data name="OpeningClientEditWindowForNewClient" xml:space="preserve">
+    <value>Opening ClientEditWindow for new client</value>
+  </data>
+  <data name="OpeningClientMergeDialog" xml:space="preserve">
+    <value>Opening ClientMergeDialog</value>
+  </data>
+  <data name="OperationCompletedSuccessfully" xml:space="preserve">
+    <value>Operation completed successfully.</value>
+  </data>
+  <data name="ParsingFile" xml:space="preserve">
+    <value>Parsing file...</value>
+  </data>
+  <data name="PasswordCannotBeEmpty" xml:space="preserve">
+    <value>Password cannot be empty.</value>
+  </data>
+  <data name="PasswordChangedSuccessfully" xml:space="preserve">
+    <value>Password changed successfully.</value>
+  </data>
+  <data name="PasswordMinimumLength" xml:space="preserve">
+    <value>Password must be at least 6 characters.</value>
+  </data>
+  <data name="PasswordResetSuccessfully" xml:space="preserve">
+    <value>Password reset successfully. Please log in.</value>
+  </data>
+  <data name="PasswordsDoNotMatchOrEmpty" xml:space="preserve">
+    <value>Passwords do not match or are empty.</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Passwords do not match.</value>
+  </data>
+  <data name="PDFImportFailed" xml:space="preserve">
+    <value>PDF import failed</value>
+  </data>
+  <data name="PDFReportGenerationFailed" xml:space="preserve">
+    <value>PDF report generation failed</value>
+  </data>
+  <data name="PleaseAuthenticateWithGoogleDriveFirst" xml:space="preserve">
+    <value>Please authenticate with Google Drive first.</value>
+  </data>
+  <data name="PleaseEnterUsername" xml:space="preserve">
+    <value>Please enter your username.</value>
+  </data>
+  <data name="PleaseSelectBackupFileToRestore" xml:space="preserve">
+    <value>Please select a backup file to restore.</value>
+  </data>
+  <data name="PleaseSelectDriveBackupToRestore" xml:space="preserve">
+    <value>Please select a Drive backup to restore.</value>
+  </data>
+  <data name="PleaseSelectVehicle" xml:space="preserve">
+    <value>Please select a vehicle.</value>
+  </data>
+  <data name="PleaseSelectImportFileFirst" xml:space="preserve">
+    <value>Please select an import file first.</value>
+  </data>
+  <data name="PleaseSelectAtLeastTwoClientsToMerge" xml:space="preserve">
+    <value>Please select at least two clients to merge.</value>
+  </data>
+  <data name="PreviewClearedByUser" xml:space="preserve">
+    <value>Preview cleared by user.</value>
+  </data>
+  <data name="PriceCannotBeNegative" xml:space="preserve">
+    <value>Price cannot be negative.</value>
+  </data>
+  <data name="PricesUpdatedAndGridRefreshed" xml:space="preserve">
+    <value>Prices updated and grid refreshed.</value>
+  </data>
+  <data name="ProcessingParcCarrieresFile" xml:space="preserve">
+    <value>Processing ParcCarrières file...</value>
+  </data>
+  <data name="PythonScriptDidNotProduceOutput" xml:space="preserve">
+    <value>Python script did not produce output.txt</value>
+  </data>
+  <data name="RefreshingAccessoriesList" xml:space="preserve">
+    <value>Refreshing accessories list</value>
+  </data>
+  <data name="ReportGenerationCancelled" xml:space="preserve">
+    <value>Report generation cancelled.</value>
+  </data>
+  <data name="ResourceLoadingFailed" xml:space="preserve">
+    <value>Resource loading failed</value>
+  </data>
+  <data name="RestoreFailed" xml:space="preserve">
+    <value>Restore failed</value>
+  </data>
+  <data name="RestoreFromDriveFailed" xml:space="preserve">
+    <value>Restore from Drive failed</value>
+  </data>
+  <data name="RestoringDatabase" xml:space="preserve">
+    <value>Restoring database...</value>
+  </data>
+  <data name="RunningPythonExtractor" xml:space="preserve">
+    <value>Running Python extractor...</value>
+  </data>
+  <data name="SaveAttemptedWithEmptyAccessoryName" xml:space="preserve">
+    <value>Save attempted with empty accessory name</value>
+  </data>
+  <data name="SaveAttemptedWithoutVehicleSelected" xml:space="preserve">
+    <value>Save attempted without a vehicle selected</value>
+  </data>
+  <data name="SaveAccessoryNoAccessoryToSave" xml:space="preserve">
+    <value>SaveAccessoryAsync called with no accessory to save</value>
+  </data>
+  <data name="SaveAsyncFailed" xml:space="preserve">
+    <value>SaveAsync failed</value>
+  </data>
+  <data name="SaveAsyncStarted" xml:space="preserve">
+    <value>SaveAsync started</value>
+  </data>
+  <data name="SearchTextEmptyReloadingAccessories" xml:space="preserve">
+    <value>Search text empty, reloading all accessories</value>
+  </data>
+  <data name="SelectedAccessoryChangedToNull" xml:space="preserve">
+    <value>Selected accessory changed to null</value>
+  </data>
+  <data name="SelectedClientChangedToNull" xml:space="preserve">
+    <value>Selected client changed to null</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Settings saved.</value>
+  </data>
+  <data name="SplashScreenText" xml:space="preserve">
+    <value>SKAuto Work Tracking System\nVersion .0.0\nDeveloped by SK Auto\n2026 - Insights®</value>
+  </data>
+  <data name="SplashInitializationError" xml:space="preserve">
+    <value>Splash: initialization error</value>
+  </data>
+  <data name="SplashLoadingResources" xml:space="preserve">
+    <value>Splash: loading resources...</value>
+  </data>
+  <data name="SplashResourcesLoadedSuccessfully" xml:space="preserve">
+    <value>Splash: resources loaded successfully.</value>
+  </data>
+  <data name="StartingBackup" xml:space="preserve">
+    <value>Starting backup...</value>
+  </data>
+  <data name="StartingExport" xml:space="preserve">
+    <value>Starting export...</value>
+  </data>
+  <data name="StartingImport" xml:space="preserve">
+    <value>Starting import...</value>
+  </data>
+  <data name="StartingManualSyncToGoogleDrive" xml:space="preserve">
+    <value>Starting manual sync to Google Drive.</value>
+  </data>
+  <data name="StepCreatingLocalBackup" xml:space="preserve">
+    <value>Step : Creating local backup...</value>
+  </data>
+  <data name="StepDownloadingDriveBackup" xml:space="preserve">
+    <value>Step 2: Downloading Drive backup...</value>
+  </data>
+  <data name="StepImportingBackup" xml:space="preserve">
+    <value>Step 3: Importing backup...</value>
+  </data>
+  <data name="SyncFailed" xml:space="preserve">
+    <value>Sync failed</value>
+  </data>
+  <data name="TestConnectionFailed" xml:space="preserve">
+    <value>TestConnection failed</value>
+  </data>
+  <data name="SelectedClientNotSavedYet" xml:space="preserve">
+    <value>The selected client is not saved yet. Please save the client first, then try again.</value>
+  </data>
+  <data name="SelectedClientNoLongerExists" xml:space="preserve">
+    <value>The selected client no longer exists. Please refresh clients and try again.</value>
+  </data>
+  <data name="TransactionStartedForMergeOperation" xml:space="preserve">
+    <value>Transaction started for merge operation</value>
+  </data>
+  <data name="UpdatingWorkOrderTasks" xml:space="preserve">
+    <value>Updating work order tasks...</value>
+  </data>
+  <data name="UploadingToGoogleDrive" xml:space="preserve">
+    <value>Uploading to Google Drive...</value>
+  </data>
+  <data name="UserNotFoundOrInactive" xml:space="preserve">
+    <value>User not found or inactive.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="UsernameAlreadyExists" xml:space="preserve">
+    <value>Username already exists.</value>
+  </data>
+  <data name="UsernameCannotBeEmpty" xml:space="preserve">
+    <value>Username cannot be empty.</value>
+  </data>
+  <data name="WorkOrderSavedSuccessfully" xml:space="preserve">
+    <value>Work order saved successfully</value>
+  </data>
+  <data name="CannotDeleteOwnAccount" xml:space="preserve">
+    <value>You cannot delete your own account.</value>
+  </data>
+  <data name="AddNewUser" xml:space="preserve">
+    <value>Add New User</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>New Password (leave blank to keep current)</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Confirm New Password</value>
+  </data>
+  <data name="CurrentPassword" xml:space="preserve">
+    <value>Current Password</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Reset Password</value>
+  </data>
+  <data name="SendCode" xml:space="preserve">
+    <value>Send Code</value>
+  </data>
+  <data name="CodeEmailBodyPart1" xml:space="preserve">
+    <value>  &lt;h2&gt;Password Reset Request&lt;/h2&gt;
+                    &lt;p&gt;You requested to reset your password for SKAuto Work Tracking.&lt;/p&gt;
+                    &lt;p&gt;Your verification code is: &lt;strong&gt;</value>
+  </data>
+  <data name="CodeEmailTitle" xml:space="preserve">
+    <value>SKAuto - Password Reset Code</value>
+  </data>
+  <data name="CodeSent" xml:space="preserve">
+    <value>Code Sent</value>
+  </data>
+  <data name="CodeSentMessageBodySuccessPart1" xml:space="preserve">
+    <value>A verification code has been sent to</value>
+  </data>
+  <data name="CodeSentMessageBodyFailed" xml:space="preserve">
+    <value>Email could not be sent.</value>
+  </data>
+  <data name="EmailFailed" xml:space="preserve">
+    <value>Email Failed</value>
+  </data>
+  <data name="VerifyReset" xml:space="preserve">
+    <value>Verify &amp; Reset</value>
+  </data>
+  <data name="CodeEmailBodyPart2" xml:space="preserve">
+    <value>&lt;/strong&gt;&lt;/p&gt;
+                    &lt;p&gt;This code will expire in 15 minutes.&lt;/p&gt;
+                    &lt;p&gt;If you did not request this, please ignore this email.&lt;/p&gt;</value>
+  </data>
+  <data name="CodeSentMessageBodySuccessPart2" xml:space="preserve">
+    <value>Please check your inbox.</value>
   </data>
 </root>

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.DTOs;
@@ -15,7 +15,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using SKAuto.Core.Entities; // for System.Windows.MessageBox
+using SKAuto.Core.Entities; using SKAuto.UI.Localization;
+// for System.Windows.MessageBox
 
 namespace SKAuto.UI.ViewModels
 {
@@ -183,8 +184,8 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenAbout()
         {
-            System.Windows.MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights®",
-                            "About", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights�",
+                            LocalizationManager.Instance["MainWindow_About"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
         private async void OpenPriceUpdate()
         {
@@ -196,7 +197,7 @@ namespace SKAuto.UI.ViewModels
             {
                 // Refresh today's work orders to show updated prices
                 await LoadTodayWorkAsync();
-                StatusMessage = "Prices updated and grid refreshed.";
+                StatusMessage = LocalizationManager.Instance["PricesUpdatedAndGridRefreshed"];
             }
         }
 
@@ -230,13 +231,13 @@ namespace SKAuto.UI.ViewModels
             {
                 var days = (DateTime.Now - settings.LastSync.Value).Days;
                 if (days >= 7)
-                    SyncStatus = $"⚠️ Sync needed (last: {settings.LastSync.Value:dd/MM}) – click to sync";
+                    SyncStatus = $"?? Sync needed (last: {settings.LastSync.Value:dd/MM}) � click to sync";
                 else
-                    SyncStatus = $"✓ Last sync: {settings.LastSync.Value:dd/MM}";
+                    SyncStatus = $"? Last sync: {settings.LastSync.Value:dd/MM}";
             }
             else
             {
-                SyncStatus = "⚙️ Configure Google Drive";
+                SyncStatus = "?? Configure Google Drive";
             }
         }
 
@@ -292,9 +293,9 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
             var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
-            // ✅ Set the owner to the current MainWindow
+            // ? Set the owner to the current MainWindow
             window.Owner = System.Windows.Application.Current.MainWindow;
-            // ✅ Set startup location (already in XAML, but ensure it's set)
+            // ? Set startup location (already in XAML, but ensure it's set)
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (window.ShowDialog() == true)
             {
@@ -322,7 +323,7 @@ namespace SKAuto.UI.ViewModels
             var serviceProvider = App.GetService<IServiceProvider>();
 
             var importVM = new ImportViewModel(
-                null,               // IUnitOfWork – not used inside ImportViewModel; safe to pass null
+                null,               // IUnitOfWork � not used inside ImportViewModel; safe to pass null
                 loggingService,
                 serviceProvider,
                 scopeFactory
@@ -424,7 +425,7 @@ namespace SKAuto.UI.ViewModels
                     if (win.ShowDialog() == true)
                     {
                         await LoadWorkForDateAsync(SelectedDate);
-                        StatusMessage = "Client updated successfully";
+                        StatusMessage = LocalizationManager.Instance["ClientUpdatedSuccessfully"];
                     }
                 }
             }

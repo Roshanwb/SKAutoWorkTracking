@@ -61,6 +61,24 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AccessoryManagementViewModel initialization complete, loading accessories.
+        /// </summary>
+        internal static string AccessoryManagementInitializationComplete {
+            get {
+                return ResourceManager.GetString("AccessoryManagementInitializationComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AccessoryManagementViewModel initializing.
+        /// </summary>
+        internal static string AccessoryManagementInitializing {
+            get {
+                return ResourceManager.GetString("AccessoryManagementInitializing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Actions.
         /// </summary>
         internal static string AccessoryManagementView_Actions {
@@ -192,6 +210,123 @@ namespace SKAuto.UI.Localization {
         internal static string AccessoryManagementView_TimeMinLabel {
             get {
                 return ResourceManager.GetString("AccessoryManagementView_TimeMinLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Accessory name cannot be empty..
+        /// </summary>
+        internal static string AccessoryNameEmptyError {
+            get {
+                return ResourceManager.GetString("AccessoryNameEmptyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddAccessory called - creating new accessory.
+        /// </summary>
+        internal static string AddAccessoryCalled {
+            get {
+                return ResourceManager.GetString("AddAccessoryCalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddClient failed.
+        /// </summary>
+        internal static string AddClientFailed {
+            get {
+                return ResourceManager.GetString("AddClientFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddClient started.
+        /// </summary>
+        internal static string AddClientStarted {
+            get {
+                return ResourceManager.GetString("AddClientStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add New User.
+        /// </summary>
+        internal static string AddNewUser {
+            get {
+                return ResourceManager.GetString("AddNewUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddTask called with no accessory selected.
+        /// </summary>
+        internal static string AddTaskNoAccessorySelected {
+            get {
+                return ResourceManager.GetString("AddTaskNoAccessorySelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddTravel called.
+        /// </summary>
+        internal static string AddTravelCalled {
+            get {
+                return ResourceManager.GetString("AddTravelCalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add travel cancelled by user.
+        /// </summary>
+        internal static string AddTravelCancelledByUser {
+            get {
+                return ResourceManager.GetString("AddTravelCancelledByUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AddUser called..
+        /// </summary>
+        internal static string AddUserCalled {
+            get {
+                return ResourceManager.GetString("AddUserCalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application starting....
+        /// </summary>
+        internal static string ApplicationStarting {
+            get {
+                return ResourceManager.GetString("ApplicationStarting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authentication failed..
+        /// </summary>
+        internal static string AuthenticationFailed {
+            get {
+                return ResourceManager.GetString("AuthenticationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authentication successful..
+        /// </summary>
+        internal static string AuthenticationSuccessful {
+            get {
+                return ResourceManager.GetString("AuthenticationSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup failed.
+        /// </summary>
+        internal static string BackupFailed {
+            get {
+                return ResourceManager.GetString("BackupFailed", resourceCulture);
             }
         }
         
@@ -376,6 +511,78 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BrowseFolder failed.
+        /// </summary>
+        internal static string BrowseFolderFailed {
+            get {
+                return ResourceManager.GetString("BrowseFolderFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bulk price update failed.
+        /// </summary>
+        internal static string BulkPriceUpdateFailed {
+            get {
+                return ResourceManager.GetString("BulkPriceUpdateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CancelEdit called - clearing edit mode.
+        /// </summary>
+        internal static string CancelEditCalled {
+            get {
+                return ResourceManager.GetString("CancelEditCalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You cannot delete your own account..
+        /// </summary>
+        internal static string CannotDeleteOwnAccount {
+            get {
+                return ResourceManager.GetString("CannotDeleteOwnAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chassis number is required..
+        /// </summary>
+        internal static string ChassisNumberRequired {
+            get {
+                return ResourceManager.GetString("ChassisNumberRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cleared all items..
+        /// </summary>
+        internal static string ClearedAllItems {
+            get {
+                return ResourceManager.GetString("ClearedAllItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client added successfully, refreshing list.
+        /// </summary>
+        internal static string ClientAddedSuccessfully {
+            get {
+                return ResourceManager.GetString("ClientAddedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client addition cancelled by user.
+        /// </summary>
+        internal static string ClientAdditionCancelledByUser {
+            get {
+                return ResourceManager.GetString("ClientAdditionCancelledByUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Active:.
         /// </summary>
         internal static string ClientEditWindow_Active {
@@ -417,6 +624,24 @@ namespace SKAuto.UI.Localization {
         internal static string ClientEditWindow_Type {
             get {
                 return ResourceManager.GetString("ClientEditWindow_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ClientManagementViewModel initialization complete, loading clients.
+        /// </summary>
+        internal static string ClientManagementInitializationComplete {
+            get {
+                return ResourceManager.GetString("ClientManagementInitializationComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ClientManagementViewModel initializing.
+        /// </summary>
+        internal static string ClientManagementInitializing {
+            get {
+                return ResourceManager.GetString("ClientManagementInitializing", resourceCulture);
             }
         }
         
@@ -561,6 +786,424 @@ namespace SKAuto.UI.Localization {
         internal static string ClientMergeDialog_Phone {
             get {
                 return ResourceManager.GetString("ClientMergeDialog_Phone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client updated successfully.
+        /// </summary>
+        internal static string ClientUpdatedSuccessfully {
+            get {
+                return ResourceManager.GetString("ClientUpdatedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CloseWindow called.
+        /// </summary>
+        internal static string CloseWindowCalled {
+            get {
+                return ResourceManager.GetString("CloseWindowCalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   &lt;h2&gt;Password Reset Request&lt;/h2&gt;
+        ///                    &lt;p&gt;You requested to reset your password for SKAuto Work Tracking.&lt;/p&gt;
+        ///                    &lt;p&gt;Your verification code is: &lt;strong&gt;.
+        /// </summary>
+        internal static string CodeEmailBodyPart1 {
+            get {
+                return ResourceManager.GetString("CodeEmailBodyPart1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;/strong&gt;&lt;/p&gt;
+        ///                    &lt;p&gt;This code will expire in 15 minutes.&lt;/p&gt;
+        ///                    &lt;p&gt;If you did not request this, please ignore this email.&lt;/p&gt;.
+        /// </summary>
+        internal static string CodeEmailBodyPart2 {
+            get {
+                return ResourceManager.GetString("CodeEmailBodyPart2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKAuto - Password Reset Code.
+        /// </summary>
+        internal static string CodeEmailTitle {
+            get {
+                return ResourceManager.GetString("CodeEmailTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Code Sent.
+        /// </summary>
+        internal static string CodeSent {
+            get {
+                return ResourceManager.GetString("CodeSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email could not be sent..
+        /// </summary>
+        internal static string CodeSentMessageBodyFailed {
+            get {
+                return ResourceManager.GetString("CodeSentMessageBodyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A verification code has been sent to.
+        /// </summary>
+        internal static string CodeSentMessageBodySuccessPart1 {
+            get {
+                return ResourceManager.GetString("CodeSentMessageBodySuccessPart1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please check your inbox..
+        /// </summary>
+        internal static string CodeSentMessageBodySuccessPart2 {
+            get {
+                return ResourceManager.GetString("CodeSentMessageBodySuccessPart2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm New Password.
+        /// </summary>
+        internal static string ConfirmNewPassword {
+            get {
+                return ResourceManager.GetString("ConfirmNewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Password.
+        /// </summary>
+        internal static string ConfirmPassword {
+            get {
+                return ResourceManager.GetString("ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection failed (unknown reason)..
+        /// </summary>
+        internal static string ConnectionFailedUnknownReason {
+            get {
+                return ResourceManager.GetString("ConnectionFailedUnknownReason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection OK..
+        /// </summary>
+        internal static string ConnectionOK {
+            get {
+                return ResourceManager.GetString("ConnectionOK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find or create folder..
+        /// </summary>
+        internal static string CouldNotFindOrCreateFolder {
+            get {
+                return ResourceManager.GetString("CouldNotFindOrCreateFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Created default configuration..
+        /// </summary>
+        internal static string CreatedDefaultConfiguration {
+            get {
+                return ResourceManager.GetString("CreatedDefaultConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Created new work order.
+        /// </summary>
+        internal static string CreatedNewWorkOrder {
+            get {
+                return ResourceManager.GetString("CreatedNewWorkOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Creating backup....
+        /// </summary>
+        internal static string CreatingBackup {
+            get {
+                return ResourceManager.GetString("CreatingBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current Password.
+        /// </summary>
+        internal static string CurrentPassword {
+            get {
+                return ResourceManager.GetString("CurrentPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current password is incorrect..
+        /// </summary>
+        internal static string CurrentPasswordIncorrect {
+            get {
+                return ResourceManager.GetString("CurrentPasswordIncorrect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database initialized..
+        /// </summary>
+        internal static string DatabaseInitialized {
+            get {
+                return ResourceManager.GetString("DatabaseInitialized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DeleteAccessoryAsync called with no accessory selected.
+        /// </summary>
+        internal static string DeleteAccessoryNoAccessorySelected {
+            get {
+                return ResourceManager.GetString("DeleteAccessoryNoAccessorySelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DeleteClientAsync called with no client selected.
+        /// </summary>
+        internal static string DeleteClientNoClientSelected {
+            get {
+                return ResourceManager.GetString("DeleteClientNoClientSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to EditAccessory called with null accessory.
+        /// </summary>
+        internal static string EditAccessoryCalledWithNull {
+            get {
+                return ResourceManager.GetString("EditAccessoryCalledWithNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to EditClientAsync called with no client selected.
+        /// </summary>
+        internal static string EditClientNoClientSelected {
+            get {
+                return ResourceManager.GetString("EditClientNoClientSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit fields cleared.
+        /// </summary>
+        internal static string EditFieldsCleared {
+            get {
+                return ResourceManager.GetString("EditFieldsCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit mode activated for accessory.
+        /// </summary>
+        internal static string EditModeActivatedForAccessory {
+            get {
+                return ResourceManager.GetString("EditModeActivatedForAccessory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit mode cancelled.
+        /// </summary>
+        internal static string EditModeCancelled {
+            get {
+                return ResourceManager.GetString("EditModeCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email Failed.
+        /// </summary>
+        internal static string EmailFailed {
+            get {
+                return ResourceManager.GetString("EmailFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email is required..
+        /// </summary>
+        internal static string EmailRequired {
+            get {
+                return ResourceManager.GetString("EmailRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error loading accessories..
+        /// </summary>
+        internal static string ErrorLoadingAccessories {
+            get {
+                return ResourceManager.GetString("ErrorLoadingAccessories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excel report generation failed.
+        /// </summary>
+        internal static string ExcelReportGenerationFailed {
+            get {
+                return ResourceManager.GetString("ExcelReportGenerationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export failed.
+        /// </summary>
+        internal static string ExportFailed {
+            get {
+                return ResourceManager.GetString("ExportFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to add travel.
+        /// </summary>
+        internal static string FailedToAddTravel {
+            get {
+                return ResourceManager.GetString("FailedToAddTravel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to list backup files.
+        /// </summary>
+        internal static string FailedToListBackupFiles {
+            get {
+                return ResourceManager.GetString("FailedToListBackupFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to list Drive backups.
+        /// </summary>
+        internal static string FailedToListDriveBackups {
+            get {
+                return ResourceManager.GetString("FailedToListDriveBackups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load accessories for bulk price update.
+        /// </summary>
+        internal static string FailedToLoadAccessoriesForBulkPriceUpdate {
+            get {
+                return ResourceManager.GetString("FailedToLoadAccessoriesForBulkPriceUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load accessories for report filter.
+        /// </summary>
+        internal static string FailedToLoadAccessoriesForReportFilter {
+            get {
+                return ResourceManager.GetString("FailedToLoadAccessoriesForReportFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load users.
+        /// </summary>
+        internal static string FailedToLoadUsers {
+            get {
+                return ResourceManager.GetString("FailedToLoadUsers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to show main window.
+        /// </summary>
+        internal static string FailedToShowMainWindow {
+            get {
+                return ResourceManager.GetString("FailedToShowMainWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FilterAccessories started.
+        /// </summary>
+        internal static string FilterAccessoriesStarted {
+            get {
+                return ResourceManager.GetString("FilterAccessoriesStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generating Excel report....
+        /// </summary>
+        internal static string GeneratingExcelReport {
+            get {
+                return ResourceManager.GetString("GeneratingExcelReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generating PDF report....
+        /// </summary>
+        internal static string GeneratingPDFReport {
+            get {
+                return ResourceManager.GetString("GeneratingPDFReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Google Drive auto-authenticated successfully on startup..
+        /// </summary>
+        internal static string GoogleDriveAutoAuthenticatedSuccessfully {
+            get {
+                return ResourceManager.GetString("GoogleDriveAutoAuthenticatedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Google Drive auto-authentication failed..
+        /// </summary>
+        internal static string GoogleDriveAutoAuthenticationFailed {
+            get {
+                return ResourceManager.GetString("GoogleDriveAutoAuthenticationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Google Drive not connected. Please authenticate first..
+        /// </summary>
+        internal static string GoogleDriveNotConnected {
+            get {
+                return ResourceManager.GetString("GoogleDriveNotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Google Drive settings saved..
+        /// </summary>
+        internal static string GoogleDriveSettingsSaved {
+            get {
+                return ResourceManager.GetString("GoogleDriveSettingsSaved", resourceCulture);
             }
         }
         
@@ -1933,6 +2576,24 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Import exception.
+        /// </summary>
+        internal static string ImportException {
+            get {
+                return ResourceManager.GetString("ImportException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import failed.
+        /// </summary>
+        internal static string ImportFailed {
+            get {
+                return ResourceManager.GetString("ImportFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clear All.
         /// </summary>
         internal static string ImportView_ClearAll {
@@ -2037,6 +2698,96 @@ namespace SKAuto.UI.Localization {
         internal static string ImportView_Source {
             get {
                 return ResourceManager.GetString("ImportView_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to InitializeAsync failed.
+        /// </summary>
+        internal static string InitializeAsyncFailed {
+            get {
+                return ResourceManager.GetString("InitializeAsyncFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to InitializeAsync started.
+        /// </summary>
+        internal static string InitializeAsyncStarted {
+            get {
+                return ResourceManager.GetString("InitializeAsyncStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid email format..
+        /// </summary>
+        internal static string InvalidEmailFormat {
+            get {
+                return ResourceManager.GetString("InvalidEmailFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid or expired verification code..
+        /// </summary>
+        internal static string InvalidOrExpiredVerificationCode {
+            get {
+                return ResourceManager.GetString("InvalidOrExpiredVerificationCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LoadAccessoriesAsync failed.
+        /// </summary>
+        internal static string LoadAccessoriesAsyncFailed {
+            get {
+                return ResourceManager.GetString("LoadAccessoriesAsyncFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LoadAccessoriesAsync started.
+        /// </summary>
+        internal static string LoadAccessoriesAsyncStarted {
+            get {
+                return ResourceManager.GetString("LoadAccessoriesAsyncStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LoadClientsAsync failed.
+        /// </summary>
+        internal static string LoadClientsAsyncFailed {
+            get {
+                return ResourceManager.GetString("LoadClientsAsyncFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LoadClientsAsync started.
+        /// </summary>
+        internal static string LoadClientsAsyncStarted {
+            get {
+                return ResourceManager.GetString("LoadClientsAsyncStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LoadSettings failed.
+        /// </summary>
+        internal static string LoadSettingsFailed {
+            get {
+                return ResourceManager.GetString("LoadSettingsFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login cancelled or failed. Exiting..
+        /// </summary>
+        internal static string LoginCancelledOrFailed {
+            get {
+                return ResourceManager.GetString("LoginCancelledOrFailed", resourceCulture);
             }
         }
         
@@ -2500,6 +3251,330 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Main window shown and activated..
+        /// </summary>
+        internal static string MainWindowShownAndActivated {
+            get {
+                return ResourceManager.GetString("MainWindowShownAndActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge cancelled by user.
+        /// </summary>
+        internal static string MergeCancelledByUser {
+            get {
+                return ResourceManager.GetString("MergeCancelledByUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MergeClientsAsync started.
+        /// </summary>
+        internal static string MergeClientsAsyncStarted {
+            get {
+                return ResourceManager.GetString("MergeClientsAsyncStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New accessory created, edit mode activated.
+        /// </summary>
+        internal static string NewAccessoryCreatedEditModeActivated {
+            get {
+                return ResourceManager.GetString("NewAccessoryCreatedEditModeActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Password (leave blank to keep current).
+        /// </summary>
+        internal static string NewPassword {
+            get {
+                return ResourceManager.GetString("NewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New password must be at least 6 characters..
+        /// </summary>
+        internal static string NewPasswordMinimumLength {
+            get {
+                return ResourceManager.GetString("NewPasswordMinimumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New passwords do not match or are empty..
+        /// </summary>
+        internal static string NewPasswordsDoNotMatchOrEmpty {
+            get {
+                return ResourceManager.GetString("NewPasswordsDoNotMatchOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No client available – cannot create vehicle.
+        /// </summary>
+        internal static string NoClientAvailableCannotCreateVehicle {
+            get {
+                return ResourceManager.GetString("NoClientAvailableCannotCreateVehicle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No client exists. Please create a client first using &apos;Manage Clients&apos;..
+        /// </summary>
+        internal static string NoClientExists {
+            get {
+                return ResourceManager.GetString("NoClientExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No email address configured for this user. Please contact an administrator..
+        /// </summary>
+        internal static string NoEmailAddressConfigured {
+            get {
+                return ResourceManager.GetString("NoEmailAddressConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No selected rows match the date range..
+        /// </summary>
+        internal static string NoSelectedRowsMatchDateRange {
+            get {
+                return ResourceManager.GetString("NoSelectedRowsMatchDateRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not connected to Google Drive..
+        /// </summary>
+        internal static string NotConnectedToGoogleDrive {
+            get {
+                return ResourceManager.GetString("NotConnectedToGoogleDrive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No valid vehicle data found in the file..
+        /// </summary>
+        internal static string NoValidVehicleDataInFile {
+            get {
+                return ResourceManager.GetString("NoValidVehicleDataInFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No work orders found for the selected accessory and date range..
+        /// </summary>
+        internal static string NoWorkOrdersFound {
+            get {
+                return ResourceManager.GetString("NoWorkOrdersFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opening ClientEditWindow for new client.
+        /// </summary>
+        internal static string OpeningClientEditWindowForNewClient {
+            get {
+                return ResourceManager.GetString("OpeningClientEditWindowForNewClient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opening ClientMergeDialog.
+        /// </summary>
+        internal static string OpeningClientMergeDialog {
+            get {
+                return ResourceManager.GetString("OpeningClientMergeDialog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operation completed successfully..
+        /// </summary>
+        internal static string OperationCompletedSuccessfully {
+            get {
+                return ResourceManager.GetString("OperationCompletedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parsing file....
+        /// </summary>
+        internal static string ParsingFile {
+            get {
+                return ResourceManager.GetString("ParsingFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password cannot be empty..
+        /// </summary>
+        internal static string PasswordCannotBeEmpty {
+            get {
+                return ResourceManager.GetString("PasswordCannotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password changed successfully..
+        /// </summary>
+        internal static string PasswordChangedSuccessfully {
+            get {
+                return ResourceManager.GetString("PasswordChangedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must be at least 6 characters..
+        /// </summary>
+        internal static string PasswordMinimumLength {
+            get {
+                return ResourceManager.GetString("PasswordMinimumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password reset successfully. Please log in..
+        /// </summary>
+        internal static string PasswordResetSuccessfully {
+            get {
+                return ResourceManager.GetString("PasswordResetSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passwords do not match..
+        /// </summary>
+        internal static string PasswordsDoNotMatch {
+            get {
+                return ResourceManager.GetString("PasswordsDoNotMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passwords do not match or are empty..
+        /// </summary>
+        internal static string PasswordsDoNotMatchOrEmpty {
+            get {
+                return ResourceManager.GetString("PasswordsDoNotMatchOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PDF import failed.
+        /// </summary>
+        internal static string PDFImportFailed {
+            get {
+                return ResourceManager.GetString("PDFImportFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PDF report generation failed.
+        /// </summary>
+        internal static string PDFReportGenerationFailed {
+            get {
+                return ResourceManager.GetString("PDFReportGenerationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please authenticate with Google Drive first..
+        /// </summary>
+        internal static string PleaseAuthenticateWithGoogleDriveFirst {
+            get {
+                return ResourceManager.GetString("PleaseAuthenticateWithGoogleDriveFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter your username..
+        /// </summary>
+        internal static string PleaseEnterUsername {
+            get {
+                return ResourceManager.GetString("PleaseEnterUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select at least two clients to merge..
+        /// </summary>
+        internal static string PleaseSelectAtLeastTwoClientsToMerge {
+            get {
+                return ResourceManager.GetString("PleaseSelectAtLeastTwoClientsToMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a backup file to restore..
+        /// </summary>
+        internal static string PleaseSelectBackupFileToRestore {
+            get {
+                return ResourceManager.GetString("PleaseSelectBackupFileToRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a Drive backup to restore..
+        /// </summary>
+        internal static string PleaseSelectDriveBackupToRestore {
+            get {
+                return ResourceManager.GetString("PleaseSelectDriveBackupToRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select an import file first..
+        /// </summary>
+        internal static string PleaseSelectImportFileFirst {
+            get {
+                return ResourceManager.GetString("PleaseSelectImportFileFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a vehicle..
+        /// </summary>
+        internal static string PleaseSelectVehicle {
+            get {
+                return ResourceManager.GetString("PleaseSelectVehicle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preview cleared by user..
+        /// </summary>
+        internal static string PreviewClearedByUser {
+            get {
+                return ResourceManager.GetString("PreviewClearedByUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Price cannot be negative..
+        /// </summary>
+        internal static string PriceCannotBeNegative {
+            get {
+                return ResourceManager.GetString("PriceCannotBeNegative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prices updated and grid refreshed..
+        /// </summary>
+        internal static string PricesUpdatedAndGridRefreshed {
+            get {
+                return ResourceManager.GetString("PricesUpdatedAndGridRefreshed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Also update default price of the accessory.
         /// </summary>
         internal static string PriceUpdateView_AlsoUpdateDefaultPrice {
@@ -2568,6 +3643,42 @@ namespace SKAuto.UI.Localization {
         internal static string PriceUpdateView_UpdatePrices {
             get {
                 return ResourceManager.GetString("PriceUpdateView_UpdatePrices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Processing ParcCarrières file....
+        /// </summary>
+        internal static string ProcessingParcCarrieresFile {
+            get {
+                return ResourceManager.GetString("ProcessingParcCarrieresFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Python script did not produce output.txt.
+        /// </summary>
+        internal static string PythonScriptDidNotProduceOutput {
+            get {
+                return ResourceManager.GetString("PythonScriptDidNotProduceOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refreshing accessories list.
+        /// </summary>
+        internal static string RefreshingAccessoriesList {
+            get {
+                return ResourceManager.GetString("RefreshingAccessoriesList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report generation cancelled..
+        /// </summary>
+        internal static string ReportGenerationCancelled {
+            get {
+                return ResourceManager.GetString("ReportGenerationCancelled", resourceCulture);
             }
         }
         
@@ -2698,6 +3809,168 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reset Password.
+        /// </summary>
+        internal static string ResetPassword {
+            get {
+                return ResourceManager.GetString("ResetPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resource loading failed.
+        /// </summary>
+        internal static string ResourceLoadingFailed {
+            get {
+                return ResourceManager.GetString("ResourceLoadingFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore failed.
+        /// </summary>
+        internal static string RestoreFailed {
+            get {
+                return ResourceManager.GetString("RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore from Drive failed.
+        /// </summary>
+        internal static string RestoreFromDriveFailed {
+            get {
+                return ResourceManager.GetString("RestoreFromDriveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restoring database....
+        /// </summary>
+        internal static string RestoringDatabase {
+            get {
+                return ResourceManager.GetString("RestoringDatabase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running Python extractor....
+        /// </summary>
+        internal static string RunningPythonExtractor {
+            get {
+                return ResourceManager.GetString("RunningPythonExtractor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SaveAccessoryAsync called with no accessory to save.
+        /// </summary>
+        internal static string SaveAccessoryNoAccessoryToSave {
+            get {
+                return ResourceManager.GetString("SaveAccessoryNoAccessoryToSave", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SaveAsync failed.
+        /// </summary>
+        internal static string SaveAsyncFailed {
+            get {
+                return ResourceManager.GetString("SaveAsyncFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SaveAsync started.
+        /// </summary>
+        internal static string SaveAsyncStarted {
+            get {
+                return ResourceManager.GetString("SaveAsyncStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save attempted with empty accessory name.
+        /// </summary>
+        internal static string SaveAttemptedWithEmptyAccessoryName {
+            get {
+                return ResourceManager.GetString("SaveAttemptedWithEmptyAccessoryName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save attempted without a vehicle selected.
+        /// </summary>
+        internal static string SaveAttemptedWithoutVehicleSelected {
+            get {
+                return ResourceManager.GetString("SaveAttemptedWithoutVehicleSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search text empty, reloading all accessories.
+        /// </summary>
+        internal static string SearchTextEmptyReloadingAccessories {
+            get {
+                return ResourceManager.GetString("SearchTextEmptyReloadingAccessories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected accessory changed to null.
+        /// </summary>
+        internal static string SelectedAccessoryChangedToNull {
+            get {
+                return ResourceManager.GetString("SelectedAccessoryChangedToNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected client changed to null.
+        /// </summary>
+        internal static string SelectedClientChangedToNull {
+            get {
+                return ResourceManager.GetString("SelectedClientChangedToNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected client no longer exists. Please refresh clients and try again..
+        /// </summary>
+        internal static string SelectedClientNoLongerExists {
+            get {
+                return ResourceManager.GetString("SelectedClientNoLongerExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected client is not saved yet. Please save the client first, then try again..
+        /// </summary>
+        internal static string SelectedClientNotSavedYet {
+            get {
+                return ResourceManager.GetString("SelectedClientNotSavedYet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Send Code.
+        /// </summary>
+        internal static string SendCode {
+            get {
+                return ResourceManager.GetString("SendCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings saved..
+        /// </summary>
+        internal static string SettingsSaved {
+            get {
+                return ResourceManager.GetString("SettingsSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 2026 - Insights®.
         /// </summary>
         internal static string Splash_Copyright {
@@ -2743,6 +4016,132 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Splash: initialization error.
+        /// </summary>
+        internal static string SplashInitializationError {
+            get {
+                return ResourceManager.GetString("SplashInitializationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Splash: loading resources....
+        /// </summary>
+        internal static string SplashLoadingResources {
+            get {
+                return ResourceManager.GetString("SplashLoadingResources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Splash: resources loaded successfully..
+        /// </summary>
+        internal static string SplashResourcesLoadedSuccessfully {
+            get {
+                return ResourceManager.GetString("SplashResourcesLoadedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKAuto Work Tracking System\nVersion .0.0\nDeveloped by SK Auto\n2026 - Insights®.
+        /// </summary>
+        internal static string SplashScreenText {
+            get {
+                return ResourceManager.GetString("SplashScreenText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting backup....
+        /// </summary>
+        internal static string StartingBackup {
+            get {
+                return ResourceManager.GetString("StartingBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting export....
+        /// </summary>
+        internal static string StartingExport {
+            get {
+                return ResourceManager.GetString("StartingExport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting import....
+        /// </summary>
+        internal static string StartingImport {
+            get {
+                return ResourceManager.GetString("StartingImport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting manual sync to Google Drive..
+        /// </summary>
+        internal static string StartingManualSyncToGoogleDrive {
+            get {
+                return ResourceManager.GetString("StartingManualSyncToGoogleDrive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Step : Creating local backup....
+        /// </summary>
+        internal static string StepCreatingLocalBackup {
+            get {
+                return ResourceManager.GetString("StepCreatingLocalBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Step 2: Downloading Drive backup....
+        /// </summary>
+        internal static string StepDownloadingDriveBackup {
+            get {
+                return ResourceManager.GetString("StepDownloadingDriveBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Step 3: Importing backup....
+        /// </summary>
+        internal static string StepImportingBackup {
+            get {
+                return ResourceManager.GetString("StepImportingBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sync failed.
+        /// </summary>
+        internal static string SyncFailed {
+            get {
+                return ResourceManager.GetString("SyncFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TestConnection failed.
+        /// </summary>
+        internal static string TestConnectionFailed {
+            get {
+                return ResourceManager.GetString("TestConnectionFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transaction started for merge operation.
+        /// </summary>
+        internal static string TransactionStartedForMergeOperation {
+            get {
+                return ResourceManager.GetString("TransactionStartedForMergeOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date:.
         /// </summary>
         internal static string TravelDialog_Date {
@@ -2784,6 +4183,24 @@ namespace SKAuto.UI.Localization {
         internal static string TravelDialog_TravelDetails {
             get {
                 return ResourceManager.GetString("TravelDialog_TravelDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updating work order tasks....
+        /// </summary>
+        internal static string UpdatingWorkOrderTasks {
+            get {
+                return ResourceManager.GetString("UpdatingWorkOrderTasks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading to Google Drive....
+        /// </summary>
+        internal static string UploadingToGoogleDrive {
+            get {
+                return ResourceManager.GetString("UploadingToGoogleDrive", resourceCulture);
             }
         }
         
@@ -2838,6 +4255,42 @@ namespace SKAuto.UI.Localization {
         internal static string UserManagementView_Role {
             get {
                 return ResourceManager.GetString("UserManagementView_Role", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username already exists..
+        /// </summary>
+        internal static string UsernameAlreadyExists {
+            get {
+                return ResourceManager.GetString("UsernameAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username cannot be empty..
+        /// </summary>
+        internal static string UsernameCannotBeEmpty {
+            get {
+                return ResourceManager.GetString("UsernameCannotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User not found..
+        /// </summary>
+        internal static string UserNotFound {
+            get {
+                return ResourceManager.GetString("UserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User not found or inactive..
+        /// </summary>
+        internal static string UserNotFoundOrInactive {
+            get {
+                return ResourceManager.GetString("UserNotFoundOrInactive", resourceCulture);
             }
         }
         
@@ -2991,6 +4444,15 @@ namespace SKAuto.UI.Localization {
         internal static string VehicleManagementView_Year {
             get {
                 return ResourceManager.GetString("VehicleManagementView_Year", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify &amp; Reset.
+        /// </summary>
+        internal static string VerifyReset {
+            get {
+                return ResourceManager.GetString("VerifyReset", resourceCulture);
             }
         }
         
@@ -3171,6 +4633,15 @@ namespace SKAuto.UI.Localization {
         internal static string WorkOrderDetailWindow_WorkOrderInfo {
             get {
                 return ResourceManager.GetString("WorkOrderDetailWindow_WorkOrderInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work order saved successfully.
+        /// </summary>
+        internal static string WorkOrderSavedSuccessfully {
+            get {
+                return ResourceManager.GetString("WorkOrderSavedSuccessfully", resourceCulture);
             }
         }
         

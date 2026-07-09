@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
@@ -66,7 +66,7 @@ namespace SKAuto.UI
 
             await _host.StartAsync();
             _logger = _host.Services.GetRequiredService<ILoggingService>();
-            _logger.LogInfo("Application starting...");
+            _logger.LogInfo(LocalizationManager.Instance["ApplicationStarting"]);
 
             var splash = new Splash(
                 loadResources: () =>
@@ -75,7 +75,7 @@ namespace SKAuto.UI
                     {
                         var initializer = _host.Services.GetRequiredService<DatabaseInitializer>();
                         initializer.InitializeAsync().GetAwaiter().GetResult();
-                        _logger.LogInfo("Database initialized.");
+                        _logger.LogInfo(LocalizationManager.Instance["DatabaseInitialized"]);
 
                         var configService = _host.Services.GetRequiredService<IConfigurationService>();
                         var appConfig = configService.GetAsync<AppConfig>("AppConfig").GetAwaiter().GetResult();
@@ -83,7 +83,7 @@ namespace SKAuto.UI
                         {
                             appConfig = new AppConfig();
                             configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
-                            _logger.LogInfo("Created default configuration.");
+                            _logger.LogInfo(LocalizationManager.Instance["CreatedDefaultConfiguration"]);
                         }
                         _currentAppConfig = appConfig; // STORE IT
                         CurrentConfig = appConfig;
@@ -123,9 +123,9 @@ namespace SKAuto.UI
                                 var driveService = _host.Services.GetRequiredService<IGoogleDriveService>();
                                 bool authenticated = driveService.AuthenticateAsync(driveSettings).GetAwaiter().GetResult();
                                 if (authenticated)
-                                    _logger.LogInfo("Google Drive auto-authenticated successfully on startup.");
+                                    _logger.LogInfo(LocalizationManager.Instance["GoogleDriveAutoAuthenticatedSuccessfully"]);
                                 else
-                                    _logger.LogWarning("Google Drive auto-authentication failed.");
+                                    _logger.LogWarning(LocalizationManager.Instance["GoogleDriveAutoAuthenticationFailed"]);
                             }
                         }
                         catch (Exception ex)
@@ -136,7 +136,7 @@ namespace SKAuto.UI
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Resource loading failed", ex);
+                        _logger.LogError(LocalizationManager.Instance["ResourceLoadingFailed"], ex);
                         throw;
                     }
                 },
@@ -154,7 +154,7 @@ namespace SKAuto.UI
                             var loginView = new LoginView(loginVM);
                             if (loginView.ShowDialog() != true)
                             {
-                                _logger.LogInfo("Login cancelled or failed. Exiting.");
+                                _logger.LogInfo(LocalizationManager.Instance["LoginCancelledOrFailed"]);
                                 Shutdown();
                                 return;
                             }
@@ -178,12 +178,12 @@ namespace SKAuto.UI
                         mainWindow.Show();
                         mainWindow.Activate();
                         mainWindow.Focus();
-                        _logger.LogInfo("Main window shown and activated.");
+                        _logger.LogInfo(LocalizationManager.Instance["MainWindowShownAndActivated"]);
                         System.Windows.Application.Current.MainWindow.WindowState = WindowState.Maximized;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Failed to show main window", ex);
+                        _logger.LogError(LocalizationManager.Instance["FailedToShowMainWindow"], ex);
                         System.Windows.MessageBox.Show($"Fatal error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         Environment.Exit(1);
                     }
@@ -218,7 +218,7 @@ namespace SKAuto.UI
             }
             else
             {
-                _logger?.LogInfo("No user logged in – skipping backup on exit.");
+                _logger?.LogInfo("No user logged in � skipping backup on exit.");
             }
 
             await _host.StopAsync();

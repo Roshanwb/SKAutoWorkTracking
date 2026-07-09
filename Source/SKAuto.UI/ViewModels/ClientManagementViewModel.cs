@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class ClientManagementViewModel : ObservableObject
@@ -49,7 +50,7 @@ namespace SKAuto.UI.ViewModels
             _unitOfWork = unitOfWork;
             _logger = logger;
 
-            _logger.LogInfo("ClientManagementViewModel initializing");
+            _logger.LogInfo(LocalizationManager.Instance["ClientManagementInitializing"]);
 
             LoadClientsCommand = new AsyncRelayCommand(LoadClientsAsync);
             AddClientCommand = new RelayCommand(AddClient);
@@ -59,13 +60,13 @@ namespace SKAuto.UI.ViewModels
             SelectedClients = new ObservableCollection<Client>();
             MergeClientsCommand = new AsyncRelayCommand(MergeClientsAsync, () => SelectedClients.Count >= 2);
 
-            _logger.LogInfo("ClientManagementViewModel initialization complete, loading clients");
+            _logger.LogInfo(LocalizationManager.Instance["ClientManagementInitializationComplete"]);
             LoadClientsCommand.Execute(null);
         }
 
         private async Task LoadClientsAsync()
         {
-            _logger.LogInfo("LoadClientsAsync started");
+            _logger.LogInfo(LocalizationManager.Instance["LoadClientsAsyncStarted"]);
             try
             {
                 var list = await _unitOfWork.Clients.GetAllAsync();
@@ -77,7 +78,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("LoadClientsAsync failed", ex);
+                _logger.LogError(LocalizationManager.Instance["LoadClientsAsyncFailed"], ex);
                 throw;
             }
         }
@@ -105,27 +106,27 @@ namespace SKAuto.UI.ViewModels
 
         private void AddClient()
         {
-            _logger.LogInfo("AddClient started");
+            _logger.LogInfo(LocalizationManager.Instance["AddClientStarted"]);
             try
             {
                 var newClient = new Client { Name = "New Client", IsActive = true };
                 var vm = new ClientEditViewModel(_unitOfWork, newClient);
                 var win = new ClientEditWindow { DataContext = vm };
 
-                _logger.LogInfo("Opening ClientEditWindow for new client");
+                _logger.LogInfo(LocalizationManager.Instance["OpeningClientEditWindowForNewClient"]);
                 if (win.ShowDialog() == true)
                 {
-                    _logger.LogInfo("Client added successfully, refreshing list");
+                    _logger.LogInfo(LocalizationManager.Instance["ClientAddedSuccessfully"]);
                     LoadClientsCommand.Execute(null);
                 }
                 else
                 {
-                    _logger.LogInfo("Client addition cancelled by user");
+                    _logger.LogInfo(LocalizationManager.Instance["ClientAdditionCancelledByUser"]);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("AddClient failed", ex);
+                _logger.LogError(LocalizationManager.Instance["AddClientFailed"], ex);
                 System.Windows.MessageBox.Show($"Error adding client: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -134,7 +135,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedClient == null)
             {
-                _logger.LogWarning("EditClientAsync called with no client selected");
+                _logger.LogWarning(LocalizationManager.Instance["EditClientNoClientSelected"]);
                 return;
             }
 
@@ -165,7 +166,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedClient == null)
             {
-                _logger.LogWarning("DeleteClientAsync called with no client selected");
+                _logger.LogWarning(LocalizationManager.Instance["DeleteClientNoClientSelected"]);
                 return;
             }
 
@@ -196,7 +197,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow()
         {
-            _logger.LogInfo("CloseWindow called");
+            _logger.LogInfo(LocalizationManager.Instance["CloseWindowCalled"]);
             foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
@@ -210,7 +211,7 @@ namespace SKAuto.UI.ViewModels
             if (value != null)
                 _logger.LogInfo($"Selected client changed to ID {value.Id}, Name '{value.Name}'");
             else
-                _logger.LogInfo("Selected client changed to null");
+                _logger.LogInfo(LocalizationManager.Instance["SelectedClientChangedToNull"]);
 
             EditClientCommand.NotifyCanExecuteChanged();
             DeleteClientCommand.NotifyCanExecuteChanged();
@@ -218,12 +219,12 @@ namespace SKAuto.UI.ViewModels
 
         private async Task MergeClientsAsync()
         {
-            _logger.LogInfo("MergeClientsAsync started");
+            _logger.LogInfo(LocalizationManager.Instance["MergeClientsAsyncStarted"]);
 
             if (SelectedClients == null || SelectedClients.Count < 2)
             {
                 _logger.LogWarning($"MergeClientsAsync called with insufficient selection: {SelectedClients?.Count ?? 0} clients selected");
-                System.Windows.MessageBox.Show("Please select at least two clients to merge.", "Merge Clients", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectAtLeastTwoClientsToMerge"], LocalizationManager.Instance["ClientMergeDialog_MergeClients"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -233,11 +234,11 @@ namespace SKAuto.UI.ViewModels
             _logger.LogInfo($"Merge: Master client ID {master.Id} '{master.Name}', will merge {others.Count} other client(s): {string.Join(", ", others.Select(c => $"{c.Id}:'{c.Name}'"))}");
 
             var dialog = new ClientMergeDialog(master);
-            _logger.LogInfo("Opening ClientMergeDialog");
+            _logger.LogInfo(LocalizationManager.Instance["OpeningClientMergeDialog"]);
 
             if (dialog.ShowDialog() != true)
             {
-                _logger.LogInfo("Merge cancelled by user");
+                _logger.LogInfo(LocalizationManager.Instance["MergeCancelledByUser"]);
                 return;
             }
 
@@ -252,7 +253,7 @@ namespace SKAuto.UI.ViewModels
             _logger.LogInfo($"Merge dialog result: Name='{newName}', Phone='{newPhone}', Email='{newEmail}', IsActive={newIsActive}");
 
             await _unitOfWork.BeginTransactionAsync();
-            _logger.LogInfo("Transaction started for merge operation");
+            _logger.LogInfo(LocalizationManager.Instance["TransactionStartedForMergeOperation"]);
 
             try
             {

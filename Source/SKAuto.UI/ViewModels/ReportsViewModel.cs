@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;   // For Cursors
+using System.Windows.Input;   using SKAuto.UI.Localization;
+// For Cursors
 
 namespace SKAuto.UI.ViewModels
 {
@@ -185,8 +186,8 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to load accessories for report filter", ex);
-                StatusMessage = "Error loading accessories.";
+                _logger.LogError(LocalizationManager.Instance["FailedToLoadAccessoriesForReportFilter"], ex);
+                StatusMessage = LocalizationManager.Instance["ErrorLoadingAccessories"];
             }
         }
 
@@ -195,7 +196,7 @@ namespace SKAuto.UI.ViewModels
             if (_isBusy) return;
             _isBusy = true;
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
-            StatusMessage = "Generating Excel report...";
+            StatusMessage = LocalizationManager.Instance["GeneratingExcelReport"];
 
             try
             {
@@ -235,12 +236,12 @@ namespace SKAuto.UI.ViewModels
                 }
                 else
                 {
-                    StatusMessage = "Report generation cancelled.";
+                    StatusMessage = LocalizationManager.Instance["ReportGenerationCancelled"];
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("Excel report generation failed", ex);
+                _logger.LogError(LocalizationManager.Instance["ExcelReportGenerationFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Failed to generate Excel report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -256,7 +257,7 @@ namespace SKAuto.UI.ViewModels
             if (_isBusy) return;
             _isBusy = true;
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
-            StatusMessage = "Generating PDF report...";
+            StatusMessage = LocalizationManager.Instance["GeneratingPDFReport"];
 
             try
             {
@@ -296,12 +297,12 @@ namespace SKAuto.UI.ViewModels
                 }
                 else
                 {
-                    StatusMessage = "Report generation cancelled.";
+                    StatusMessage = LocalizationManager.Instance["ReportGenerationCancelled"];
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("PDF report generation failed", ex);
+                _logger.LogError(LocalizationManager.Instance["PDFReportGenerationFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
                 System.Windows.MessageBox.Show($"Failed to generate PDF report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

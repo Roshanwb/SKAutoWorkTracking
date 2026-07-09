@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public enum UserEditMode
@@ -46,14 +47,14 @@ namespace SKAuto.UI.ViewModels
         private bool _isEmailEditable = true;
 
         [ObservableProperty]
-        private string _passwordLabel = "Password";
+        private string _passwordLabel = LocalizationManager.Instance["LoginView_Password"];
 
         [ObservableProperty]
-        private string _confirmPasswordLabel = "Confirm Password";
+        private string _confirmPasswordLabel = LocalizationManager.Instance["ConfirmPassword"];
 
         // NEW: For ChangePassword mode, we'll have a separate NewPassword field
         [ObservableProperty]
-        private string _newPasswordLabel = "New Password";
+        private string _newPasswordLabel = LocalizationManager.Instance["NewPassword"];
 
         [ObservableProperty]
         private bool _showConfirmPassword = true;
@@ -77,7 +78,7 @@ namespace SKAuto.UI.ViewModels
         private bool _showVerificationCodeField;
 
         [ObservableProperty]
-        private string _actionButtonText = "Save";
+        private string _actionButtonText = LocalizationManager.Instance["VehicleEditWindow_Save"];
 
         public string Password { get; set; }       // Current password (for ChangePassword) or regular password
         public string NewPassword { get; set; }    // New password (only for ChangePassword)
@@ -90,6 +91,8 @@ namespace SKAuto.UI.ViewModels
 
         public event EventHandler<bool> Completed;
 
+        private bool _isSendCode=false;
+
         public UserEditViewModel(IUnitOfWork unitOfWork, ILoggingService logger, User currentUser, User editingUser = null, UserEditMode mode = UserEditMode.Edit)
         {
             _unitOfWork = unitOfWork;
@@ -101,65 +104,69 @@ namespace SKAuto.UI.ViewModels
             switch (_mode)
             {
                 case UserEditMode.Add:
-                    WindowTitle = "Add New User";
+                    WindowTitle = LocalizationManager.Instance["AddNewUser"];
                     IsUsernameEditable = true;
                     Username = "";
                     Email = "";
                     ShowEmailField = true;
                     IsEmailEditable = true;
-                    PasswordLabel = "Password";
-                    ConfirmPasswordLabel = "Confirm Password";
+                    PasswordLabel = LocalizationManager.Instance["LoginView_Password"];
+                    ConfirmPasswordLabel = LocalizationManager.Instance["ConfirmPassword"];
                     ShowConfirmPassword = true;
                     ShowNewPasswordField = false;
                     ShowAdminFields = true;
                     IsActive = true;
+                    _isSendCode = false;
                     break;
 
                 case UserEditMode.Edit:
-                    WindowTitle = $"Edit User: {editingUser?.Username}";
+                    WindowTitle = $"{LocalizationManager.Instance["MainWindow_Edit"]}: {editingUser?.Username}";
                     IsUsernameEditable = false;
                     Username = editingUser?.Username ?? "";
                     Email = editingUser?.Email ?? "";
                     ShowEmailField = true;
                     IsEmailEditable = true;
-                    PasswordLabel = "New Password (leave blank to keep current)";
-                    ConfirmPasswordLabel = "Confirm New Password";
+                    PasswordLabel = LocalizationManager.Instance["NewPassword"];
+                    ConfirmPasswordLabel = LocalizationManager.Instance["ConfirmNewPassword"];
                     ShowConfirmPassword = true;
                     ShowNewPasswordField = false;
                     ShowAdminFields = true;
                     SelectedRole = editingUser?.Role ?? UserRole.User;
                     IsActive = editingUser?.IsActive ?? true;
+                    _isSendCode = false;
                     break;
 
                 case UserEditMode.ChangePassword:
-                    WindowTitle = "Change Password";
+                    WindowTitle = LocalizationManager.Instance["MainWindow_ChangePassword"];
                     IsUsernameEditable = false;
                     Username = currentUser?.Username ?? "";
                     Email = currentUser?.Email ?? "";
                     ShowEmailField = false;
                     IsEmailEditable = false;
-                    PasswordLabel = "Current Password";
-                    NewPasswordLabel = "New Password";
-                    ConfirmPasswordLabel = "Confirm New Password";
+                    PasswordLabel = LocalizationManager.Instance["CurrentPassword"];
+                    NewPasswordLabel = LocalizationManager.Instance["NewPassword"];
+                    ConfirmPasswordLabel = LocalizationManager.Instance["ConfirmNewPassword"];
                     ShowConfirmPassword = true;
                     ShowNewPasswordField = true;   // we will show three fields
                     ShowAdminFields = false;
+                    _isSendCode = false;    
                     break;
 
                 case UserEditMode.ResetPassword:
-                    WindowTitle = "Reset Password";
+                    WindowTitle = LocalizationManager.Instance["ResetPassword"]; 
                     IsUsernameEditable = true;
                     Username = "";
                     Email = "";
                     ShowEmailField = false;
                     IsEmailEditable = false;
-                    PasswordLabel = "New Password";
-                    ConfirmPasswordLabel = "Confirm Password";
+                    PasswordLabel = LocalizationManager.Instance["NewPassword"];
+                    ConfirmPasswordLabel = LocalizationManager.Instance["ConfirmNewPassword"];
                     ShowConfirmPassword = true;
                     ShowNewPasswordField = false;
                     ShowAdminFields = false;
                     ShowVerificationCodeField = true;
-                    ActionButtonText = "Send Code";
+                    ActionButtonText = LocalizationManager.Instance["SendCode"];
+                    _isSendCode = true;
                     break;
             }
 
@@ -171,20 +178,20 @@ namespace SKAuto.UI.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Username))
             {
-                System.Windows.MessageBox.Show("Please enter your username.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseEnterUsername"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             var user = (await _unitOfWork.Users.FindAsync(u => u.Username == Username)).FirstOrDefault();
             if (user == null || !user.IsActive)
             {
-                System.Windows.MessageBox.Show("User not found or inactive.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["UserNotFoundOrInactive"], "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrEmpty(user.Email))
             {
-                System.Windows.MessageBox.Show("No email address configured for this user. Please contact an administrator.", "Email Missing", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["NoEmailAddressConfigured"], "Email Missing", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -197,28 +204,22 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 var emailService = App.GetService<IEmailService>();
-                var body = $@"
-                    <h2>Password Reset Request</h2>
-                    <p>You requested to reset your password for SKAuto Work Tracking.</p>
-                    <p>Your verification code is: <strong>{code}</strong></p>
-                    <p>This code will expire in 15 minutes.</p>
-                    <p>If you did not request this, please ignore this email.</p>
-                ";
-                await emailService.SendEmailAsync(user.Email, "SKAuto - Password Reset Code", body);
-                System.Windows.MessageBox.Show($"A verification code has been sent to {user.Email}. Please check your inbox.", "Code Sent", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                var body = $@"{LocalizationManager.Instance["CodeEmailBodyPart1"]} {code} {LocalizationManager.Instance["CodeEmailBodyPart2"]} ";
+                await emailService.SendEmailAsync(user.Email, LocalizationManager.Instance["CodeEmailTitle"], body);
+                System.Windows.MessageBox.Show($"{LocalizationManager.Instance["CodeSentMessageBodySuccessPart1"]} {user.Email} . {LocalizationManager.Instance["CodeSentMessageBodySuccessPart2"]}", LocalizationManager.Instance["CodeSent"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
             catch (System.Net.Mail.SmtpException smtpEx)
             {
                 _logger.LogError($"SMTP error sending email to {user.Email}", smtpEx);
-                System.Windows.MessageBox.Show($"Email could not be sent.", "Email Failed ", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["CodeSentMessageBodyFailed"], LocalizationManager.Instance["EmailFailed"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to send reset email to {user.Email}", ex);
-                System.Windows.MessageBox.Show($"Email could not be sent.", "Email Failed ", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["CodeSentMessageBodyFailed"], LocalizationManager.Instance["EmailFailed"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
 
-            ActionButtonText = "Verify & Reset";
+            ActionButtonText = LocalizationManager.Instance["VerifyReset"];
         }
 
         private async Task SaveAsync()
@@ -227,14 +228,14 @@ namespace SKAuto.UI.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(Username))
                 {
-                    System.Windows.MessageBox.Show("Username cannot be empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["UsernameCannotBeEmpty"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
                 // --- RESET PASSWORD FLOW ---
                 if (_mode == UserEditMode.ResetPassword)
                 {
-                    if (ActionButtonText == "Send Code")
+                    if (_isSendCode)
                     {
                         await SendResetCodeAsync();
                         return;
@@ -243,25 +244,25 @@ namespace SKAuto.UI.ViewModels
                     var user = (await _unitOfWork.Users.FindAsync(u => u.Username == Username)).FirstOrDefault();
                     if (user == null || !user.IsActive)
                     {
-                        System.Windows.MessageBox.Show("User not found.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["UserNotFound"], "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     if (user.ResetToken != VerificationCode || user.ResetTokenExpiry < DateTime.UtcNow)
                     {
-                        System.Windows.MessageBox.Show("Invalid or expired verification code.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["InvalidOrExpiredVerificationCode"], "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(Password) || Password != ConfirmPassword)
                     {
-                        System.Windows.MessageBox.Show("Passwords do not match or are empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordsDoNotMatchOrEmpty"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     if (Password.Length < 6)
                     {
-                        System.Windows.MessageBox.Show("Password must be at least 6 characters.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordMinimumLength"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -271,7 +272,7 @@ namespace SKAuto.UI.ViewModels
                     await _unitOfWork.Users.UpdateAsync(user);
                     await _unitOfWork.CompleteAsync();
                     _logger.LogInfo($"Password reset for user {Username}");
-                    System.Windows.MessageBox.Show("Password reset successfully. Please log in.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordResetSuccessfully"], "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     Completed?.Invoke(this, true);
                     return;
                 }
@@ -282,7 +283,7 @@ namespace SKAuto.UI.ViewModels
                     // Validate email
                     if (string.IsNullOrWhiteSpace(Email))
                     {
-                        System.Windows.MessageBox.Show("Email is required.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["EmailRequired"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
                     try
@@ -293,7 +294,7 @@ namespace SKAuto.UI.ViewModels
                     }
                     catch
                     {
-                        System.Windows.MessageBox.Show("Invalid email format.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["InvalidEmailFormat"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -302,12 +303,12 @@ namespace SKAuto.UI.ViewModels
                     {
                         if (string.IsNullOrWhiteSpace(Password))
                         {
-                            System.Windows.MessageBox.Show("Password cannot be empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordCannotBeEmpty"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                         if (Password != ConfirmPassword)
                         {
-                            System.Windows.MessageBox.Show("Passwords do not match.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordsDoNotMatch"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                     }
@@ -317,7 +318,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         if (!string.IsNullOrWhiteSpace(Password) && Password != ConfirmPassword)
                         {
-                            System.Windows.MessageBox.Show("Passwords do not match.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordsDoNotMatch"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                     }
@@ -329,19 +330,19 @@ namespace SKAuto.UI.ViewModels
                     // Verify current password
                     if (!PasswordHelper.VerifyPassword(Password, _currentUser.PasswordHash))
                     {
-                        System.Windows.MessageBox.Show("Current password is incorrect.", "Invalid Password", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["CurrentPasswordIncorrect"], "Invalid Password", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     // Validate new password
                     if (string.IsNullOrWhiteSpace(NewPassword) || NewPassword != ConfirmPassword)
                     {
-                        System.Windows.MessageBox.Show("New passwords do not match or are empty.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["NewPasswordsDoNotMatchOrEmpty"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
                     if (NewPassword.Length < 6)
                     {
-                        System.Windows.MessageBox.Show("New password must be at least 6 characters.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["NewPasswordMinimumLength"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -350,7 +351,7 @@ namespace SKAuto.UI.ViewModels
                     await _unitOfWork.Users.UpdateAsync(_currentUser);
                     await _unitOfWork.CompleteAsync();
                     _logger.LogInfo($"User {_currentUser.Username} changed their own password.");
-                    System.Windows.MessageBox.Show("Password changed successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordChangedSuccessfully"], "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     Completed?.Invoke(this, true);
                     return;
                 }
@@ -361,7 +362,7 @@ namespace SKAuto.UI.ViewModels
                     var existing = await _unitOfWork.Users.FindAsync(u => u.Username == Username);
                     if (existing.Any())
                     {
-                        System.Windows.MessageBox.Show("Username already exists.", "Duplicate", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["UsernameAlreadyExists"], "Duplicate", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
@@ -388,7 +389,7 @@ namespace SKAuto.UI.ViewModels
                     {
                         if (Password != ConfirmPassword)
                         {
-                            System.Windows.MessageBox.Show("Passwords do not match.", "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                            System.Windows.MessageBox.Show(LocalizationManager.Instance["PasswordsDoNotMatch"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                             return;
                         }
                         _editingUser.PasswordHash = PasswordHelper.HashPassword(Password);
@@ -399,7 +400,7 @@ namespace SKAuto.UI.ViewModels
                     _logger.LogInfo($"Admin updated user: {_editingUser.Username} (email: {Email})");
                 }
 
-                System.Windows.MessageBox.Show("Operation completed successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["OperationCompletedSuccessfully"], "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 Completed?.Invoke(this, true);
             }
             catch (Exception ex)

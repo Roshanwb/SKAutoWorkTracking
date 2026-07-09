@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Enums;
@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class GoogleDriveSettingsViewModel : ObservableObject
@@ -85,7 +86,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Error loading settings: {ex.Message}";
-                _logger.LogError("LoadSettings failed", ex);
+                _logger.LogError(LocalizationManager.Instance["LoadSettingsFailed"], ex);
             }
         }
 
@@ -101,12 +102,12 @@ namespace SKAuto.UI.ViewModels
             IsConnected = await _driveService.AuthenticateAsync(settings);
             if (IsConnected)
             {
-                StatusMessage = "Authentication successful.";
+                StatusMessage = LocalizationManager.Instance["AuthenticationSuccessful"];
                 await SaveSettingsAsync();
             }
             else
             {
-                StatusMessage = "Authentication failed.";
+                StatusMessage = LocalizationManager.Instance["AuthenticationFailed"];
             }
         }
 
@@ -115,14 +116,14 @@ namespace SKAuto.UI.ViewModels
             try
             {
                 if (await _driveService.TestConnectionAsync())
-                    StatusMessage = "Connection OK.";
+                    StatusMessage = LocalizationManager.Instance["ConnectionOK"];
                 else
-                    StatusMessage = "Connection failed (unknown reason).";
+                    StatusMessage = LocalizationManager.Instance["ConnectionFailedUnknownReason"];
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Error: {ex.Message}";
-                _logger.LogError("TestConnection failed", ex);
+                _logger.LogError(LocalizationManager.Instance["TestConnectionFailed"], ex);
                 System.Windows.MessageBox.Show($"Connection test failed:\n{ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -139,16 +140,16 @@ namespace SKAuto.UI.ViewModels
                 LastSync = LastSync
             };
             await _config.SetAsync("GoogleDrive", settings);
-            StatusMessage = "Settings saved.";
-            _logger.LogInfo("Google Drive settings saved.");
+            StatusMessage = LocalizationManager.Instance["SettingsSaved"];
+            _logger.LogInfo(LocalizationManager.Instance["GoogleDriveSettingsSaved"]);
         }
 
         private async Task SyncNowAsync()
         {
             if (!IsConnected)
             {
-                StatusMessage = "Not connected to Google Drive.";
-                System.Windows.MessageBox.Show("Please authenticate with Google Drive first.", "Not Connected", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                StatusMessage = LocalizationManager.Instance["NotConnectedToGoogleDrive"];
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseAuthenticateWithGoogleDriveFirst"], "Not Connected", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
@@ -157,8 +158,8 @@ namespace SKAuto.UI.ViewModels
                 const string folderName = "SKAuto Backups";
                 string folderId = await _driveService.GetFolderIdAsync(folderName);
 
-                StatusMessage = "Creating backup...";
-                _logger.LogInfo("Starting manual sync to Google Drive.");
+                StatusMessage = LocalizationManager.Instance["CreatingBackup"];
+                _logger.LogInfo(LocalizationManager.Instance["StartingManualSyncToGoogleDrive"]);
 
                 var tempFolder = Path.Combine(Path.GetTempPath(), "SKAuto_Sync_" + Guid.NewGuid());
                 Directory.CreateDirectory(tempFolder);
@@ -166,7 +167,7 @@ namespace SKAuto.UI.ViewModels
                 var backupPath = await _backupService.ExportDataAsync(tempFolder);
                 // Alternative: var backupPath = await _backupService.BackupDatabaseAsync(tempFolder);
 
-                StatusMessage = "Uploading to Google Drive...";
+                StatusMessage = LocalizationManager.Instance["UploadingToGoogleDrive"];
 
                 string fileName = Path.GetFileName(backupPath);
                 string fileId = await _driveService.UploadFileAsync(backupPath, fileName, folderId);
@@ -183,13 +184,13 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("Sync failed", ex);
+                _logger.LogError(LocalizationManager.Instance["SyncFailed"], ex);
                 StatusMessage = $"Sync failed: {ex.Message}";
                 System.Windows.MessageBox.Show($"Sync failed:\n{ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
-        // NEW: Browse folder command – finds or creates the default folder
+        // NEW: Browse folder command � finds or creates the default folder
         private async Task BrowseFolderAsync()
         {
             try
@@ -204,13 +205,13 @@ namespace SKAuto.UI.ViewModels
                 }
                 else
                 {
-                    StatusMessage = "Could not find or create folder.";
+                    StatusMessage = LocalizationManager.Instance["CouldNotFindOrCreateFolder"];
                 }
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Error browsing folder: {ex.Message}";
-                _logger.LogError("BrowseFolder failed", ex);
+                _logger.LogError(LocalizationManager.Instance["BrowseFolderFailed"], ex);
                 System.Windows.MessageBox.Show($"Error selecting folder:\n{ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
