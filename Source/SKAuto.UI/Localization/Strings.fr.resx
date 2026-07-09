@@ -1,0 +1,1654 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="HelpView_UserGuide" xml:space="preserve">
+    <value>– Guide d'utilisation</value>
+  </data>
+  <data name="BackupView_ConflictHelp" xml:space="preserve">
+    <value>(Ignorer = ignorer, Écraser = remplacer)</value>
+  </data>
+  <data name="ClientManagementView_TypeToFilter" xml:space="preserve">
+    <value>(tapez pour filtrer)</value>
+  </data>
+  <data name="MainWindow_Admin" xml:space="preserve">
+    <value>_Administration</value>
+  </data>
+  <data name="MainWindow_BackupRestore" xml:space="preserve">
+    <value>_Sauvegarde/Restauration</value>
+  </data>
+  <data name="MainWindow_Clients" xml:space="preserve">
+    <value>_Clients</value>
+  </data>
+  <data name="MainWindow_Exit" xml:space="preserve">
+    <value>_Quitter</value>
+  </data>
+  <data name="MainWindow_File" xml:space="preserve">
+    <value>_Fichier</value>
+  </data>
+  <data name="MainWindow_GenerateReport" xml:space="preserve">
+    <value>_Générer un rapport</value>
+  </data>
+  <data name="MainWindow_Import" xml:space="preserve">
+    <value>_Importer</value>
+  </data>
+  <data name="MainWindow_Manage" xml:space="preserve">
+    <value>_Gérer</value>
+  </data>
+  <data name="MainWindow_Reports" xml:space="preserve">
+    <value>_Rapports</value>
+  </data>
+  <data name="MainWindow_Tasks" xml:space="preserve">
+    <value>_Tâches</value>
+  </data>
+  <data name="MainWindow_Users" xml:space="preserve">
+    <value>_Utilisateurs</value>
+  </data>
+  <data name="MainWindow_Vehicles" xml:space="preserve">
+    <value>_Véhicules</value>
+  </data>
+  <data name="MainWindow_EditIcon" xml:space="preserve">
+    <value>✏️</value>
+  </data>
+  <data name="HelpView_DataManagement" xml:space="preserve">
+    <value>⚙️ Gestion des données</value>
+  </data>
+  <data name="Splash_Copyright" xml:space="preserve">
+    <value>2026 - Insights®</value>
+  </data>
+  <data name="MainWindow_About" xml:space="preserve">
+    <value>À propos</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Accessory" xml:space="preserve">
+    <value>Accessoire</value>
+  </data>
+  <data name="AccessoryManagementView_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="VehicleManagementView_Active" xml:space="preserve">
+    <value>Actif</value>
+  </data>
+  <data name="ClientEditWindow_Active" xml:space="preserve">
+    <value>Actif :</value>
+  </data>
+  <data name="UserManagementView_Add" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="AccessoryManagementView_AddNewTask" xml:space="preserve">
+    <value>Ajouter une nouvelle tâche</value>
+  </data>
+  <data name="HelpView_AddNotesTravel" xml:space="preserve">
+    <value>Ajoutez des notes ou des déplacements si nécessaire.</value>
+  </data>
+  <data name="WorkOrderDetailWindow_AddTask" xml:space="preserve">
+    <value>Ajouter une tâche</value>
+  </data>
+  <data name="HelpView_AddTasksDescription" xml:space="preserve">
+    <value>Ajoutez des tâches (accessoires) – type, quantité, prix et temps.</value>
+  </data>
+  <data name="WorkOrderDetailWindow_AddTravel" xml:space="preserve">
+    <value>Ajouter un déplacement</value>
+  </data>
+  <data name="HelpView_AddTravelDescription" xml:space="preserve">
+    <value>Ajoutez des enregistrements de déplacement (destination, distance, coût) si nécessaire.</value>
+  </data>
+  <data name="HelpView_ManageClientsDescription" xml:space="preserve">
+    <value>Ajoutez, modifiez ou supprimez des clients dans la fenêtre Gestion des clients.</value>
+  </data>
+  <data name="ClientEditWindow_Address" xml:space="preserve">
+    <value>Adresse :</value>
+  </data>
+  <data name="HelpView_AdminRoleDescription" xml:space="preserve">
+    <value>Admin – accès complet (gérer les utilisateurs, les paramètres, les sauvegardes, toutes les données).</value>
+  </data>
+  <data name="HelpView_ImportAllVehiclesClients" xml:space="preserve">
+    <value>Tous les véhicules et clients sont importés, quel que soit l'État ou la date.</value>
+  </data>
+  <data name="HelpView_MergeVehiclesReassigned" xml:space="preserve">
+    <value>Tous les véhicules liés aux clients sources sont automatiquement réaffectés au client maître.</value>
+  </data>
+  <data name="PriceUpdateView_AlsoUpdateDefaultPrice" xml:space="preserve">
+    <value>Mettre également à jour le prix par défaut de l'accessoire</value>
+  </data>
+  <data name="GoogleDriveSettingsView_Authenticate" xml:space="preserve">
+    <value>S'authentifier</value>
+  </data>
+  <data name="HelpView_AutoAuthenticate" xml:space="preserve">
+    <value>Authentification automatique au démarrage (si configurée).</value>
+  </data>
+  <data name="HelpView_AutoBackupOnExit" xml:space="preserve">
+    <value>Sauvegarde automatique à la fermeture de l'application (si l'utilisateur est connecté).</value>
+  </data>
+  <data name="BackupView_BackupRestore" xml:space="preserve">
+    <value>Sauvegarde &amp; Restauration</value>
+  </data>
+  <data name="BackupView_BackupDatabase" xml:space="preserve">
+    <value>Sauvegarder la base de données</value>
+  </data>
+  <data name="MainWindow_Blocked" xml:space="preserve">
+    <value>Bloqué</value>
+  </data>
+  <data name="GoogleDriveSettingsView_Browse" xml:space="preserve">
+    <value>Parcourir</value>
+  </data>
+  <data name="MainWindow_BulkPriceUpdate" xml:space="preserve">
+    <value>Mise à jour des prix en masse</value>
+  </data>
+  <data name="HelpView_BulkPriceUpdateDescription" xml:space="preserve">
+    <value>Mise à jour des prix en masse : modifiez le prix d'un accessoire spécifique sur une plage de dates.</value>
+  </data>
+  <data name="VehicleEditWindow_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="MainWindow_ChangePassword" xml:space="preserve">
+    <value>Changer le mot de passe</value>
+  </data>
+  <data name="MainWindow_Chassis" xml:space="preserve">
+    <value>Châssis</value>
+  </data>
+  <data name="VehicleEditWindow_ChassisNumber" xml:space="preserve">
+    <value>Numéro de châssis :</value>
+  </data>
+  <data name="HelpView_CheckPlannedWork" xml:space="preserve">
+    <value>Vérifiez le travail prévu du jour (tableau de bord).</value>
+  </data>
+  <data name="HelpView_ChooseBackupSource" xml:space="preserve">
+    <value>Choisissez une sauvegarde locale .db, un fichier ZIP ou une sauvegarde Drive.</value>
+  </data>
+  <data name="ImportView_ClearAll" xml:space="preserve">
+    <value>Tout effacer</value>
+  </data>
+  <data name="HelpView_ClickNewWorkOrder" xml:space="preserve">
+    <value>Cliquez sur 'Nouveau bon de travail' dans le tableau de bord.</value>
+  </data>
+  <data name="HelpView_ClickEditButton" xml:space="preserve">
+    <value>Cliquez sur le bouton '✏️' dans la grille principale pour modifier un bon de travail.</value>
+  </data>
+  <data name="MainWindow_Client" xml:space="preserve">
+    <value>Client</value>
+  </data>
+  <data name="ClientEditWindow_ClientCode" xml:space="preserve">
+    <value>Code client :</value>
+  </data>
+  <data name="GoogleDriveSettingsView_ClientID" xml:space="preserve">
+    <value>ID client :</value>
+  </data>
+  <data name="GoogleDriveSettingsView_ClientSecret" xml:space="preserve">
+    <value>Secret client :</value>
+  </data>
+  <data name="ImportView_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="HelpView_ClientsReportDescription" xml:space="preserve">
+    <value>Clients – liste de tous les clients avec coordonnées.</value>
+  </data>
+  <data name="ClientManagementView_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="HelpView_ConfigureDriveSettings" xml:space="preserve">
+    <value>Configurer les paramètres Google Drive.</value>
+  </data>
+  <data name="HelpView_ConfigureDriveCredentials" xml:space="preserve">
+    <value>Configurez votre ID client et secret Google Drive dans les paramètres.</value>
+  </data>
+  <data name="BackupView_ConflictResolution" xml:space="preserve">
+    <value>Résolution des conflits :</value>
+  </data>
+  <data name="HelpView_ConflictResolutionDescription" xml:space="preserve">
+    <value>Résolution des conflits : ignorer ou écraser les enregistrements existants.</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Cost" xml:space="preserve">
+    <value>Coût</value>
+  </data>
+  <data name="BackupView_CreateBackup" xml:space="preserve">
+    <value>Créer une sauvegarde</value>
+  </data>
+  <data name="BackupView_Created" xml:space="preserve">
+    <value>Créé</value>
+  </data>
+  <data name="HelpView_LocalBackupDescription" xml:space="preserve">
+    <value>Crée une copie .db dans le dossier choisi.</value>
+  </data>
+  <data name="HelpView_ImportVehiclesCreatesClients" xml:space="preserve">
+    <value>Crée de nouveaux clients (nom nettoyé) et lie les véhicules à ceux‑ci.</value>
+  </data>
+  <data name="HelpView_DailyBackupLocation" xml:space="preserve">
+    <value>Les sauvegardes automatiques quotidiennes sont enregistrées dans %AppData%\SKAuto\Backups.</value>
+  </data>
+  <data name="MainWindow_Danger" xml:space="preserve">
+    <value>Danger</value>
+  </data>
+  <data name="ImportView_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="ImportView_DateFrom" xml:space="preserve">
+    <value>Date du :</value>
+  </data>
+  <data name="PriceUpdateView_DateRange" xml:space="preserve">
+    <value>Plage de dates</value>
+  </data>
+  <data name="HelpView_ReportFiltersDescription" xml:space="preserve">
+    <value>Plage de dates, type de tâche, statut, accessoire spécifique.</value>
+  </data>
+  <data name="TravelDialog_Date" xml:space="preserve">
+    <value>Date :</value>
+  </data>
+  <data name="HelpView_ParcCarrieresParserDescription" xml:space="preserve">
+    <value>Analyseur dédié pour l'export ParcCarrières standard. Même logique que ci‑dessus mais optimisé pour ce format.</value>
+  </data>
+  <data name="HelpView_DefineTasksDescription" xml:space="preserve">
+    <value>Définissez les tâches avec nom, numéro de pièce, prix, temps et type de tâche (Pose, Vente, Retrait, Préparation, Déplacement, Autre).</value>
+  </data>
+  <data name="ClientManagementView_Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="HelpView_DeleteWorkOrderDescription" xml:space="preserve">
+    <value>Supprimez depuis la fenêtre des détails du bon de travail ou via le bouton 'Supprimer' (admin uniquement).</value>
+  </data>
+  <data name="MainWindow_DeleteWorkOrder" xml:space="preserve">
+    <value>Supprimer le bon de travail</value>
+  </data>
+  <data name="AccessoryManagementView_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="AccessoryManagementView_DescriptionLabel" xml:space="preserve">
+    <value>Description :</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Destination" xml:space="preserve">
+    <value>Destination</value>
+  </data>
+  <data name="TravelDialog_Destination" xml:space="preserve">
+    <value>Destination :</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Distance" xml:space="preserve">
+    <value>Distance</value>
+  </data>
+  <data name="TravelDialog_DistanceKm" xml:space="preserve">
+    <value>Distance (km) :</value>
+  </data>
+  <data name="MainWindow_Done" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="MainWindow_Drive" xml:space="preserve">
+    <value>Drive</value>
+  </data>
+  <data name="BackupView_DryRun" xml:space="preserve">
+    <value>Simulation (aperçu uniquement)</value>
+  </data>
+  <data name="HelpView_DryRunDescription" xml:space="preserve">
+    <value>Mode 'Simulation' pour prévisualiser les modifications sans les appliquer.</value>
+  </data>
+  <data name="HelpView_DuringTheDay" xml:space="preserve">
+    <value>Au cours de la journée</value>
+  </data>
+  <data name="MainWindow_Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="ClientEditWindow_EditClient" xml:space="preserve">
+    <value>Modifier le client</value>
+  </data>
+  <data name="ClientMergeDialog_EditMasterClient" xml:space="preserve">
+    <value>Modifier les détails du client maître</value>
+  </data>
+  <data name="ClientManagementView_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="HelpView_EmailNotConfigured" xml:space="preserve">
+    <value>'Email non configuré' – l'administrateur doit configurer les paramètres SMTP dans AppConfig.json pour la réinitialisation du mot de passe.</value>
+  </data>
+  <data name="ClientMergeDialog_Email" xml:space="preserve">
+    <value>Email :</value>
+  </data>
+  <data name="HelpView_EndOfDay" xml:space="preserve">
+    <value>Fin de journée (16:00–17:00)</value>
+  </data>
+  <data name="HelpView_LoginInstructions" xml:space="preserve">
+    <value>Saisissez votre nom d'utilisateur et votre mot de passe pour accéder au système.</value>
+  </data>
+  <data name="WorkOrderDetailWindow_EstMin" xml:space="preserve">
+    <value>Est. min</value>
+  </data>
+  <data name="HelpView_ExcelExportDescription" xml:space="preserve">
+    <value>Excel (.xlsx) – modifiable, prêt pour les tableaux croisés.</value>
+  </data>
+  <data name="BackupView_ExportData" xml:space="preserve">
+    <value>Exporter les données</value>
+  </data>
+  <data name="BackupView_ExportDataCsvZip" xml:space="preserve">
+    <value>Exporter les données vers CSV/ZIP</value>
+  </data>
+  <data name="HelpView_ExportZipDescription" xml:space="preserve">
+    <value>Exporte toutes les tables sous forme de fichiers CSV dans une archive ZIP.</value>
+  </data>
+  <data name="BackupView_FileName" xml:space="preserve">
+    <value>Nom du fichier</value>
+  </data>
+  <data name="ReportsView_Filters" xml:space="preserve">
+    <value>Filtres</value>
+  </data>
+  <data name="GoogleDriveSettingsView_FolderID" xml:space="preserve">
+    <value>ID du dossier :</value>
+  </data>
+  <data name="HelpView_ImportPerformanceTip" xml:space="preserve">
+    <value>Pour les gros imports, décochez 'Véhicules' et 'Clients' s'ils existent déjà – accélère le traitement.</value>
+  </data>
+  <data name="HelpView_SupportContact" xml:space="preserve">
+    <value>Pour les problèmes techniques, contactez : roshanwb@gmail.com</value>
+  </data>
+  <data name="HelpView_ForeignKeyError" xml:space="preserve">
+    <value>'Erreur de clé étrangère' – client ou véhicule manquant. Importez d'abord les clients/véhicules.</value>
+  </data>
+  <data name="LoginView_ForgotPassword" xml:space="preserve">
+    <value>Mot de passe oublié ?</value>
+  </data>
+  <data name="HelpView_ForgotPasswordDescription" xml:space="preserve">
+    <value>Mot de passe oublié ? Cliquez sur 'Mot de passe oublié ?' – un code de vérification sera envoyé à votre email.</value>
+  </data>
+  <data name="PriceUpdateView_From" xml:space="preserve">
+    <value>Du :</value>
+  </data>
+  <data name="HelpView_GenerateDailyReports" xml:space="preserve">
+    <value>Générez des rapports quotidiens (Excel/PDF).</value>
+  </data>
+  <data name="ReportsView_GenerateExcel" xml:space="preserve">
+    <value>Générer Excel</value>
+  </data>
+  <data name="ReportsView_GeneratePDF" xml:space="preserve">
+    <value>Générer PDF</value>
+  </data>
+  <data name="ReportsView_GenerateReports" xml:space="preserve">
+    <value>Générer des rapports</value>
+  </data>
+  <data name="HelpView_GeneratingReports" xml:space="preserve">
+    <value>Génération de rapports</value>
+  </data>
+  <data name="GoogleDriveSettingsView_GetFromCloudConsole" xml:space="preserve">
+    <value>Obtenir depuis Google Cloud Console</value>
+  </data>
+  <data name="BackupView_GoogleDrive" xml:space="preserve">
+    <value>Google Drive</value>
+  </data>
+  <data name="GoogleDriveSettingsView_GoogleDriveSettings" xml:space="preserve">
+    <value>Paramètres Google Drive</value>
+  </data>
+  <data name="ReportsView_GroupByTaskType" xml:space="preserve">
+    <value>Grouper par type de tâche</value>
+  </data>
+  <data name="HelpView_GroupByTaskTypeDescription" xml:space="preserve">
+    <value>Grouper par type de tâche (pour le rapport des tâches).</value>
+  </data>
+  <data name="ReportsView_GroupByWeek" xml:space="preserve">
+    <value>Grouper par semaine</value>
+  </data>
+  <data name="HelpView_GroupByWeekDescription" xml:space="preserve">
+    <value>Grouper par semaine (regroupe les commandes par semaine).</value>
+  </data>
+  <data name="MainWindow_Help" xml:space="preserve">
+    <value>Aide</value>
+  </data>
+  <data name="HelpView_Title" xml:space="preserve">
+    <value>Aide – SKAuto Work Tracking</value>
+  </data>
+  <data name="MainWindow_ID" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="BackupView_Import" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="HelpView_ImportNewFiles" xml:space="preserve">
+    <value>Importez de nouveaux fichiers (Excel/CSV, ParcCarrières, ou dossier PDF).</value>
+  </data>
+  <data name="MainWindow_ImportData" xml:space="preserve">
+    <value>Importer des données</value>
+  </data>
+  <data name="BackupView_ImportFromZip" xml:space="preserve">
+    <value>Importer depuis ZIP</value>
+  </data>
+  <data name="ImportView_ImportOptions" xml:space="preserve">
+    <value>Options d'import</value>
+  </data>
+  <data name="VehicleManagementView_ImportVehicles" xml:space="preserve">
+    <value>Importer des véhicules</value>
+  </data>
+  <data name="HelpView_ImportVehiclesDirect" xml:space="preserve">
+    <value>Importez directement des véhicules depuis CSV en utilisant le bouton 'Importer des véhicules'.</value>
+  </data>
+  <data name="ImportView_ImportWorkOrders" xml:space="preserve">
+    <value>Importer des bons de travail</value>
+  </data>
+  <data name="HelpView_PdfImportDescription" xml:space="preserve">
+    <value>Importe toutes les lignes ; les bons de travail sont créés avec le statut 'Planifié'.</value>
+  </data>
+  <data name="HelpView_ImportVehiclesFormat" xml:space="preserve">
+    <value>Importe VIN, modèle et client depuis le même format CSV.</value>
+  </data>
+  <data name="MainWindow_InProgress" xml:space="preserve">
+    <value>En cours</value>
+  </data>
+  <data name="Splash_Initializing" xml:space="preserve">
+    <value>Initialisation...</value>
+  </data>
+  <data name="AccessoryManagementView_IsActive" xml:space="preserve">
+    <value>Est actif</value>
+  </data>
+  <data name="VehicleEditWindow_IsActive" xml:space="preserve">
+    <value>Est actif :</value>
+  </data>
+  <data name="HelpView_KeepLatestBackups" xml:space="preserve">
+    <value>Conserve uniquement les N dernières sauvegardes (configurable).</value>
+  </data>
+  <data name="GoogleDriveSettingsView_LastSync" xml:space="preserve">
+    <value>Dernière synchronisation :</value>
+  </data>
+  <data name="HelpView_LaunchApp" xml:space="preserve">
+    <value>Lancez l'application depuis le bureau ou la barre d'état système.</value>
+  </data>
+  <data name="PriceUpdateView_LeaveEmptyKeepPrice" xml:space="preserve">
+    <value>Laissez vide pour conserver le prix actuel</value>
+  </data>
+  <data name="HelpView_DriveBackupOperations" xml:space="preserve">
+    <value>Listez, téléversez et restaurez les sauvegardes directement depuis Drive.</value>
+  </data>
+  <data name="BackupView_LocalBackups" xml:space="preserve">
+    <value>Sauvegardes locales</value>
+  </data>
+  <data name="LoginView_Login" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="MainWindow_MainWindow" xml:space="preserve">
+    <value>Fenêtre principale</value>
+  </data>
+  <data name="VehicleManagementView_Make" xml:space="preserve">
+    <value>Marque</value>
+  </data>
+  <data name="VehicleEditWindow_Make" xml:space="preserve">
+    <value>Marque :</value>
+  </data>
+  <data name="ClientManagementView_ManageClients" xml:space="preserve">
+    <value>Gérer les clients</value>
+  </data>
+  <data name="UserManagementView_ManageUsers" xml:space="preserve">
+    <value>Gérer les utilisateurs</value>
+  </data>
+  <data name="HelpView_ManageUsersDescription" xml:space="preserve">
+    <value>Gérez les utilisateurs (ajouter, modifier, supprimer, réinitialiser les mots de passe).</value>
+  </data>
+  <data name="VehicleManagementView_ManageVehicles" xml:space="preserve">
+    <value>Gérer les véhicules</value>
+  </data>
+  <data name="HelpView_ManagingData" xml:space="preserve">
+    <value>Gestion des clients, véhicules et accessoires</value>
+  </data>
+  <data name="HelpView_ManagingWorkOrders" xml:space="preserve">
+    <value>Gestion des bons de travail</value>
+  </data>
+  <data name="HelpView_MarkDone" xml:space="preserve">
+    <value>Marquez tous les travaux terminés comme 'Terminé'.</value>
+  </data>
+  <data name="ImportView_MarkSelected" xml:space="preserve">
+    <value>Marquer la sélection</value>
+  </data>
+  <data name="HelpView_MarkDoneAutoComplete" xml:space="preserve">
+    <value>Marquer comme 'Terminé' définit automatiquement la date d'achèvement.</value>
+  </data>
+  <data name="ClientMergeDialog_MergeClients" xml:space="preserve">
+    <value>Fusionner les clients</value>
+  </data>
+  <data name="HelpView_MergeClientsDescription" xml:space="preserve">
+    <value>Fusionnez les clients en double : sélectionnez plusieurs clients et cliquez sur 'Fusionner'.</value>
+  </data>
+  <data name="ClientManagementView_MergeSelected" xml:space="preserve">
+    <value>Fusionner la sélection</value>
+  </data>
+  <data name="VehicleManagementView_Model" xml:space="preserve">
+    <value>Modèle</value>
+  </data>
+  <data name="VehicleEditWindow_Model" xml:space="preserve">
+    <value>Modèle :</value>
+  </data>
+  <data name="HelpView_Morning" xml:space="preserve">
+    <value>Matin (8:00–9:00)</value>
+  </data>
+  <data name="AccessoryManagementView_Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="ClientMergeDialog_Name" xml:space="preserve">
+    <value>Nom :</value>
+  </data>
+  <data name="AccessoryManagementView_NameRequired" xml:space="preserve">
+    <value>Nom :*</value>
+  </data>
+  <data name="PriceUpdateView_NewPrice" xml:space="preserve">
+    <value>Nouveau prix (€)</value>
+  </data>
+  <data name="WorkOrderDetailWindow_NewTask" xml:space="preserve">
+    <value>Nouvelle tâche</value>
+  </data>
+  <data name="MainWindow_NewWorkOrder" xml:space="preserve">
+    <value>Nouveau bon de travail</value>
+  </data>
+  <data name="MainWindow_NextDay" xml:space="preserve">
+    <value>Jour suivant</value>
+  </data>
+  <data name="MainWindow_NextWeek" xml:space="preserve">
+    <value>Semaine suivante</value>
+  </data>
+  <data name="MainWindow_Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="ClientMergeDialog_Notes" xml:space="preserve">
+    <value>Notes :</value>
+  </data>
+  <data name="ClientMergeDialog_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="HelpView_OpenBulkPriceUpdate" xml:space="preserve">
+    <value>Ouvrez depuis le menu principal → Mise à jour des prix en masse.</value>
+  </data>
+  <data name="HelpView_UpdateDefaultPriceOption" xml:space="preserve">
+    <value>Mettez éventuellement à jour le prix par défaut de l'accessoire.</value>
+  </data>
+  <data name="HelpView_UploadReportsToDrive" xml:space="preserve">
+    <value>Envoyez éventuellement les rapports vers Google Drive.</value>
+  </data>
+  <data name="WorkOrderDetailWindow_OrderDate" xml:space="preserve">
+    <value>Date de commande</value>
+  </data>
+  <data name="WorkOrderDetailWindow_OrderType" xml:space="preserve">
+    <value>Type de commande</value>
+  </data>
+  <data name="AccessoryManagementView_PartNumber" xml:space="preserve">
+    <value>N° pièce</value>
+  </data>
+  <data name="AccessoryManagementView_PartNumberLabel" xml:space="preserve">
+    <value>N° pièce :</value>
+  </data>
+  <data name="LoginView_Password" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="HelpView_PdfExportDescription" xml:space="preserve">
+    <value>PDF (.pdf) – imprimable, adapté aux clients.</value>
+  </data>
+  <data name="ClientManagementView_Phone" xml:space="preserve">
+    <value>Téléphone</value>
+  </data>
+  <data name="ClientMergeDialog_Phone" xml:space="preserve">
+    <value>Téléphone :</value>
+  </data>
+  <data name="HelpView_StatusFlow" xml:space="preserve">
+    <value>Planifié → En cours → Bloqué → Terminé.</value>
+  </data>
+  <data name="HelpView_PortableBackup" xml:space="preserve">
+    <value>Portable – peut être restauré sur n'importe quelle machine.</value>
+  </data>
+  <data name="MainWindow_PreviousDay" xml:space="preserve">
+    <value>Jour précédent</value>
+  </data>
+  <data name="MainWindow_PreviousWeek" xml:space="preserve">
+    <value>Semaine précédente</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Price" xml:space="preserve">
+    <value>Prix</value>
+  </data>
+  <data name="AccessoryManagementView_Price" xml:space="preserve">
+    <value>Prix (€)</value>
+  </data>
+  <data name="AccessoryManagementView_PriceLabel" xml:space="preserve">
+    <value>Prix (€) :</value>
+  </data>
+  <data name="HelpView_PrintWorkSheets" xml:space="preserve">
+    <value>Imprimez les fiches de travail pour les mécaniciens (via les rapports).</value>
+  </data>
+  <data name="HelpView_ProtectData" xml:space="preserve">
+    <value>Protégez vos données</value>
+  </data>
+  <data name="Splash_PSACertifiedPartner" xml:space="preserve">
+    <value>Partenaire certifié PSA</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Qty" xml:space="preserve">
+    <value>Qté</value>
+  </data>
+  <data name="HelpView_QuickTips" xml:space="preserve">
+    <value>Conseils rapides</value>
+  </data>
+  <data name="MainWindow_Refresh" xml:space="preserve">
+    <value>Rafraîchir</value>
+  </data>
+  <data name="BackupView_RefreshDriveList" xml:space="preserve">
+    <value>Rafraîchir la liste Drive</value>
+  </data>
+  <data name="BackupView_RefreshList" xml:space="preserve">
+    <value>Rafraîchir la liste</value>
+  </data>
+  <data name="VehicleManagementView_Reg" xml:space="preserve">
+    <value>Immat</value>
+  </data>
+  <data name="VehicleEditWindow_Registration" xml:space="preserve">
+    <value>Immatriculation :</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Remove" xml:space="preserve">
+    <value>Retirer</value>
+  </data>
+  <data name="ReportsView_ReportType" xml:space="preserve">
+    <value>Type de rapport</value>
+  </data>
+  <data name="ReportsView_Reports" xml:space="preserve">
+    <value>Rapports</value>
+  </data>
+  <data name="AccessoryManagementView_RequiresPassword" xml:space="preserve">
+    <value>Nécessite une protection par mot de passe</value>
+  </data>
+  <data name="HelpView_RequiresPythonScript" xml:space="preserve">
+    <value>Nécessite pdf_accessories_extractor.py dans le dossier de l'application.</value>
+  </data>
+  <data name="BackupView_RestoreFromDrive" xml:space="preserve">
+    <value>Restaurer depuis Drive</value>
+  </data>
+  <data name="BackupView_RestoreSelected" xml:space="preserve">
+    <value>Restaurer la sélection</value>
+  </data>
+  <data name="BackupView_Result" xml:space="preserve">
+    <value>Résultat</value>
+  </data>
+  <data name="UserManagementView_Role" xml:space="preserve">
+    <value>Rôle</value>
+  </data>
+  <data name="UserEditView_Role" xml:space="preserve">
+    <value>Rôle :</value>
+  </data>
+  <data name="VehicleEditWindow_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="GoogleDriveSettingsView_SaveSettings" xml:space="preserve">
+    <value>Enregistrer les paramètres</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Search" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+  <data name="AccessoryManagementView_SearchHint" xml:space="preserve">
+    <value>Rechercher par nom, numéro de pièce ou description</value>
+  </data>
+  <data name="VehicleManagementView_SearchChassis" xml:space="preserve">
+    <value>Rechercher un châssis :</value>
+  </data>
+  <data name="ClientManagementView_SearchClientName" xml:space="preserve">
+    <value>Rechercher un nom de client :</value>
+  </data>
+  <data name="HelpView_SearchVehicle" xml:space="preserve">
+    <value>Recherchez un véhicule par numéro de châssis ou inscrivez‑en un nouveau.</value>
+  </data>
+  <data name="HelpView_ManageVehiclesDescription" xml:space="preserve">
+    <value>Recherchez, ajoutez, modifiez ou supprimez des véhicules.</value>
+  </data>
+  <data name="ImportView_Select" xml:space="preserve">
+    <value>Sélectionner</value>
+  </data>
+  <data name="HelpView_SelectPDFFolderDescription" xml:space="preserve">
+    <value>Sélectionnez un dossier contenant des bons de travail PDF. L'extracteur Python intégré lit les données.</value>
+  </data>
+  <data name="ImportView_SelectAll" xml:space="preserve">
+    <value>Tout sélectionner</value>
+  </data>
+  <data name="HelpView_SelectAccessoryForBulkUpdate" xml:space="preserve">
+    <value>Sélectionnez un accessoire, une plage de dates et un nouveau prix.</value>
+  </data>
+  <data name="ImportView_SelectExcelCsv" xml:space="preserve">
+    <value>Sélectionner un fichier Excel/CSV</value>
+  </data>
+  <data name="ImportView_SelectPDFFolder" xml:space="preserve">
+    <value>Sélectionner un dossier PDF</value>
+  </data>
+  <data name="WorkOrderDetailWindow_SelectedVehicle" xml:space="preserve">
+    <value>Véhicule sélectionné</value>
+  </data>
+  <data name="HelpView_SetReportStyles" xml:space="preserve">
+    <value>Définissez les styles des rapports (couleurs, polices) dans les paramètres.</value>
+  </data>
+  <data name="MainWindow_Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="LoginView_SignInToContinue" xml:space="preserve">
+    <value>Connectez‑vous pour continuer</value>
+  </data>
+  <data name="BackupView_Size" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>SK Auto Work Tracking</value>
+  </data>
+  <data name="Insights" xml:space="preserve">
+    <value>© 2026 Insights®</value>
+  </data>
+  <data name="Splash_Title" xml:space="preserve">
+    <value>SKAuto Work Tracking</value>
+  </data>
+  <data name="HelpView_ImportVehiclesSkipExisting" xml:space="preserve">
+    <value>Ignore les VIN existants. La date et l'État sont ignorés.</value>
+  </data>
+  <data name="ImportView_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="HelpView_SQLiteUniqueError" xml:space="preserve">
+    <value>'Erreur SQLite 19 : contrainte UNIQUE violée' – client/véhicule/accessoire en double. Utilisez la résolution 'Écraser' ou ignorez les doublons.</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Status" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="ReportsView_Status" xml:space="preserve">
+    <value>Statut :</value>
+  </data>
+  <data name="HelpView_SummaryOnlyDescription" xml:space="preserve">
+    <value>Résumé uniquement – masque les détails des tâches, affiche uniquement les totaux.</value>
+  </data>
+  <data name="ReportsView_SummaryOnly" xml:space="preserve">
+    <value>Résumé uniquement (masquer les détails)</value>
+  </data>
+  <data name="HelpView_ImportCSVColumns" xml:space="preserve">
+    <value>Colonnes prises en charge : N° (VIN), Client, Modèle, Fin prép., Etat.</value>
+  </data>
+  <data name="GoogleDriveSettingsView_SyncNow" xml:space="preserve">
+    <value>Synchroniser maintenant</value>
+  </data>
+  <data name="PriceUpdateView_Task" xml:space="preserve">
+    <value>Tâche</value>
+  </data>
+  <data name="ReportsView_TaskType" xml:space="preserve">
+    <value>Type de tâche :</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Task" xml:space="preserve">
+    <value>Tâche :</value>
+  </data>
+  <data name="ReportsView_Tasks" xml:space="preserve">
+    <value>Tâches</value>
+  </data>
+  <data name="HelpView_TasksReportDescription" xml:space="preserve">
+    <value>Tâches – tous les accessoires avec type, prix et nombre d'utilisations.</value>
+  </data>
+  <data name="GoogleDriveSettingsView_TestConnection" xml:space="preserve">
+    <value>Tester la connexion</value>
+  </data>
+  <data name="HelpView_BackupRestoreOverview" xml:space="preserve">
+    <value>La fenêtre Sauvegarde &amp; Restauration offre plusieurs moyens de sécuriser votre base de données.</value>
+  </data>
+  <data name="HelpView_DatabaseStorage" xml:space="preserve">
+    <value>La base de données est stockée dans AppData – assurez‑vous d'avoir suffisamment d'espace disque.</value>
+  </data>
+  <data name="HelpView_ReportsOverview" xml:space="preserve">
+    <value>La fenêtre Rapports offre un filtrage puissant et une exportation vers Excel ou PDF.</value>
+  </data>
+  <data name="HelpView_ImportMethodsOverview" xml:space="preserve">
+    <value>Le système prend en charge plusieurs méthodes d'importation. Chacune a des cas d'usage spécifiques.</value>
+  </data>
+  <data name="HelpView_WelcomeDescription" xml:space="preserve">
+    <value>Ce système vous aide à gérer les bons de travail pour la pose d'accessoires et la préparation de véhicules. Vous trouverez ci‑dessous un aperçu rapide des principaux flux de travail.</value>
+  </data>
+  <data name="AccessoryManagementView_TimeMin" xml:space="preserve">
+    <value>Temps (min)</value>
+  </data>
+  <data name="AccessoryManagementView_TimeMinLabel" xml:space="preserve">
+    <value>Temps (min) :</value>
+  </data>
+  <data name="PriceUpdateView_To" xml:space="preserve">
+    <value>Au :</value>
+  </data>
+  <data name="MainWindow_Today" xml:space="preserve">
+    <value>Aujourd'hui</value>
+  </data>
+  <data name="HelpView_TodayWorkOrders" xml:space="preserve">
+    <value>Les bons de travail du jour se chargent automatiquement.</value>
+  </data>
+  <data name="MainWindow_TopClients" xml:space="preserve">
+    <value>Meilleurs clients</value>
+  </data>
+  <data name="MainWindow_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="TravelDialog_TravelCost" xml:space="preserve">
+    <value>Coût du déplacement (€) :</value>
+  </data>
+  <data name="TravelDialog_TravelDetails" xml:space="preserve">
+    <value>Détails du déplacement</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Travels" xml:space="preserve">
+    <value>DÉPLACEMENTS</value>
+  </data>
+  <data name="ClientManagementView_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ClientEditWindow_Type" xml:space="preserve">
+    <value>Type :</value>
+  </data>
+  <data name="PriceUpdateView_UpdatePrices" xml:space="preserve">
+    <value>Mettre à jour les prix</value>
+  </data>
+  <data name="MainWindow_UpdateStatus" xml:space="preserve">
+    <value>Mettre à jour le statut</value>
+  </data>
+  <data name="HelpView_UpdateStatusDescription" xml:space="preserve">
+    <value>Mettez à jour le statut du bon de travail (Planifié → En cours → Terminé).</value>
+  </data>
+  <data name="HelpView_ChangePasswordMenu" xml:space="preserve">
+    <value>Utilisez Fichier → Changer le mot de passe depuis le menu principal.</value>
+  </data>
+  <data name="HelpView_UseDriveOffsite" xml:space="preserve">
+    <value>Utilisez Google Drive pour conserver des sauvegardes hors site.</value>
+  </data>
+  <data name="HelpView_UseImportVehiclesButton" xml:space="preserve">
+    <value>Utilisez le bouton 'Importer des véhicules' dans la fenêtre Gestion des véhicules.</value>
+  </data>
+  <data name="HelpView_UseMainMenu" xml:space="preserve">
+    <value>Utilisez le menu principal pour importer des données, gérer les clients/véhicules ou générer des rapports.</value>
+  </data>
+  <data name="HelpView_UseGeneralImport" xml:space="preserve">
+    <value>Utilisez‑le pour la plupart des imports. Il lit le format ParcCarrières ou similaire.</value>
+  </data>
+  <data name="HelpView_UserRoleDescription" xml:space="preserve">
+    <value>Utilisateur – accès limité : créer des bons de travail, importer des données, mettre à jour le statut, générer des rapports (les prix sont masqués).</value>
+  </data>
+  <data name="GoogleDriveSettingsView_UserEmail" xml:space="preserve">
+    <value>Email utilisateur :</value>
+  </data>
+  <data name="HelpView_UserManagementSecurity" xml:space="preserve">
+    <value>Gestion des utilisateurs &amp; Sécurité</value>
+  </data>
+  <data name="LoginView_Username" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="UserEditView_Username" xml:space="preserve">
+    <value>Nom d'utilisateur :</value>
+  </data>
+  <data name="MainWindow_Vehicle" xml:space="preserve">
+    <value>Véhicule</value>
+  </data>
+  <data name="VehicleLookupView_VehicleLookup" xml:space="preserve">
+    <value>Recherche de véhicule</value>
+  </data>
+  <data name="ReportsView_Vehicles" xml:space="preserve">
+    <value>Véhicules</value>
+  </data>
+  <data name="HelpView_VehiclesReportDescription" xml:space="preserve">
+    <value>Véhicules – liste de tous les véhicules avec association client.</value>
+  </data>
+  <data name="UserEditView_VerificationCode" xml:space="preserve">
+    <value>Code de vérification :</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version : 1.0.0 (dernière)</value>
+  </data>
+  <data name="MainWindow_Week" xml:space="preserve">
+    <value>Semaine</value>
+  </data>
+  <data name="HelpView_Welcome" xml:space="preserve">
+    <value>Bienvenue dans SKAuto Work Tracking</value>
+  </data>
+  <data name="WorkOrderView_WorkOrder" xml:space="preserve">
+    <value>Bon de travail</value>
+  </data>
+  <data name="WorkOrderDetailWindow_WorkOrderDetails" xml:space="preserve">
+    <value>Détails du bon de travail</value>
+  </data>
+  <data name="WorkOrderDetailWindow_WorkOrderInfo" xml:space="preserve">
+    <value>INFORMATIONS DU BON DE TRAVAIL</value>
+  </data>
+  <data name="ReportsView_WorkOrders" xml:space="preserve">
+    <value>Bons de travail</value>
+  </data>
+  <data name="HelpView_WorkOrdersReportDescription" xml:space="preserve">
+    <value>Bons de travail – liste détaillée avec tâches et déplacements.</value>
+  </data>
+  <data name="HelpView_WorkOrdersCreatedCondition" xml:space="preserve">
+    <value>Les bons de travail sont créés uniquement pour les lignes avec Etat = 'Prêt' et date dans la plage sélectionnée.</value>
+  </data>
+  <data name="HelpView_WorkOrdersCore" xml:space="preserve">
+    <value>Les bons de travail sont au cœur du système. Chaque bon représente tout le travail pour un véhicule donné à une date donnée.</value>
+  </data>
+  <data name="LoginView_WorkTracking" xml:space="preserve">
+    <value>Suivi des travaux</value>
+  </data>
+  <data name="Splash_WorkTrackingSystem" xml:space="preserve">
+    <value>Système de suivi des travaux</value>
+  </data>
+  <data name="VehicleManagementView_Year" xml:space="preserve">
+    <value>Année</value>
+  </data>
+  <data name="VehicleEditWindow_Year" xml:space="preserve">
+    <value>Année :</value>
+  </data>
+  <data name="HelpView_ManualExportZip" xml:space="preserve">
+    <value>Vous pouvez exporter manuellement vers ZIP pour la portabilité.</value>
+  </data>
+  <data name="HelpView_CurrentPasswordRequired" xml:space="preserve">
+    <value>Vous devez connaître votre mot de passe actuel pour le modifier.</value>
+  </data>
+  <data name="HelpView_TipBCrypt" xml:space="preserve">
+    <value>💡 Astuce : Les mots de passe sont hachés avec BCrypt – jamais stockés en clair.</value>
+  </data>
+  <data name="HelpView_TipPDFReports" xml:space="preserve">
+    <value>💡 Astuce : Les rapports PDF utilisent vos couleurs et polices personnalisées (définies dans les paramètres).</value>
+  </data>
+  <data name="HelpView_TipProgressBar" xml:space="preserve">
+    <value>💡 Astuce : La barre de progression montre l'étape en cours, et le curseur change en icône d'attente pendant les opérations longues.</value>
+  </data>
+  <data name="HelpView_TipDryRun" xml:space="preserve">
+    <value>💡 Astuce : Utilisez la case 'Simulation' pour prévisualiser l'import sans effectuer de modifications.</value>
+  </data>
+  <data name="HelpView_TipMarkDone" xml:space="preserve">
+    <value>💡 Astuce : Vous pouvez marquer rapidement un bon de travail comme 'Terminé' directement depuis la grille principale en utilisant le bouton vert.</value>
+  </data>
+  <data name="HelpView_BackupRestoreTab" xml:space="preserve">
+    <value>💾 Sauvegarde &amp; Restauration</value>
+  </data>
+  <data name="HelpView_ReportingTab" xml:space="preserve">
+    <value>📊 Rapports</value>
+  </data>
+  <data name="HelpView_WorkOrdersTab" xml:space="preserve">
+    <value>📋 Bons de travail</value>
+  </data>
+  <data name="HelpView_TipsTab" xml:space="preserve">
+    <value>📌 Conseils &amp; Dépannage</value>
+  </data>
+  <data name="HelpView_HelpDocumentationTab" xml:space="preserve">
+    <value>📘 Aide &amp; Documentation</value>
+  </data>
+  <data name="HelpView_ImportingDataTab" xml:space="preserve">
+    <value>📥 Importation de données</value>
+  </data>
+  <data name="HelpView_UserSecurityTab" xml:space="preserve">
+    <value>🔒 Utilisateur &amp; Sécurité</value>
+  </data>
+  <data name="HelpView_AccessoriesTopic" xml:space="preserve">
+    <value>🔹 Accessoires (tâches)</value>
+  </data>
+  <data name="HelpView_AdminOnlyTopic" xml:space="preserve">
+    <value>🔹 Réservé à l'administrateur</value>
+  </data>
+  <data name="HelpView_BulkPriceUpdateTopic" xml:space="preserve">
+    <value>🔹 Mise à jour des prix en masse</value>
+  </data>
+  <data name="HelpView_ChangePasswordTopic" xml:space="preserve">
+    <value>🔹 Changer le mot de passe</value>
+  </data>
+  <data name="HelpView_ClientsTopic" xml:space="preserve">
+    <value>🔹 Clients</value>
+  </data>
+  <data name="HelpView_CommonErrorsTopic" xml:space="preserve">
+    <value>🔹 Erreurs courantes</value>
+  </data>
+  <data name="HelpView_CreateWorkOrderTopic" xml:space="preserve">
+    <value>🔹 Créer un bon de travail</value>
+  </data>
+  <data name="HelpView_DailyWorkflowTopic" xml:space="preserve">
+    <value>🔹 Flux de travail quotidien</value>
+  </data>
+  <data name="HelpView_DataRecoveryTopic" xml:space="preserve">
+    <value>🔹 Récupération des données</value>
+  </data>
+  <data name="HelpView_EditDeleteTopic" xml:space="preserve">
+    <value>🔹 Modifier &amp; Supprimer</value>
+  </data>
+  <data name="HelpView_ExcelCSVTopic" xml:space="preserve">
+    <value>🔹 Excel / CSV (général)</value>
+  </data>
+  <data name="HelpView_ExportOptionsTopic" xml:space="preserve">
+    <value>🔹 Options d'export</value>
+  </data>
+  <data name="HelpView_ExportZipTopic" xml:space="preserve">
+    <value>🔹 Exporter vers ZIP (CSV)</value>
+  </data>
+  <data name="HelpView_FiltersTopic" xml:space="preserve">
+    <value>🔹 Filtres (bons de travail &amp; tâches)</value>
+  </data>
+  <data name="HelpView_GoogleDriveTopic" xml:space="preserve">
+    <value>🔹 Synchronisation Google Drive</value>
+  </data>
+  <data name="HelpView_ImportVehiclesTopic" xml:space="preserve">
+    <value>🔹 Importer uniquement les véhicules</value>
+  </data>
+  <data name="HelpView_LocalBackupTopic" xml:space="preserve">
+    <value>🔹 Sauvegarde locale</value>
+  </data>
+  <data name="HelpView_LoginTopic" xml:space="preserve">
+    <value>🔹 Connexion</value>
+  </data>
+  <data name="HelpView_ParcCarrieresTopic" xml:space="preserve">
+    <value>🔹 CSV ParcCarrières</value>
+  </data>
+  <data name="HelpView_PDFFolderTopic" xml:space="preserve">
+    <value>🔹 Dossier PDF</value>
+  </data>
+  <data name="HelpView_PerformanceTopic" xml:space="preserve">
+    <value>🔹 Performances</value>
+  </data>
+  <data name="HelpView_QuickStartTopic" xml:space="preserve">
+    <value>🔹 Démarrage rapide</value>
+  </data>
+  <data name="HelpView_ReportTypesTopic" xml:space="preserve">
+    <value>🔹 Types de rapports</value>
+  </data>
+  <data name="HelpView_RestoreTopic" xml:space="preserve">
+    <value>🔹 Restauration</value>
+  </data>
+  <data name="HelpView_RolesTopic" xml:space="preserve">
+    <value>🔹 Rôles</value>
+  </data>
+  <data name="HelpView_StatusTrackingTopic" xml:space="preserve">
+    <value>🔹 Suivi du statut</value>
+  </data>
+  <data name="HelpView_SupportTopic" xml:space="preserve">
+    <value>🔹 Support</value>
+  </data>
+  <data name="HelpView_VehiclesTopic" xml:space="preserve">
+    <value>🔹 Véhicules</value>
+  </data>
+  <data name="HelpView_GettingStartedTab" xml:space="preserve">
+    <value>🚀 Premiers pas</value>
+  </data>
+  <data name="AccessoryNameEmptyError" xml:space="preserve">
+    <value>Le nom de l'accessoire ne peut pas être vide.</value>
+  </data>
+  <data name="AccessoryManagementInitializationComplete" xml:space="preserve">
+    <value>Initialisation de AccessoryManagementViewModel terminée, chargement des accessoires</value>
+  </data>
+  <data name="AccessoryManagementInitializing" xml:space="preserve">
+    <value>Initialisation de AccessoryManagementViewModel en cours</value>
+  </data>
+  <data name="AddTravelCancelledByUser" xml:space="preserve">
+    <value>Ajout de déplacement annulé par l'utilisateur</value>
+  </data>
+  <data name="AddAccessoryCalled" xml:space="preserve">
+    <value>Appel de AddAccessory : création d'un nouvel accessoire</value>
+  </data>
+  <data name="AddClientFailed" xml:space="preserve">
+    <value>Échec de AddClient</value>
+  </data>
+  <data name="AddClientStarted" xml:space="preserve">
+    <value>Démarrage de AddClient</value>
+  </data>
+  <data name="AddTaskNoAccessorySelected" xml:space="preserve">
+    <value>Appel de AddTask sans accessoire sélectionné</value>
+  </data>
+  <data name="AddTravelCalled" xml:space="preserve">
+    <value>Appel de AddTravel</value>
+  </data>
+  <data name="AddUserCalled" xml:space="preserve">
+    <value>Appel de AddUser.</value>
+  </data>
+  <data name="ApplicationStarting" xml:space="preserve">
+    <value>Démarrage de l'application...</value>
+  </data>
+  <data name="AuthenticationFailed" xml:space="preserve">
+    <value>Échec de l'authentification.</value>
+  </data>
+  <data name="AuthenticationSuccessful" xml:space="preserve">
+    <value>Authentification réussie.</value>
+  </data>
+  <data name="BackupFailed" xml:space="preserve">
+    <value>Échec de la sauvegarde</value>
+  </data>
+  <data name="BrowseFolderFailed" xml:space="preserve">
+    <value>Échec de BrowseFolder</value>
+  </data>
+  <data name="BulkPriceUpdateFailed" xml:space="preserve">
+    <value>Échec de la mise à jour groupée des prix</value>
+  </data>
+  <data name="CancelEditCalled" xml:space="preserve">
+    <value>Appel de CancelEdit : sortie du mode édition</value>
+  </data>
+  <data name="ChassisNumberRequired" xml:space="preserve">
+    <value>Le numéro de châssis est requis.</value>
+  </data>
+  <data name="ClearedAllItems" xml:space="preserve">
+    <value>Tous les éléments ont été effacés.</value>
+  </data>
+  <data name="ClientAddedSuccessfully" xml:space="preserve">
+    <value>Client ajouté avec succès, actualisation de la liste</value>
+  </data>
+  <data name="ClientAdditionCancelledByUser" xml:space="preserve">
+    <value>Ajout de client annulé par l'utilisateur</value>
+  </data>
+  <data name="ClientUpdatedSuccessfully" xml:space="preserve">
+    <value>Client mis à jour avec succès</value>
+  </data>
+  <data name="ClientManagementInitializationComplete" xml:space="preserve">
+    <value>Initialisation de ClientManagementViewModel terminée, chargement des clients</value>
+  </data>
+  <data name="ClientManagementInitializing" xml:space="preserve">
+    <value>Initialisation de ClientManagementViewModel en cours</value>
+  </data>
+  <data name="CloseWindowCalled" xml:space="preserve">
+    <value>Appel de CloseWindow</value>
+  </data>
+  <data name="ConnectionFailedUnknownReason" xml:space="preserve">
+    <value>Échec de la connexion (raison inconnue).</value>
+  </data>
+  <data name="ConnectionOK" xml:space="preserve">
+    <value>Connexion OK.</value>
+  </data>
+  <data name="CouldNotFindOrCreateFolder" xml:space="preserve">
+    <value>Impossible de trouver ou de créer le dossier.</value>
+  </data>
+  <data name="CreatedDefaultConfiguration" xml:space="preserve">
+    <value>Configuration par défaut créée.</value>
+  </data>
+  <data name="CreatedNewWorkOrder" xml:space="preserve">
+    <value>Nouvel ordre de travail créé</value>
+  </data>
+  <data name="CreatingBackup" xml:space="preserve">
+    <value>Création de la sauvegarde...</value>
+  </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>Le mot de passe actuel est incorrect.</value>
+  </data>
+  <data name="DatabaseInitialized" xml:space="preserve">
+    <value>Base de données initialisée.</value>
+  </data>
+  <data name="DeleteAccessoryNoAccessorySelected" xml:space="preserve">
+    <value>Appel de DeleteAccessoryAsync sans accessoire sélectionné</value>
+  </data>
+  <data name="DeleteClientNoClientSelected" xml:space="preserve">
+    <value>Appel de DeleteClientAsync sans client sélectionné</value>
+  </data>
+  <data name="EditFieldsCleared" xml:space="preserve">
+    <value>Champs d'édition effacés</value>
+  </data>
+  <data name="EditModeActivatedForAccessory" xml:space="preserve">
+    <value>Mode édition activé pour l'accessoire</value>
+  </data>
+  <data name="EditModeCancelled" xml:space="preserve">
+    <value>Mode édition annulé</value>
+  </data>
+  <data name="EditAccessoryCalledWithNull" xml:space="preserve">
+    <value>Appel de EditAccessory avec un accessoire nul</value>
+  </data>
+  <data name="EditClientNoClientSelected" xml:space="preserve">
+    <value>Appel de EditClientAsync sans client sélectionné</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>L'adresse e-mail est requise.</value>
+  </data>
+  <data name="ErrorLoadingAccessories" xml:space="preserve">
+    <value>Erreur lors du chargement des accessoires.</value>
+  </data>
+  <data name="ExcelReportGenerationFailed" xml:space="preserve">
+    <value>Échec de la génération du rapport Excel</value>
+  </data>
+  <data name="ExportFailed" xml:space="preserve">
+    <value>Échec de l'exportation</value>
+  </data>
+  <data name="FailedToAddTravel" xml:space="preserve">
+    <value>Échec de l'ajout du déplacement</value>
+  </data>
+  <data name="FailedToListBackupFiles" xml:space="preserve">
+    <value>Échec de la liste des fichiers de sauvegarde</value>
+  </data>
+  <data name="FailedToListDriveBackups" xml:space="preserve">
+    <value>Échec de la liste des sauvegardes Drive</value>
+  </data>
+  <data name="FailedToLoadAccessoriesForBulkPriceUpdate" xml:space="preserve">
+    <value>Échec du chargement des accessoires pour la mise à jour groupée des prix</value>
+  </data>
+  <data name="FailedToLoadAccessoriesForReportFilter" xml:space="preserve">
+    <value>Échec du chargement des accessoires pour le filtre du rapport</value>
+  </data>
+  <data name="FailedToLoadUsers" xml:space="preserve">
+    <value>Échec du chargement des utilisateurs</value>
+  </data>
+  <data name="FailedToShowMainWindow" xml:space="preserve">
+    <value>Échec de l'affichage de la fenêtre principale</value>
+  </data>
+  <data name="FilterAccessoriesStarted" xml:space="preserve">
+    <value>Démarrage de FilterAccessories</value>
+  </data>
+  <data name="GeneratingExcelReport" xml:space="preserve">
+    <value>Génération du rapport Excel...</value>
+  </data>
+  <data name="GeneratingPDFReport" xml:space="preserve">
+    <value>Génération du rapport PDF...</value>
+  </data>
+  <data name="GoogleDriveAutoAuthenticatedSuccessfully" xml:space="preserve">
+    <value>Authentification automatique Google Drive réussie au démarrage.</value>
+  </data>
+  <data name="GoogleDriveAutoAuthenticationFailed" xml:space="preserve">
+    <value>Échec de l'authentification automatique Google Drive.</value>
+  </data>
+  <data name="GoogleDriveNotConnected" xml:space="preserve">
+    <value>Google Drive non connecté. Veuillez d'abord vous authentifier.</value>
+  </data>
+  <data name="GoogleDriveSettingsSaved" xml:space="preserve">
+    <value>Paramètres Google Drive enregistrés.</value>
+  </data>
+  <data name="ImportException" xml:space="preserve">
+    <value>Exception lors de l'importation</value>
+  </data>
+  <data name="ImportFailed" xml:space="preserve">
+    <value>Échec de l'importation</value>
+  </data>
+  <data name="InitializeAsyncFailed" xml:space="preserve">
+    <value>Échec de InitializeAsync</value>
+  </data>
+  <data name="InitializeAsyncStarted" xml:space="preserve">
+    <value>Démarrage de InitializeAsync</value>
+  </data>
+  <data name="InvalidEmailFormat" xml:space="preserve">
+    <value>Format d'e-mail invalide.</value>
+  </data>
+  <data name="InvalidOrExpiredVerificationCode" xml:space="preserve">
+    <value>Code de vérification invalide ou expiré.</value>
+  </data>
+  <data name="LoadAccessoriesAsyncFailed" xml:space="preserve">
+    <value>Échec de LoadAccessoriesAsync</value>
+  </data>
+  <data name="LoadAccessoriesAsyncStarted" xml:space="preserve">
+    <value>Démarrage de LoadAccessoriesAsync</value>
+  </data>
+  <data name="LoadClientsAsyncFailed" xml:space="preserve">
+    <value>Échec de LoadClientsAsync</value>
+  </data>
+  <data name="LoadClientsAsyncStarted" xml:space="preserve">
+    <value>Démarrage de LoadClientsAsync</value>
+  </data>
+  <data name="LoadSettingsFailed" xml:space="preserve">
+    <value>Échec de LoadSettings</value>
+  </data>
+  <data name="LoginCancelledOrFailed" xml:space="preserve">
+    <value>Connexion annulée ou échouée. Fermeture.</value>
+  </data>
+  <data name="MainWindowShownAndActivated" xml:space="preserve">
+    <value>Fenêtre principale affichée et activée.</value>
+  </data>
+  <data name="MergeCancelledByUser" xml:space="preserve">
+    <value>Fusion annulée par l'utilisateur</value>
+  </data>
+  <data name="MergeClientsAsyncStarted" xml:space="preserve">
+    <value>Démarrage de MergeClientsAsync</value>
+  </data>
+  <data name="NewAccessoryCreatedEditModeActivated" xml:space="preserve">
+    <value>Nouvel accessoire créé, mode édition activé</value>
+  </data>
+  <data name="NewPasswordMinimumLength" xml:space="preserve">
+    <value>Le nouveau mot de passe doit comporter au moins 6 caractères.</value>
+  </data>
+  <data name="NewPasswordsDoNotMatchOrEmpty" xml:space="preserve">
+    <value>Les nouveaux mots de passe ne correspondent pas ou sont vides.</value>
+  </data>
+  <data name="NoClientAvailableCannotCreateVehicle" xml:space="preserve">
+    <value>Aucun client disponible – impossible de créer un véhicule</value>
+  </data>
+  <data name="NoClientExists" xml:space="preserve">
+    <value>Aucun client n'existe. Veuillez d'abord créer un client via « Gérer les clients ».</value>
+  </data>
+  <data name="NoEmailAddressConfigured" xml:space="preserve">
+    <value>Aucune adresse e-mail configurée pour cet utilisateur. Veuillez contacter un administrateur.</value>
+  </data>
+  <data name="NoSelectedRowsMatchDateRange" xml:space="preserve">
+    <value>Aucune ligne sélectionnée ne correspond à la plage de dates.</value>
+  </data>
+  <data name="NoValidVehicleDataInFile" xml:space="preserve">
+    <value>Aucune donnée de véhicule valide trouvée dans le fichier.</value>
+  </data>
+  <data name="NoWorkOrdersFound" xml:space="preserve">
+    <value>Aucun ordre de travail trouvé pour l'accessoire et la plage de dates sélectionnés.</value>
+  </data>
+  <data name="NotConnectedToGoogleDrive" xml:space="preserve">
+    <value>Non connecté à Google Drive.</value>
+  </data>
+  <data name="OpeningClientEditWindowForNewClient" xml:space="preserve">
+    <value>Ouverture de la fenêtre d'édition pour un nouveau client</value>
+  </data>
+  <data name="OpeningClientMergeDialog" xml:space="preserve">
+    <value>Ouverture de la boîte de dialogue de fusion de clients</value>
+  </data>
+  <data name="OperationCompletedSuccessfully" xml:space="preserve">
+    <value>Opération terminée avec succès.</value>
+  </data>
+  <data name="ParsingFile" xml:space="preserve">
+    <value>Analyse du fichier...</value>
+  </data>
+  <data name="PasswordCannotBeEmpty" xml:space="preserve">
+    <value>Le mot de passe ne peut pas être vide.</value>
+  </data>
+  <data name="PasswordChangedSuccessfully" xml:space="preserve">
+    <value>Mot de passe modifié avec succès.</value>
+  </data>
+  <data name="PasswordMinimumLength" xml:space="preserve">
+    <value>Le mot de passe doit comporter au moins 6 caractères.</value>
+  </data>
+  <data name="PasswordResetSuccessfully" xml:space="preserve">
+    <value>Réinitialisation du mot de passe réussie. Veuillez vous connecter.</value>
+  </data>
+  <data name="PasswordsDoNotMatchOrEmpty" xml:space="preserve">
+    <value>Les mots de passe ne correspondent pas ou sont vides.</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Les mots de passe ne correspondent pas.</value>
+  </data>
+  <data name="PDFImportFailed" xml:space="preserve">
+    <value>Échec de l'importation PDF</value>
+  </data>
+  <data name="PDFReportGenerationFailed" xml:space="preserve">
+    <value>Échec de la génération du rapport PDF</value>
+  </data>
+  <data name="PleaseAuthenticateWithGoogleDriveFirst" xml:space="preserve">
+    <value>Veuillez d'abord vous authentifier auprès de Google Drive.</value>
+  </data>
+  <data name="PleaseEnterUsername" xml:space="preserve">
+    <value>Veuillez saisir votre nom d'utilisateur.</value>
+  </data>
+  <data name="PleaseSelectBackupFileToRestore" xml:space="preserve">
+    <value>Veuillez sélectionner un fichier de sauvegarde à restaurer.</value>
+  </data>
+  <data name="PleaseSelectDriveBackupToRestore" xml:space="preserve">
+    <value>Veuillez sélectionner une sauvegarde Drive à restaurer.</value>
+  </data>
+  <data name="PleaseSelectVehicle" xml:space="preserve">
+    <value>Veuillez sélectionner un véhicule.</value>
+  </data>
+  <data name="PleaseSelectImportFileFirst" xml:space="preserve">
+    <value>Veuillez d'abord sélectionner un fichier d'importation.</value>
+  </data>
+  <data name="PleaseSelectAtLeastTwoClientsToMerge" xml:space="preserve">
+    <value>Veuillez sélectionner au moins deux clients à fusionner.</value>
+  </data>
+  <data name="PreviewClearedByUser" xml:space="preserve">
+    <value>Aperçu effacé par l'utilisateur.</value>
+  </data>
+  <data name="PriceCannotBeNegative" xml:space="preserve">
+    <value>Le prix ne peut pas être négatif.</value>
+  </data>
+  <data name="PricesUpdatedAndGridRefreshed" xml:space="preserve">
+    <value>Prix mis à jour et grille actualisée.</value>
+  </data>
+  <data name="ProcessingParcCarrieresFile" xml:space="preserve">
+    <value>Traitement du fichier ParcCarrières...</value>
+  </data>
+  <data name="PythonScriptDidNotProduceOutput" xml:space="preserve">
+    <value>Le script Python n'a pas généré output.txt</value>
+  </data>
+  <data name="RefreshingAccessoriesList" xml:space="preserve">
+    <value>Actualisation de la liste des accessoires</value>
+  </data>
+  <data name="ReportGenerationCancelled" xml:space="preserve">
+    <value>Génération du rapport annulée.</value>
+  </data>
+  <data name="ResourceLoadingFailed" xml:space="preserve">
+    <value>Échec du chargement des ressources</value>
+  </data>
+  <data name="RestoreFailed" xml:space="preserve">
+    <value>Échec de la restauration</value>
+  </data>
+  <data name="RestoreFromDriveFailed" xml:space="preserve">
+    <value>Échec de la restauration depuis Drive</value>
+  </data>
+  <data name="RestoringDatabase" xml:space="preserve">
+    <value>Restauration de la base de données...</value>
+  </data>
+  <data name="RunningPythonExtractor" xml:space="preserve">
+    <value>Exécution de l'extracteur Python...</value>
+  </data>
+  <data name="SaveAttemptedWithEmptyAccessoryName" xml:space="preserve">
+    <value>Tentative d'enregistrement avec un nom d'accessoire vide</value>
+  </data>
+  <data name="SaveAttemptedWithoutVehicleSelected" xml:space="preserve">
+    <value>Tentative d'enregistrement sans véhicule sélectionné</value>
+  </data>
+  <data name="SaveAccessoryNoAccessoryToSave" xml:space="preserve">
+    <value>SaveAccessoryAsync appelé sans accessoire à enregistrer</value>
+  </data>
+  <data name="SaveAsyncFailed" xml:space="preserve">
+    <value>Échec de SaveAccessoryAsync</value>
+  </data>
+  <data name="SaveAsyncStarted" xml:space="preserve">
+    <value>Démarrage de SaveAccessoryAsync</value>
+  </data>
+  <data name="SearchTextEmptyReloadingAccessories" xml:space="preserve">
+    <value>Texte de recherche vide, rechargement de tous les accessoires</value>
+  </data>
+  <data name="SelectedAccessoryChangedToNull" xml:space="preserve">
+    <value>L'accessoire sélectionné a été défini sur null</value>
+  </data>
+  <data name="SelectedClientChangedToNull" xml:space="preserve">
+    <value>Le client sélectionné a été défini sur null</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Paramètres enregistrés.</value>
+  </data>
+  <data name="SplashScreenText" xml:space="preserve">
+    <value>Système de suivi des travaux SKAuto\nVersion .0.0\nDéveloppé par SK Auto\n2026 - Insights®</value>
+  </data>
+  <data name="SplashInitializationError" xml:space="preserve">
+    <value>Écran de démarrage : erreur d'initialisation</value>
+  </data>
+  <data name="SplashLoadingResources" xml:space="preserve">
+    <value>Écran de démarrage : chargement des ressources...</value>
+  </data>
+  <data name="SplashResourcesLoadedSuccessfully" xml:space="preserve">
+    <value>Écran de démarrage : ressources chargées avec succès.</value>
+  </data>
+  <data name="StartingBackup" xml:space="preserve">
+    <value>Démarrage de la sauvegarde...</value>
+  </data>
+  <data name="StartingExport" xml:space="preserve">
+    <value>Démarrage de l'exportation...</value>
+  </data>
+  <data name="StartingImport" xml:space="preserve">
+    <value>Démarrage de l'importation...</value>
+  </data>
+  <data name="StartingManualSyncToGoogleDrive" xml:space="preserve">
+    <value>Démarrage de la synchronisation manuelle vers Google Drive.</value>
+  </data>
+  <data name="StepCreatingLocalBackup" xml:space="preserve">
+    <value>Étape : Création de la sauvegarde locale...</value>
+  </data>
+  <data name="StepDownloadingDriveBackup" xml:space="preserve">
+    <value>Étape 2 : Téléchargement de la sauvegarde Drive...</value>
+  </data>
+  <data name="StepImportingBackup" xml:space="preserve">
+    <value>Étape 3 : Importation de la sauvegarde...</value>
+  </data>
+  <data name="SyncFailed" xml:space="preserve">
+    <value>Échec de la synchronisation</value>
+  </data>
+  <data name="TestConnectionFailed" xml:space="preserve">
+    <value>Échec de TestConnection</value>
+  </data>
+  <data name="SelectedClientNotSavedYet" xml:space="preserve">
+    <value>Le client sélectionné n'est pas encore enregistré. Veuillez d'abord enregistrer le client, puis réessayer.</value>
+  </data>
+  <data name="SelectedClientNoLongerExists" xml:space="preserve">
+    <value>Le client sélectionné n'existe plus. Veuillez actualiser la liste des clients et réessayer.</value>
+  </data>
+  <data name="TransactionStartedForMergeOperation" xml:space="preserve">
+    <value>Lancement de la transaction de fusion</value>
+  </data>
+  <data name="UpdatingWorkOrderTasks" xml:space="preserve">
+    <value>Mise à jour des tâches de l'ordre de travail...</value>
+  </data>
+  <data name="UploadingToGoogleDrive" xml:space="preserve">
+    <value>Téléchargement vers Google Drive...</value>
+  </data>
+  <data name="UserNotFoundOrInactive" xml:space="preserve">
+    <value>Utilisateur introuvable ou inactif.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Utilisateur introuvable.</value>
+  </data>
+  <data name="UsernameAlreadyExists" xml:space="preserve">
+    <value>Ce nom d'utilisateur existe déjà.</value>
+  </data>
+  <data name="UsernameCannotBeEmpty" xml:space="preserve">
+    <value>Le nom d'utilisateur ne peut pas être vide.</value>
+  </data>
+  <data name="WorkOrderSavedSuccessfully" xml:space="preserve">
+    <value>Ordre de travail enregistré avec succès</value>
+  </data>
+  <data name="CannotDeleteOwnAccount" xml:space="preserve">
+    <value>Vous ne pouvez pas supprimer votre propre compte.</value>
+  </data>
+  <data name="AddNewUser" xml:space="preserve">
+    <value>Ajouter un nouvel utilisateur</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirmez le mdp</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>Nouveau mdp (laisser vide pour conserver l'actuel)</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Confirmer le nouveau mdp</value>
+  </data>
+  <data name="CurrentPassword" xml:space="preserve">
+    <value>Mot de passe actuel</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Réinitialiser le mdp</value>
+  </data>
+  <data name="SendCode" xml:space="preserve">
+    <value>Envoyer le code</value>
+  </data>
+  <data name="CodeEmailBodyPart1" xml:space="preserve">
+    <value>&lt;h2&gt;Demande de réinitialisation de mot de passe&lt;/h2&gt;
+&lt;p&gt;Vous avez demandé la réinitialisation de votre mot de passe pour SKAuto Work Tracking.&lt;/p&gt;
+&lt;p&gt;Votre code de vérification est : &lt;strong&gt;</value>
+  </data>
+  <data name="CodeEmailTitle" xml:space="preserve">
+    <value>SKAuto – Code de réinitialisation du mot de passe</value>
+  </data>
+  <data name="CodeSent" xml:space="preserve">
+    <value>Code envoyé</value>
+  </data>
+  <data name="CodeSentMessageBodySuccessPart1" xml:space="preserve">
+    <value>Un code de vérification a été envoyé à </value>
+  </data>
+  <data name="CodeSentMessageBodyFailed" xml:space="preserve">
+    <value>L'e-mail n'a pas pu être envoyé.</value>
+  </data>
+  <data name="EmailFailed" xml:space="preserve">
+    <value>Échec de l'envoi du courriel</value>
+  </data>
+  <data name="VerifyReset" xml:space="preserve">
+    <value>Vérifier et réinitialiser</value>
+  </data>
+  <data name="CodeEmailBodyPart2" xml:space="preserve">
+    <value>&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Ce code expirera dans 15 minutes.&lt;/p&gt;
+&lt;p&gt;Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet e-mail.&lt;/p&gt;</value>
+  </data>
+  <data name="CodeSentMessageBodySuccessPart2" xml:space="preserve">
+    <value>Veuillez consulter votre boîte de réception.</value>
+  </data>
+</root>

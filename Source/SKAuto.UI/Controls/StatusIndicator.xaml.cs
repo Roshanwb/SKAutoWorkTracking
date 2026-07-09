@@ -2,7 +2,7 @@
 
 namespace SKAuto.UI.Controls
 {
-    public partial class StatusIndicator : UserControl
+    public partial class StatusIndicator : System.Windows.Controls.UserControl
     {
         public StatusIndicator()
         {

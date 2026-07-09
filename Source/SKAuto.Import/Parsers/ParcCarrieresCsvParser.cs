@@ -19,7 +19,10 @@ namespace SKAuto.Import.Parsers
         private static readonly HashSet<string> AllowedEtat = new(StringComparer.OrdinalIgnoreCase)
         {
             "Préparé",
-            "Livré"
+            "Livré",
+            "Prêt",
+            "Non préparé",
+            "Atelier"
             // add "Terminé" if needed
         };
 
@@ -67,7 +70,8 @@ namespace SKAuto.Import.Parsers
                 string model = SafeGet(fields, modelCol);
                 string finPrepStr = SafeGet(fields, finPrepCol);
 
-                if (string.IsNullOrWhiteSpace(finPrepStr)) continue;
+                if (string.IsNullOrWhiteSpace(finPrepStr))
+                    finPrepStr = "01/01/1900"; // default date if missing
 
                 // Parse date (expect DD/MM/YYYY)
                 if (!DateTime.TryParseExact(finPrepStr, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var orderDate))

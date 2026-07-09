@@ -1,7 +1,7 @@
-﻿<Window x:Class="SKAuto.UI.Views.PriceUpdateView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window x:Class="SKAuto.UI.Views.PriceUpdateView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Bulk Price Update" Height="500" Width="500"
+        Title="{loc:Translate MainWindow_BulkPriceUpdate}" Height="500" Width="500"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Background="#F5F5F5">
     <Window.Resources>
@@ -37,12 +37,12 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Bulk Price Update" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Grid.Row="0" Text="{loc:Translate MainWindow_BulkPriceUpdate}" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
 
         <!-- Accessory selection -->
         <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="0,0,0,10">
             <StackPanel>
-                <TextBlock Text="Task" Style="{StaticResource SectionHeader}" Margin="0,0,0,5"/>
+                <TextBlock Text="{loc:Translate PriceUpdateView_Task}" Style="{StaticResource SectionHeader}" Margin="0,0,0,5"/>
                 <ComboBox ItemsSource="{Binding Accessories}"
                           SelectedItem="{Binding SelectedAccessory}"
                           DisplayMemberPath="Name"
@@ -54,7 +54,7 @@
         <!-- Date range -->
         <Border Grid.Row="2" Style="{StaticResource CardBorder}" Margin="0,0,0,10">
             <StackPanel>
-                <TextBlock Text="Date Range" Style="{StaticResource SectionHeader}" Margin="0,0,0,5"/>
+                <TextBlock Text="{loc:Translate PriceUpdateView_DateRange}" Style="{StaticResource SectionHeader}" Margin="0,0,0,5"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -62,9 +62,9 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="From:" VerticalAlignment="Center" Margin="5,0,5,0"/>
+                    <Label Grid.Column="0" Content="{loc:Translate PriceUpdateView_From}" VerticalAlignment="Center" Margin="5,0,5,0"/>
                     <DatePicker Grid.Column="1" SelectedDate="{Binding FromDate}" Margin="0,0,10,0"/>
-                    <Label Grid.Column="2" Content="To:" VerticalAlignment="Center" Margin="5,0,5,0"/>
+                    <Label Grid.Column="2" Content="{loc:Translate PriceUpdateView_To}" VerticalAlignment="Center" Margin="5,0,5,0"/>
                     <DatePicker Grid.Column="3" SelectedDate="{Binding ToDate}" Margin="0,0,0,0"/>
                 </Grid>
             </StackPanel>
@@ -73,15 +73,15 @@
         <!-- New price -->
         <Border Grid.Row="3" Style="{StaticResource CardBorder}" Margin="0,0,0,10">
             <StackPanel>
-                <TextBlock Text="New Price (€)" Style="{StaticResource SectionHeader}" Margin="0,0,0,5"/>
+                <TextBlock Text="{loc:Translate PriceUpdateView_NewPrice}" Style="{StaticResource SectionHeader}" Margin="0,0,0,5"/>
                 <TextBox Text="{Binding NewPrice, UpdateSourceTrigger=PropertyChanged}" Width="150" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-                <TextBlock Text="Leave empty to keep current price" FontSize="10" Foreground="Gray" Margin="5,5,0,0"/>
+                <TextBlock Text="{loc:Translate PriceUpdateView_LeaveEmptyKeepPrice}" FontSize="10" Foreground="Gray" Margin="5,5,0,0"/>
             </StackPanel>
         </Border>
 
         <!-- Options -->
         <Border Grid.Row="4" Style="{StaticResource CardBorder}" Margin="0,0,0,10">
-            <CheckBox Content="Also update default price of the accessory" IsChecked="{Binding UpdateDefaultPrice}" Margin="5,5,0,5"/>
+            <CheckBox Content="{loc:Translate PriceUpdateView_AlsoUpdateDefaultPrice}" IsChecked="{Binding UpdateDefaultPrice}" Margin="5,5,0,5"/>
         </Border>
 
         <!-- Status message -->
@@ -89,9 +89,9 @@
 
         <!-- Buttons -->
         <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button Content="Update Prices" Command="{Binding UpdateCommand}" Width="120" Margin="5"
+            <Button Content="{loc:Translate PriceUpdateView_UpdatePrices}" Command="{Binding UpdateCommand}" Width="120" Margin="5"
                     Style="{StaticResource StatusButton}" Background="#27AE60"/>
-            <Button Content="Close" Command="{Binding CloseCommand}" Width="80" Margin="5"
+            <Button Content="{loc:Translate ClientManagementView_Close}" Command="{Binding CloseCommand}" Width="80" Margin="5"
                     Style="{StaticResource StatusButton}" Background="#6C757D"/>
         </StackPanel>
     </Grid>

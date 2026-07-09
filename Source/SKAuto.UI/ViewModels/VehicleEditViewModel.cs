@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleEditViewModel : ObservableObject
@@ -31,7 +32,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow()
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.Close();
@@ -46,7 +47,7 @@ namespace SKAuto.UI.ViewModels
                 // Basic validation
                 if (string.IsNullOrWhiteSpace(Vehicle.ChassisNumber))
                 {
-                    MessageBox.Show("Chassis number is required.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["ChassisNumberRequired"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
@@ -60,13 +61,13 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving vehicle: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error saving vehicle: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private void CloseWindow(bool success = false)
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.DialogResult = success;

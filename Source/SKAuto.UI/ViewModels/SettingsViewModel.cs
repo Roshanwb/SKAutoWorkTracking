@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
+using SKAuto.UI.Localization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -44,6 +45,18 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private int _maxBackupsToKeep = 30;
 
+        [ObservableProperty]
+        private string _selectedLanguage = "en-US";
+
+        [ObservableProperty]
+        private List<string> _availableLanguages = new() { "en-US", "fr-FR" };
+
+        [ObservableProperty]
+        private List<string> _availableThemes = new() { "Light", "Dark", "Blue" };
+
+        [ObservableProperty]
+        private string _selectedTheme = "Light";
+
         // Available font families (for combo box)
         public List<string> FontFamilies { get; } = new()
         {
@@ -82,13 +95,16 @@ namespace SKAuto.UI.ViewModels
             HeaderFontSize = _originalConfig.ReportFonts.HeaderSize;
             NormalFontSize = _originalConfig.ReportFonts.NormalSize;
             TitleFontSize = _originalConfig.ReportFonts.TitleSize;
+            SelectedLanguage = _originalConfig.Language ?? "en-US";
+            SelectedTheme = _originalConfig.Theme ?? "Light";
         }
 
         private async void Save()
         {
             var newConfig = new AppConfig
             {
-                Language = Language,
+                Language = SelectedLanguage,
+                Theme = SelectedTheme,
                 ReportColors = new ReportColors
                 {
                     HeaderBackground = HeaderBackground,
@@ -105,6 +121,7 @@ namespace SKAuto.UI.ViewModels
                     NormalSize = NormalFontSize,
                     TitleSize = TitleFontSize
                 }
+
             };
 
             await _configService.SetAsync("AppConfig", newConfig);
@@ -117,12 +134,13 @@ namespace SKAuto.UI.ViewModels
                 CultureInfo.DefaultThreadCurrentUICulture = culture;
             }
             catch { }
-
-            MessageBox.Show(
+            LocalizationManager.Instance.CurrentCulture = new CultureInfo(SelectedLanguage);
+            ApplicationThemeManager.ApplyTheme(SelectedTheme);
+            System.Windows.MessageBox.Show(
                 "Settings saved. Language changes require restart to take full effect.",
                 "Settings Saved",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
 
             CloseWindow();
         }
@@ -147,7 +165,7 @@ namespace SKAuto.UI.ViewModels
 
         private void CloseWindow()
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.Close();

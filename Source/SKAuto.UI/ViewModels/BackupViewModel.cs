@@ -1,13 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class BackupViewModel : ObservableObject
@@ -45,6 +48,26 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _isRefreshingBackups;
 
+        // Drive properties
+        [ObservableProperty]
+        private ObservableCollection<BackupFileInfo> _driveBackupFiles = new();
+
+        [ObservableProperty]
+        private BackupFileInfo _selectedDriveBackupFile;
+
+        [ObservableProperty]
+        private bool _isRefreshingDriveBackups;
+
+        [ObservableProperty]
+        private bool _isDriveConnected;
+
+        // Progress properties
+        [ObservableProperty]
+        private bool _isBusy;
+
+        [ObservableProperty]
+        private int _importProgress;
+
         public IAsyncRelayCommand SelectBackupFolderCommand { get; }
         public IAsyncRelayCommand SelectExportFolderCommand { get; }
         public IAsyncRelayCommand SelectImportFileCommand { get; }
@@ -56,6 +79,10 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand RefreshBackupsCommand { get; }
         public IAsyncRelayCommand RestoreSelectedBackupCommand { get; }
 
+        // Drive commands
+        public IAsyncRelayCommand RefreshDriveBackupsCommand { get; }
+        public IAsyncRelayCommand RestoreSelectedDriveBackupCommand { get; }
+
         private string _backupsListFolder;
 
         public BackupViewModel(IBackupService backupService, ILoggingService loggingService)
@@ -63,7 +90,7 @@ namespace SKAuto.UI.ViewModels
             _backupService = backupService;
             _loggingService = loggingService;
 
-            _backupsListFolder = System.IO.Path.Combine(
+            _backupsListFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "SKAuto",
                 "Backups");
@@ -79,9 +106,261 @@ namespace SKAuto.UI.ViewModels
             RefreshBackupsCommand = new AsyncRelayCommand(RefreshBackupsAsync);
             RestoreSelectedBackupCommand = new AsyncRelayCommand(RestoreSelectedBackupAsync, () => SelectedBackupFile != null);
 
+            RefreshDriveBackupsCommand = new AsyncRelayCommand(RefreshDriveBackupsAsync);
+            RestoreSelectedDriveBackupCommand = new AsyncRelayCommand(RestoreSelectedDriveBackupAsync, () => SelectedDriveBackupFile != null && IsDriveConnected);
+
             _ = RefreshBackupsAsync();
         }
 
+        // ===== Helper to report progress from service =====
+        private void OnProgress(BackupProgress progress)
+        {
+            ImportProgress = progress.Percent;
+            StatusMessage = progress.Operation;
+        }
+
+        // ===== Backup =====
+        private async Task BackupAsync()
+        {
+            if (IsBusy) return;
+            IsBusy = true;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            ImportProgress = 0;
+            StatusMessage = LocalizationManager.Instance["StartingBackup"];
+
+            try
+            {
+                var progress = new Progress<BackupProgress>(OnProgress);
+                var path = await _backupService.BackupDatabaseAsync(BackupFolder, progress);
+                StatusMessage = $"Backup created: {path}";
+                _loggingService.LogInfo($"Database backup created at {path}");
+                System.Windows.MessageBox.Show($"Backup saved to:\n{path}", "Backup Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                await RefreshBackupsAsync();
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError(LocalizationManager.Instance["BackupFailed"], ex);
+                StatusMessage = $"Error: {ex.Message}";
+                System.Windows.MessageBox.Show($"Backup failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                ImportProgress = 0;
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        // ===== Export =====
+        private async Task ExportAsync()
+        {
+            if (IsBusy) return;
+            IsBusy = true;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            ImportProgress = 0;
+            StatusMessage = LocalizationManager.Instance["StartingExport"];
+
+            try
+            {
+                var progress = new Progress<BackupProgress>(OnProgress);
+                var path = await _backupService.ExportDataAsync(ExportFolder, progress);
+                StatusMessage = $"Export created: {path}";
+                _loggingService.LogInfo($"Data export created at {path}");
+                System.Windows.MessageBox.Show($"Export saved to:\n{path}", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError(LocalizationManager.Instance["ExportFailed"], ex);
+                StatusMessage = $"Error: {ex.Message}";
+                System.Windows.MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                ImportProgress = 0;
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        // ===== Import =====
+        private async Task ImportAsync()
+        {
+            if (IsBusy) return;
+            if (string.IsNullOrEmpty(ImportFilePath))
+            {
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectImportFileFirst"], "No File", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsBusy = true;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            ImportProgress = 0;
+            StatusMessage = LocalizationManager.Instance["StartingImport"];
+
+            var options = new BackupImportOptions
+            {
+                DryRun = IsDryRun,
+                Conflict = Conflict
+            };
+
+            try
+            {
+                var progress = new Progress<BackupProgress>(OnProgress);
+                var result = await _backupService.ImportDataAsync(ImportFilePath, options, progress);
+                LastImportResult = result;
+
+                if (result.Success)
+                {
+                    var msg = IsDryRun ? "Dry run completed." : "Import completed.";
+                    msg += $"\nInserted: {result.RowsInserted}, Updated: {result.RowsUpdated}, Skipped: {result.RowsSkipped}";
+                    if (result.Conflicts.Count > 0)
+                        msg += $"\nConflicts: {result.Conflicts.Count} (see log)";
+                    StatusMessage = msg;
+                    _loggingService.LogInfo(msg);
+                    System.Windows.MessageBox.Show(msg, IsDryRun ? "Dry Run Result" : "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    StatusMessage = $"Import failed: {result.ErrorMessage}";
+                    _loggingService.LogError($"Import failed: {result.ErrorMessage}");
+                    System.Windows.MessageBox.Show($"Import failed:\n{result.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError(LocalizationManager.Instance["ImportException"], ex);
+                StatusMessage = $"Error: {ex.Message}";
+                System.Windows.MessageBox.Show($"Import error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                ImportProgress = 0;
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        // ===== Drive backups =====
+        private async Task RefreshDriveBackupsAsync()
+        {
+            if (IsRefreshingDriveBackups) return;
+            IsRefreshingDriveBackups = true;
+            try
+            {
+                var driveService = App.GetService<IGoogleDriveService>();
+                IsDriveConnected = await driveService.TestConnectionAsync();
+                if (!IsDriveConnected)
+                {
+                    StatusMessage = LocalizationManager.Instance["GoogleDriveNotConnected"];
+                    return;
+                }
+                var files = await driveService.ListDriveBackupsAsync();
+                DriveBackupFiles = new ObservableCollection<BackupFileInfo>(files);
+                if (DriveBackupFiles.Count > 0)
+                    SelectedDriveBackupFile = DriveBackupFiles[0];
+                StatusMessage = $"Found {DriveBackupFiles.Count} backup files in Google Drive.";
+                _loggingService.LogInfo(StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError(LocalizationManager.Instance["FailedToListDriveBackups"], ex);
+                StatusMessage = $"Error: {ex.Message}";
+                System.Windows.MessageBox.Show($"Error listing Drive backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsRefreshingDriveBackups = false;
+                RestoreSelectedDriveBackupCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        private async Task RestoreSelectedDriveBackupAsync()
+        {
+            if (SelectedDriveBackupFile == null)
+            {
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectDriveBackupToRestore"], "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = System.Windows.MessageBox.Show(
+                $"Restore database from Drive backup '{SelectedDriveBackupFile.FileName}' (created {SelectedDriveBackupFile.CreatedAt:dd/MM/yyyy HH:mm})?\n\n" +
+                "This will:\n1. Create a local backup of the current database.\n2. Download the Drive backup.\n3. Restore the downloaded backup.",
+                "Confirm Restore from Drive",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            StatusMessage = "Step 1: Creating local backup...";
+
+            try
+            {
+                // Step 1: Create local backup in the standard backup folder
+                string backupFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "SKAuto",
+                    "Backups");
+                var localBackupPath = await _backupService.BackupDatabaseAsync(backupFolder);
+                _loggingService.LogInfo($"Local backup created before Drive restore: {localBackupPath}");
+                StatusMessage = $"Local backup saved to: {localBackupPath}";
+
+                // Step 2: Download Drive backup to a temporary folder
+                StatusMessage = LocalizationManager.Instance["StepDownloadingDriveBackup"];
+                var driveService = App.GetService<IGoogleDriveService>();
+                string driveFileId = SelectedDriveBackupFile.FilePath;
+                string downloadedPath = await driveService.DownloadDriveBackupAsync(driveFileId);
+                _loggingService.LogInfo($"Drive backup downloaded to: {downloadedPath}");
+
+                // Step 3: Import the downloaded ZIP
+                StatusMessage = LocalizationManager.Instance["StepImportingBackup"];
+                var options = new BackupImportOptions
+                {
+                    DryRun = IsDryRun,
+                    Conflict = Conflict
+                };
+                var importResult = await _backupService.ImportDataAsync(downloadedPath, options);
+
+                if (importResult.Success)
+                {
+                    StatusMessage = $"Database restored from Drive backup '{SelectedDriveBackupFile.FileName}'.\n" +
+                                    $"Inserted: {importResult.RowsInserted}, Updated: {importResult.RowsUpdated}, Skipped: {importResult.RowsSkipped}";
+                    _loggingService.LogInfo(StatusMessage);
+                    System.Windows.MessageBox.Show($"Restore successful.\n\nLocal backup created before restore:\n{localBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    StatusMessage = $"Restore failed: {importResult.ErrorMessage}";
+                    _loggingService.LogError(StatusMessage);
+                    System.Windows.MessageBox.Show($"Restore failed:\n{importResult.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                // Clean up downloaded file
+                try { File.Delete(downloadedPath); } catch { }
+
+                // Refresh the Drive backup list
+                await RefreshDriveBackupsAsync();
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError(LocalizationManager.Instance["RestoreFromDriveFailed"], ex);
+                StatusMessage = $"Error: {ex.Message}";
+                System.Windows.MessageBox.Show($"Restore from Drive failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                Mouse.OverrideCursor = null;
+                RestoreSelectedDriveBackupCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        partial void OnSelectedDriveBackupFileChanged(BackupFileInfo value)
+        {
+            RestoreSelectedDriveBackupCommand.NotifyCanExecuteChanged();
+        }
+
+        // ===== Folder/File selection =====
         private async Task SelectBackupFolderAsync()
         {
             var dialog = new OpenFolderDialog { Title = "Select backup folder" };
@@ -100,7 +379,7 @@ namespace SKAuto.UI.ViewModels
 
         private async Task SelectImportFileAsync()
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Select import zip file",
                 Filter = "Zip files|*.zip"
@@ -110,95 +389,7 @@ namespace SKAuto.UI.ViewModels
             await Task.CompletedTask;
         }
 
-        private async Task BackupAsync()
-        {
-            try
-            {
-                var path = await _backupService.BackupDatabaseAsync(BackupFolder);
-                StatusMessage = $"Backup created: {path}";
-                _loggingService.LogInfo($"Database backup created at {path}");
-                MessageBox.Show($"Backup saved to:\n{path}", "Backup Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                await RefreshBackupsAsync();
-            }
-            catch (Exception ex)
-            {
-                _loggingService.LogError("Backup failed", ex);
-                StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Backup failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async Task ExportAsync()
-        {
-            try
-            {
-                var path = await _backupService.ExportDataAsync(ExportFolder);
-                StatusMessage = $"Export created: {path}";
-                _loggingService.LogInfo($"Data export created at {path}");
-                MessageBox.Show($"Export saved to:\n{path}", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                _loggingService.LogError("Export failed", ex);
-                StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async Task ImportAsync()
-        {
-            if (string.IsNullOrEmpty(ImportFilePath))
-            {
-                MessageBox.Show("Please select an import file first.", "No File", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var options = new BackupImportOptions
-            {
-                DryRun = IsDryRun,
-                Conflict = Conflict
-            };
-
-            try
-            {
-                var result = await _backupService.ImportDataAsync(ImportFilePath, options);
-                LastImportResult = result;
-
-                if (result.Success)
-                {
-                    var msg = IsDryRun ? "Dry run completed." : "Import completed.";
-                    msg += $"\nInserted: {result.RowsInserted}, Updated: {result.RowsUpdated}, Skipped: {result.RowsSkipped}";
-                    if (result.Conflicts.Count > 0)
-                        msg += $"\nConflicts: {result.Conflicts.Count} (see log)";
-                    StatusMessage = msg;
-                    _loggingService.LogInfo(msg);
-                    MessageBox.Show(msg, IsDryRun ? "Dry Run Result" : "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    StatusMessage = $"Import failed: {result.ErrorMessage}";
-                    _loggingService.LogError($"Import failed: {result.ErrorMessage}");
-                    MessageBox.Show($"Import failed:\n{result.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                _loggingService.LogError("Import exception", ex);
-                StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Import error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void CloseWindow()
-        {
-            foreach (Window w in Application.Current.Windows)
-                if (w.DataContext == this)
-                {
-                    w.Close();
-                    break;
-                }
-        }
-
+        // ===== Local backups =====
         private async Task RefreshBackupsAsync()
         {
             if (IsRefreshingBackups) return;
@@ -214,9 +405,9 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Failed to list backup files", ex);
+                _loggingService.LogError(LocalizationManager.Instance["FailedToListBackupFiles"], ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Error listing backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error listing backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -229,11 +420,11 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedBackupFile == null)
             {
-                MessageBox.Show("Please select a backup file to restore.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectBackupFileToRestore"], "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
                 $"Restore database from backup '{SelectedBackupFile.FileName}' (created {SelectedBackupFile.CreatedAt:dd/MM/yyyy HH:mm})?\n\nThis will replace the current database. A backup of the current database will be created automatically before restore.",
                 "Confirm Restore",
                 MessageBoxButton.YesNo,
@@ -242,24 +433,34 @@ namespace SKAuto.UI.ViewModels
 
             try
             {
-                StatusMessage = "Restoring database...";
+                StatusMessage = LocalizationManager.Instance["RestoringDatabase"];
                 var currentBackupPath = await _backupService.RestoreDatabaseAsync(SelectedBackupFile.FilePath);
                 StatusMessage = $"Database restored from {SelectedBackupFile.FileName}. Previous database backed up to {currentBackupPath}";
                 _loggingService.LogInfo(StatusMessage);
-                MessageBox.Show($"Restore successful.\n\nCurrent database before restore was backed up to:\n{currentBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Restore successful.\n\nCurrent database before restore was backed up to:\n{currentBackupPath}", "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
                 await RefreshBackupsAsync();
             }
             catch (Exception ex)
             {
-                _loggingService.LogError("Restore failed", ex);
+                _loggingService.LogError(LocalizationManager.Instance["RestoreFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Restore failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Restore failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         partial void OnSelectedBackupFileChanged(BackupFileInfo value)
         {
             RestoreSelectedBackupCommand.NotifyCanExecuteChanged();
+        }
+
+        private void CloseWindow()
+        {
+            foreach (Window w in System.Windows.Application.Current.Windows)
+                if (w.DataContext == this)
+                {
+                    w.Close();
+                    break;
+                }
         }
     }
 }

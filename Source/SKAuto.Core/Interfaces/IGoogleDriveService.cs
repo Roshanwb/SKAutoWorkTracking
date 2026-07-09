@@ -1,4 +1,5 @@
 ﻿using SKAuto.Core.DTOs;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SKAuto.Core.Interfaces
@@ -14,5 +15,11 @@ namespace SKAuto.Core.Interfaces
         void SetLastSync(DateTime time);
         Task<bool> TestFolderAccessAsync(string folderId);
         Task<string> UploadFileAsync(string localPath, string remoteFileName = null, string folderId = null);
+
+        // NEW: List backup files from Google Drive
+        Task<List<BackupFileInfo>> ListDriveBackupsAsync();
+
+        // NEW: Download a backup file from Drive to local path (returns local path)
+        Task<string> DownloadDriveBackupAsync(string fileId);
     }
 }

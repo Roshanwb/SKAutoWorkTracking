@@ -16,6 +16,8 @@ namespace SKAuto.Import.Parsers
         public List<ImportWorkOrderDto> Parse(string filePath)
         {
             var results = new List<ImportWorkOrderDto>();
+            var diagnosticPath = Path.Combine(Path.GetTempPath(), "SKAuto_CsvParser_Diagnostics.txt");
+            File.WriteAllText(diagnosticPath, $"CsvImportParser started at {DateTime.Now}\n");
 
             using var parser = new TextFieldParser(filePath, Encoding.Default);
             parser.TextFieldType = FieldType.Delimited;
@@ -39,7 +41,7 @@ namespace SKAuto.Import.Parsers
             int modeleCol = FindColumn(headerList, new[] { "Modèle"}); // first choice
             //int marqueCol = FindColumn(headerList, new[] { "Marque" });           // fallback for model
             int finPrepCol = FindColumn(headerList, new[] { "Fin prép.", "Fin prep.", "Fin", "Date fin" });
-            int livreurCol = FindColumn(headerList, new[] { "Livreur"});
+            int etatCol = FindColumn(headerList, new[] { "Etat" });
 
             // Use modeleCol if found, otherwise use marqueCol
             int modelCol = modeleCol != -1 ? modeleCol : 4;
@@ -73,7 +75,7 @@ namespace SKAuto.Import.Parsers
                 string client = SafeGet(fields, clientCol);
                 string model = SafeGet(fields, modelCol);
                 string finPrepStr = SafeGet(fields, finPrepCol);
-                string livreur = SafeGet(fields, livreurCol);
+                string etat = SafeGet(fields, etatCol);
 
                 if (string.IsNullOrWhiteSpace(finPrepStr))
                 {
@@ -107,7 +109,8 @@ namespace SKAuto.Import.Parsers
                     ClientName = client,
                     OrderDate = hasDate ? orderDate : DateTime.MinValue,
                     HasDate = hasDate,
-                    Source = "CSV"
+                    Source = "CSV",
+                    Etat = etat
                 });
                 imported++;
             }
@@ -116,6 +119,7 @@ namespace SKAuto.Import.Parsers
             {
                 Debug.WriteLine($"CSV Parse: Total={totalRows}, NoVIN={skippedNoVin}, NoDate={skippedNoDate}, DateParseFail={skippedDateParse}");
             }
+            File.AppendAllText(diagnosticPath, $"Parser finished. Results count: {results.Count}\n");
 
             return results;
         }

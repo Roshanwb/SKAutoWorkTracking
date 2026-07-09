@@ -1,13 +1,19 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+#pragma warning disable CS0618 // CreatedTime is obsolete but still works
 
 namespace SKAuto.Core.Services
 {
@@ -78,11 +84,13 @@ namespace SKAuto.Core.Services
         public async Task<string> UploadFileAsync(string localPath, string remoteFileName = null)
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+            // Always use the correct folder ID
+            string folderId = await GetFolderIdAsync("SKAuto Backups");
 
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
                 Name = remoteFileName ?? Path.GetFileName(localPath),
-                Parents = new[] { _settings.FolderId } // upload to specified folder
+                Parents = new[] { folderId }
             };
 
             using (var stream = new FileStream(localPath, FileMode.Open))
@@ -103,19 +111,20 @@ namespace SKAuto.Core.Services
                 }
                 catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    throw new Exception($"The folder with ID '{_settings.FolderId}' was not found. Please check the folder ID and try again.", ex);
+                    throw new Exception($"The folder 'SKAuto Backups' was not found.", ex);
                 }
             }
         }
+
         public async Task<bool> TestFolderAccessAsync(string folderId)
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+            folderId = ExtractFolderId(folderId);
             try
             {
                 var request = _driveService.Files.Get(folderId);
                 request.Fields = "id, name, mimeType";
                 var file = await request.ExecuteAsync();
-                // If it's a folder, mimeType should be application/vnd.google-apps.folder
                 return file.MimeType == "application/vnd.google-apps.folder";
             }
             catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
@@ -123,6 +132,7 @@ namespace SKAuto.Core.Services
                 return false;
             }
         }
+
         public async Task<bool> DownloadFileAsync(string fileId, string localPath)
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
@@ -134,6 +144,7 @@ namespace SKAuto.Core.Services
             }
             return true;
         }
+
         public Task<DateTime?> GetLastSyncAsync()
         {
             return Task.FromResult(_settings?.LastSync);
@@ -161,13 +172,17 @@ namespace SKAuto.Core.Services
         public async Task<string> UploadFileAsync(string localPath, string remoteFileName = null, string folderId = null)
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+            // If folderId is provided, use it; otherwise use the default folder
+            string targetFolderId = folderId;
+            if (string.IsNullOrEmpty(targetFolderId))
+                targetFolderId = await GetFolderIdAsync("SKAuto Backups");
 
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
                 Name = remoteFileName ?? Path.GetFileName(localPath)
             };
-            if (!string.IsNullOrEmpty(folderId))
-                fileMetadata.Parents = new[] { folderId };
+            if (!string.IsNullOrEmpty(targetFolderId))
+                fileMetadata.Parents = new[] { targetFolderId };
 
             using (var stream = new FileStream(localPath, FileMode.Open))
             {
@@ -194,8 +209,10 @@ namespace SKAuto.Core.Services
             request.Q = $"mimeType='application/vnd.google-apps.folder' and name='{folderName}' and trashed=false";
             request.Fields = "files(id, name)";
             var result = await request.ExecuteAsync();
-            if (result.Files.Any())
-                return result.Files.First().Id;
+
+            var folder = result.Files.FirstOrDefault();
+            if (folder != null)
+                return folder.Id;
 
             // Create folder if not found
             var folderMetadata = new Google.Apis.Drive.v3.Data.File()
@@ -205,8 +222,103 @@ namespace SKAuto.Core.Services
             };
             var createRequest = _driveService.Files.Create(folderMetadata);
             createRequest.Fields = "id";
-            var folder = await createRequest.ExecuteAsync();
-            return folder.Id;
+            var newFolder = await createRequest.ExecuteAsync();
+            return newFolder.Id;
+        }
+
+        // ========== HELPERS ==========
+        private string ExtractFolderId(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+
+            if (!input.Contains("/") && !input.Contains("?") && !input.Contains("&"))
+                return input;
+
+            var match = Regex.Match(input, @"folders/([a-zA-Z0-9-_]+)");
+            if (match.Success)
+                return match.Groups[1].Value;
+
+            match = Regex.Match(input, @"[?&]id=([a-zA-Z0-9-_]+)");
+            if (match.Success)
+                return match.Groups[1].Value;
+
+            return input;
+        }
+
+        // ========== LIST BACKUPS FROM DRIVE ==========
+        public async Task<List<BackupFileInfo>> ListDriveBackupsAsync()
+        {
+            if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+
+            var result = new List<BackupFileInfo>();
+
+            // Always get the correct folder ID
+            string folderId = await GetFolderIdAsync("SKAuto Backups");
+
+            if (string.IsNullOrEmpty(folderId))
+            {
+                _logger.LogWarning("Could not find or create folder 'SKAuto Backups'.");
+                return result;
+            }
+
+            _logger.LogInfo($"Using folder ID: {folderId}");
+
+            // Query files in that folder
+            var request = _driveService.Files.List();
+            request.Q = $"'{folderId}' in parents and trashed=false";
+            request.Fields = "files(id, name, createdTime, size, mimeType)";
+            request.OrderBy = "createdTime desc";
+
+            var files = await request.ExecuteAsync();
+            _logger.LogInfo($"Folder '{folderId}' contains {files.Files.Count} files.");
+
+            var backupFiles = files.Files
+                .Where(f =>
+                    f.MimeType == "application/zip" ||
+                    f.Name?.IndexOf(".zip", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    f.Name?.IndexOf(".db", StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
+
+            _logger.LogInfo($"Found {backupFiles.Count} backup files in folder.");
+
+            foreach (var file in backupFiles)
+            {
+                DateTime createdAt = file.CreatedTime.HasValue ? file.CreatedTime.Value : DateTime.Now;
+                result.Add(new BackupFileInfo
+                {
+                    FilePath = file.Id,
+                    FileName = file.Name,
+                    CreatedAt = createdAt,
+                    SizeInBytes = file.Size ?? 0
+                });
+            }
+            return result;
+        }
+
+        // ========== DOWNLOAD DRIVE BACKUP ==========
+        public async Task<string> DownloadDriveBackupAsync(string fileId)
+        {
+            if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+
+            // Get file name
+            var getRequest = _driveService.Files.Get(fileId);
+            getRequest.Fields = "name";
+            var fileMeta = await getRequest.ExecuteAsync();
+            string fileName = fileMeta.Name ?? "backup.zip";
+
+            // Use a temporary folder (not Documents)
+            string tempDir = Path.Combine(Path.GetTempPath(), "SKAuto_Restore");
+            Directory.CreateDirectory(tempDir);
+            string localPath = Path.Combine(tempDir, fileName);
+
+            var downloadRequest = _driveService.Files.Get(fileId);
+            using (var stream = new FileStream(localPath, FileMode.Create))
+            {
+                await downloadRequest.DownloadAsync(stream);
+            }
+            return localPath;
         }
     }
 }
+
+#pragma warning restore CS0618

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class PriceUpdateViewModel : ObservableObject
@@ -48,7 +49,7 @@ namespace SKAuto.UI.ViewModels
             UpdateCommand = new AsyncRelayCommand(UpdatePricesAsync, CanUpdate);
             CloseCommand = new RelayCommand(() => CloseWindow(false));
 
-            // Load accessories asynchronously; the command will be re‑evaluated when SelectedAccessory changes
+            // Load accessories asynchronously; the command will be re-evaluated when SelectedAccessory changes
             _ = LoadAccessoriesAsync();
         }
 
@@ -63,7 +64,7 @@ namespace SKAuto.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to load accessories for bulk price update", ex);
+                _logger.LogError(LocalizationManager.Instance["FailedToLoadAccessoriesForBulkPriceUpdate"], ex);
                 StatusMessage = $"Error loading accessories: {ex.Message}";
             }
         }
@@ -103,13 +104,13 @@ namespace SKAuto.UI.ViewModels
             decimal newPriceValue = decimal.Parse(NewPrice); // safe because CanUpdate validated it
             if (newPriceValue < 0)
             {
-                StatusMessage = "Price cannot be negative.";
+                StatusMessage = LocalizationManager.Instance["PriceCannotBeNegative"];
                 return;
             }
 
             try
             {
-                StatusMessage = "Updating work order tasks...";
+                StatusMessage = LocalizationManager.Instance["UpdatingWorkOrderTasks"];
                 _logger.LogInfo($"Bulk price update started: Accessory '{SelectedAccessory!.Name}', From {FromDate:yyyy-MM-dd} To {ToDate:yyyy-MM-dd}, New Price {newPriceValue}");
 
                 var tasks = await _unitOfWork.WorkTasks.FindAsync(t =>
@@ -120,7 +121,7 @@ namespace SKAuto.UI.ViewModels
                 var taskList = tasks.ToList();
                 if (!taskList.Any())
                 {
-                    StatusMessage = "No work orders found for the selected accessory and date range.";
+                    StatusMessage = LocalizationManager.Instance["NoWorkOrdersFound"];
                     return;
                 }
 
@@ -152,25 +153,25 @@ namespace SKAuto.UI.ViewModels
                 }
                 await _unitOfWork.CompleteAsync();
 
-                StatusMessage = $"✅ Updated {updatedCount} work order task(s). Accessory default price {(UpdateDefaultPrice ? "updated" : "unchanged")}.";
+                StatusMessage = $"? Updated {updatedCount} work order task(s). Accessory default price {(UpdateDefaultPrice ? "updated" : "unchanged")}.";
                 _logger.LogInfo($"Bulk price update completed: {updatedCount} tasks updated.");
 
-                MessageBox.Show($"Successfully updated {updatedCount} work order tasks.\nAccessory default price {(UpdateDefaultPrice ? "was also updated." : "remains unchanged.")}",
-                                "Update Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Successfully updated {updatedCount} work order tasks.\nAccessory default price {(UpdateDefaultPrice ? "was also updated." : "remains unchanged.")}",
+                                "Update Complete", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 CloseWindow(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Bulk price update failed", ex);
+                _logger.LogError(LocalizationManager.Instance["BulkPriceUpdateFailed"], ex);
                 StatusMessage = $"Error: {ex.Message}";
-                MessageBox.Show($"Failed to update prices: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Failed to update prices: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 CloseWindow(false);
             }
         }
 
         private void CloseWindow(bool? dialogResult = null)
         {
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.DialogResult = dialogResult;

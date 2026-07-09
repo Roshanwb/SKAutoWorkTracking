@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class WorkOrderDetailViewModel : ObservableObject
@@ -127,11 +128,11 @@ namespace SKAuto.UI.ViewModels
         // ========== ADD TRAVEL ==========
         private void AddTravel()
         {
-            _logger.LogInfo("AddTravel called");
+            _logger.LogInfo(LocalizationManager.Instance["AddTravelCalled"]);
             var dialog = new TravelDialog();
-            // ✅ Set the owner to the current MainWindow
-            dialog.Owner = Application.Current.MainWindow;
-            // ✅ Set startup location (already in XAML, but ensure it's set)
+            // ? Set the owner to the current MainWindow
+            dialog.Owner = System.Windows.Application.Current.MainWindow;
+            // ? Set startup location (already in XAML, but ensure it's set)
             dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (dialog.ShowDialog() == true)
             {
@@ -152,13 +153,13 @@ namespace SKAuto.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Failed to add travel", ex);
-                    MessageBox.Show($"Error adding travel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _logger.LogError(LocalizationManager.Instance["FailedToAddTravel"], ex);
+                    System.Windows.MessageBox.Show($"Error adding travel: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
             else
             {
-                _logger.LogInfo("Add travel cancelled by user");
+                _logger.LogInfo(LocalizationManager.Instance["AddTravelCancelledByUser"]);
             }
         }
 
@@ -187,7 +188,7 @@ namespace SKAuto.UI.ViewModels
                     Width = 900,
                     Height = 700,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                    Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
                 };
 
                 if (window.ShowDialog() == true)
@@ -195,7 +196,7 @@ namespace SKAuto.UI.ViewModels
                     // Clear search text so the newly added accessory appears
                     AccessorySearchText = "";
                     // Ensure the refresh happens on the UI thread
-                    await Application.Current.Dispatcher.InvokeAsync(async () =>
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
                     {
                         await RefreshAccessoriesAsync();
                     });
@@ -205,15 +206,15 @@ namespace SKAuto.UI.ViewModels
             {
                 var logger = App.GetService<ILoggingService>();
                 logger?.LogError("Failed to open accessory management", ex);
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
         private async Task RefreshAccessoriesAsync()
         {
-            _logger.LogInfo("Refreshing accessories list");
+            _logger.LogInfo(LocalizationManager.Instance["RefreshingAccessoriesList"]);
             // Run on the UI thread to avoid cross-thread collection issues
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
             {
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
                 AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
@@ -230,7 +231,7 @@ namespace SKAuto.UI.ViewModels
             var editWindow = new VehicleEditWindow();
             var viewModel = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
             editWindow.DataContext = viewModel;
-            editWindow.Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
+            editWindow.Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
 
             if (editWindow.ShowDialog() == true)
             {
@@ -255,7 +256,7 @@ namespace SKAuto.UI.ViewModels
         {
             try
             {
-                _logger.LogInfo("InitializeAsync started");
+                _logger.LogInfo(LocalizationManager.Instance["InitializeAsyncStarted"]);
 
                 var clients = await _unitOfWork.Clients.GetAllAsync();
                 Clients = new ObservableCollection<Client>(clients);
@@ -277,7 +278,7 @@ namespace SKAuto.UI.ViewModels
                     if (WorkOrder == null)
                     {
                         _logger.LogError($"WorkOrder with ID {workOrderId} not found");
-                        MessageBox.Show($"Work order #{workOrderId} not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show($"Work order #{workOrderId} not found.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         CloseWindow();
                         return;
                     }
@@ -303,13 +304,13 @@ namespace SKAuto.UI.ViewModels
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                     Travels = new ObservableCollection<Travel>();
-                    _logger.LogInfo("Created new work order");
+                    _logger.LogInfo(LocalizationManager.Instance["CreatedNewWorkOrder"]);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("InitializeAsync failed", ex);
-                MessageBox.Show($"Error initializing: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _logger.LogError(LocalizationManager.Instance["InitializeAsyncFailed"], ex);
+                System.Windows.MessageBox.Show($"Error initializing: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 CloseWindow();
             }
         }
@@ -333,9 +334,9 @@ namespace SKAuto.UI.ViewModels
                 }
 
                 _logger.LogWarning($"Vehicle with chassis {ChassisSearch} not found");
-                var result = MessageBox.Show($"Vehicle with chassis {ChassisSearch} not found. Create new vehicle?",
-                    "Create Vehicle", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result != MessageBoxResult.Yes) return;
+                var result = System.Windows.MessageBox.Show($"Vehicle with chassis {ChassisSearch} not found. Create new vehicle?",
+                    "Create Vehicle", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+                if (result != System.Windows.MessageBoxResult.Yes) return;
 
                 if (SelectedClient == null)
                 {
@@ -346,8 +347,8 @@ namespace SKAuto.UI.ViewModels
                     }
                     else
                     {
-                        _logger.LogWarning("No client available – cannot create vehicle");
-                        MessageBox.Show("No client exists. Please create a client first using 'Manage Clients'.", "No Client", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        _logger.LogWarning(LocalizationManager.Instance["NoClientAvailableCannotCreateVehicle"]);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["NoClientExists"], "No Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -355,7 +356,7 @@ namespace SKAuto.UI.ViewModels
                 if (SelectedClient.Id <= 0)
                 {
                     _logger.LogError($"Selected client has invalid ID {SelectedClient.Id}");
-                    MessageBox.Show("The selected client is not saved yet. Please save the client first, then try again.", "Invalid Client", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["SelectedClientNotSavedYet"], "Invalid Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     return;
                 }
 
@@ -363,7 +364,7 @@ namespace SKAuto.UI.ViewModels
                 if (existingClient == null)
                 {
                     _logger.LogError($"Client with ID {SelectedClient.Id} does not exist in database.");
-                    MessageBox.Show("The selected client no longer exists. Please refresh clients and try again.", "Client Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["SelectedClientNoLongerExists"], "Client Not Found", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     return;
                 }
 
@@ -387,7 +388,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"Error searching/creating vehicle: {ChassisSearch}", ex);
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -429,7 +430,7 @@ namespace SKAuto.UI.ViewModels
         {
             if (SelectedAccessory == null)
             {
-                _logger.LogWarning("AddTask called with no accessory selected");
+                _logger.LogWarning(LocalizationManager.Instance["AddTaskNoAccessorySelected"]);
                 return;
             }
 
@@ -466,12 +467,12 @@ namespace SKAuto.UI.ViewModels
         {
             try
             {
-                _logger.LogInfo("SaveAsync started");
+                _logger.LogInfo(LocalizationManager.Instance["SaveAsyncStarted"]);
 
                 if (SelectedVehicle == null)
                 {
-                    _logger.LogWarning("Save attempted without a vehicle selected");
-                    MessageBox.Show("Please select a vehicle.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _logger.LogWarning(LocalizationManager.Instance["SaveAttemptedWithoutVehicleSelected"]);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectVehicle"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                     return;
                 }
 
@@ -499,13 +500,13 @@ namespace SKAuto.UI.ViewModels
                 }
 
                 await _unitOfWork.CompleteAsync();
-                _logger.LogInfo("Work order saved successfully");
+                _logger.LogInfo(LocalizationManager.Instance["WorkOrderSavedSuccessfully"]);
                 CloseWindow(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError("SaveAsync failed", ex);
-                MessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _logger.LogError(LocalizationManager.Instance["SaveAsyncFailed"], ex);
+                System.Windows.MessageBox.Show($"Error saving: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -515,9 +516,9 @@ namespace SKAuto.UI.ViewModels
             if (_isNew) return;
 
             _logger.LogInfo($"DeleteAsync called for work order #{WorkOrder.Id}");
-            var result = MessageBox.Show($"Delete work order #{WorkOrder.Id}? This will also delete all associated tasks and travels.",
-                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            var result = System.Windows.MessageBox.Show($"Delete work order #{WorkOrder.Id}? This will also delete all associated tasks and travels.",
+                "Confirm Delete", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+            if (result != System.Windows.MessageBoxResult.Yes) return;
 
             try
             {
@@ -529,7 +530,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"DeleteAsync failed for work order #{WorkOrder.Id}", ex);
-                MessageBox.Show($"Error deleting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error deleting: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -537,7 +538,7 @@ namespace SKAuto.UI.ViewModels
         private void CloseWindow(bool success = false)
         {
             _logger.LogInfo($"Closing window, success={success}");
-            foreach (Window window in Application.Current.Windows)
+            foreach (Window window in System.Windows.Application.Current.Windows)
                 if (window.DataContext == this)
                 {
                     window.DialogResult = success;

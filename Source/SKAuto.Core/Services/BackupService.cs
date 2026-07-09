@@ -29,18 +29,29 @@ namespace SKAuto.Core.Services
             _configService = configService;
         }
 
+        private void ReportProgress(IProgress<BackupProgress>? progress, string operation, int percent)
+        {
+            progress?.Report(new BackupProgress { Operation = operation, Percent = percent });
+        }
+
         // ========== BACKUP (with cleanup) ==========
-        public async Task<string> BackupDatabaseAsync(string backupFolder)
+        public async Task<string> BackupDatabaseAsync(string backupFolder, IProgress<BackupProgress>? progress = null)
         {
             _logger.LogInfo($"BackupDatabaseAsync started. Target folder: {backupFolder}");
+            ReportProgress(progress, "Preparing backup...", 10);
+
             var fileName = $"SKAuto_{DateTime.Now:yyyyMMdd_HHmmss}.db";
             var destPath = Path.Combine(backupFolder, fileName);
             Directory.CreateDirectory(backupFolder);
+
+            ReportProgress(progress, "Copying database file...", 50);
             File.Copy(_dbPath, destPath, true);
             _logger.LogInfo($"Backup created: {destPath}");
 
+            ReportProgress(progress, "Cleaning old backups...", 80);
             await CleanupOldBackupsAsync(backupFolder);
 
+            ReportProgress(progress, "Backup complete!", 100);
             return destPath;
         }
 
@@ -125,28 +136,132 @@ namespace SKAuto.Core.Services
         }
 
         // ========== EXPORT ==========
-        public async Task<string> ExportDataAsync(string exportFolder)
+        public async Task<string> ExportDataAsync(string exportFolder, IProgress<BackupProgress>? progress = null)
         {
             _logger.LogInfo($"ExportDataAsync started. Export folder: {exportFolder}");
+            ReportProgress(progress, "Creating temporary directory...", 5);
+
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var tempDir = Path.Combine(Path.GetTempPath(), $"SKAuto_Export_{timestamp}");
             Directory.CreateDirectory(tempDir);
             _logger.LogInfo($"Temporary directory created: {tempDir}");
 
+            // Clients
+            ReportProgress(progress, "Exporting clients...", 10);
             await ExportTableToCsvAsync(await _unitOfWork.Clients.GetAllAsync(), tempDir, "Clients.csv");
+
+            // Accessories
+            ReportProgress(progress, "Exporting accessories...", 20);
             await ExportTableToCsvAsync(await _unitOfWork.Accessories.GetAllAsync(), tempDir, "Accessories.csv");
-            await ExportTableToCsvAsync(await _unitOfWork.Vehicles.GetAllAsync(), tempDir, "Vehicles.csv");
-            await ExportTableToCsvAsync(await _unitOfWork.WorkOrders.GetAllAsync(), tempDir, "WorkOrders.csv");
-            await ExportTableToCsvAsync(await _unitOfWork.WorkTasks.GetAllAsync(), tempDir, "WorkTasks.csv");
-            await ExportTableToCsvAsync(await _unitOfWork.Travels.GetAllAsync(), tempDir, "Travels.csv");
+
+            // Vehicles (with ClientName)
+            ReportProgress(progress, "Exporting vehicles...", 30);
+            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+            var vehicleData = vehicles.Select(v => new
+            {
+                v.Id,
+                v.ChassisNumber,
+                v.Make,
+                v.Model,
+                v.Year,
+                v.Registration,
+                v.IsActive,
+                v.ClientId,
+                ClientName = v.Client?.Name ?? ""
+            }).ToList();
+            using (var writer = new StreamWriter(Path.Combine(tempDir, "Vehicles.csv"), false, System.Text.Encoding.UTF8))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                await csv.WriteRecordsAsync(vehicleData);
+            }
+            _logger.LogInfo($"Exported {vehicleData.Count} vehicles to Vehicles.csv (with ClientName)");
+
+            // WorkOrders (with VehicleChassis, ISO dates)
+            ReportProgress(progress, "Exporting work orders...", 40);
+            var workOrders = await _unitOfWork.WorkOrders.GetAllAsync();
+            var woData = workOrders.Select(wo => new
+            {
+                wo.Id,
+                OrderDate = wo.OrderDate.ToString("yyyy-MM-dd"),
+                Status = wo.Status.ToString(),
+                OrderType = wo.OrderType.ToString(),
+                CompletedDate = wo.CompletedDate?.ToString("yyyy-MM-dd"),
+                Notes = wo.Notes,
+                TotalAmount = wo.TotalAmount,
+                wo.VehicleId,
+                VehicleChassis = wo.Vehicle?.ChassisNumber ?? ""
+            }).ToList();
+            using (var writer = new StreamWriter(Path.Combine(tempDir, "WorkOrders.csv"), false, System.Text.Encoding.UTF8))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                await csv.WriteRecordsAsync(woData);
+            }
+            _logger.LogInfo($"Exported {woData.Count} work orders to WorkOrders.csv (with VehicleChassis, ISO dates)");
+
+            // WorkTasks (with AccessoryName)
+            ReportProgress(progress, "Exporting work tasks...", 50);
+            var workTasks = await _unitOfWork.WorkTasks.GetAllAsync();
+            var taskData = workTasks.Select(t => new
+            {
+                t.Id,
+                t.Quantity,
+                t.TaskType,
+                t.TaskStatus,
+                t.Price,
+                t.EstimatedMinutes,
+                t.ActualMinutes,
+                t.Notes,
+                t.WorkOrderId,
+                t.AccessoryId,
+                AccessoryName = t.Accessory?.Name ?? ""
+            }).ToList();
+            using (var writer = new StreamWriter(Path.Combine(tempDir, "WorkTasks.csv"), false, System.Text.Encoding.UTF8))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                await csv.WriteRecordsAsync(taskData);
+            }
+            _logger.LogInfo($"Exported {taskData.Count} work tasks to WorkTasks.csv (with AccessoryName)");
+
+            // Travels (ISO dates)
+            ReportProgress(progress, "Exporting travels...", 60);
+            var travels = await _unitOfWork.Travels.GetAllAsync();
+            var travelData = travels.Select(t => new
+            {
+                t.Id,
+                TravelDate = t.TravelDate.ToString("yyyy-MM-dd"),
+                t.Destination,
+                t.DistanceKm,
+                t.TravelCost,
+                t.Notes,
+                t.WorkOrderId
+            }).ToList();
+            using (var writer = new StreamWriter(Path.Combine(tempDir, "Travels.csv"), false, System.Text.Encoding.UTF8))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                await csv.WriteRecordsAsync(travelData);
+            }
+            _logger.LogInfo($"Exported {travelData.Count} travels to Travels.csv (with ISO dates)");
+
+            // ProtectedRates
+            ReportProgress(progress, "Exporting protected rates...", 70);
             await ExportTableToCsvAsync(await _unitOfWork.ProtectedRates.GetAllAsync(), tempDir, "ProtectedRates.csv");
+
+            // Users
+            ReportProgress(progress, "Exporting users...", 80);
             await ExportTableToCsvAsync(await _unitOfWork.Users.GetAllAsync(), tempDir, "Users.csv");
+
+            // SourceDocuments
+            ReportProgress(progress, "Exporting source documents...", 90);
             await ExportTableToCsvAsync(await _unitOfWork.SourceDocuments.GetAllAsync(), tempDir, "SourceDocuments.csv");
 
+            // Zip
+            ReportProgress(progress, "Creating ZIP archive...", 95);
             var zipPath = Path.Combine(exportFolder, $"SKAuto_Export_{timestamp}.zip");
             ZipFile.CreateFromDirectory(tempDir, zipPath);
             _logger.LogInfo($"Export ZIP created: {zipPath}");
             Directory.Delete(tempDir, true);
+
+            ReportProgress(progress, "Export complete!", 100);
             return zipPath;
         }
 
@@ -157,6 +272,77 @@ namespace SKAuto.Core.Services
             await csv.WriteRecordsAsync(records);
             _logger.LogInfo($"Exported {records.Count()} records to {filename}");
         }
+
+        // ========== IMPORT ==========
+        public async Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options, IProgress<BackupProgress>? progress = null)
+        {
+            _logger.LogInfo($"ImportDataAsync started. ZIP: {zipPath}, DryRun: {options.DryRun}, Conflict: {options.Conflict}");
+            var result = new BackupImportResult();
+            ReportProgress(progress, "Extracting ZIP...", 5);
+
+            var extractDir = Path.Combine(Path.GetTempPath(), $"SKAuto_Import_{Guid.NewGuid()}");
+            ZipFile.ExtractToDirectory(zipPath, extractDir);
+            _logger.LogInfo($"Extracted ZIP to {extractDir}");
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                ReportProgress(progress, "Importing clients...", 10);
+                var clients = await ImportClientsAsync(extractDir, options, result);
+
+                ReportProgress(progress, "Importing accessories...", 20);
+                var accessories = await ImportAccessoriesAsync(extractDir, options, result);
+
+                ReportProgress(progress, "Importing vehicles...", 30);
+                var vehicles = await ImportVehiclesAsync(extractDir, options, clients, result);
+
+                ReportProgress(progress, "Importing work orders...", 40);
+                var workOrders = await ImportWorkOrdersAsync(extractDir, options, vehicles, result);
+
+                ReportProgress(progress, "Importing work tasks...", 50);
+                await ImportWorkTasksAsync(extractDir, options, workOrders, accessories, result);
+
+                ReportProgress(progress, "Importing travels...", 60);
+                await ImportTravelsAsync(extractDir, options, workOrders, result);
+
+                ReportProgress(progress, "Importing protected rates...", 70);
+                await ImportProtectedRatesAsync(extractDir, options, accessories, result);
+
+                ReportProgress(progress, "Importing users...", 80);
+                await ImportUsersAsync(extractDir, options, result);
+
+                ReportProgress(progress, "Importing source documents...", 90);
+                await ImportSourceDocumentsAsync(extractDir, options, workOrders, result);
+
+                if (!options.DryRun)
+                {
+                    ReportProgress(progress, "Committing changes...", 95);
+                    await _unitOfWork.CommitTransactionAsync();
+                    _logger.LogInfo($"Import committed: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped.");
+                }
+                else
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _logger.LogInfo($"Dry run completed: {result.RowsInserted} inserts, {result.RowsUpdated} updates, {result.RowsSkipped} skips.");
+                }
+                result.Success = true;
+                ReportProgress(progress, "Import complete!", 100);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                result.Success = false;
+                result.ErrorMessage = ex.Message;
+                _logger.LogError($"Import failed: {ex.Message}", ex);
+            }
+            finally
+            {
+                Directory.Delete(extractDir, true);
+                _logger.LogInfo($"Cleaned up temporary directory {extractDir}");
+            }
+            return result;
+        }
+
 
         // ========== IMPORT ==========
         public async Task<BackupImportResult> ImportDataAsync(string zipPath, BackupImportOptions options)
@@ -205,6 +391,29 @@ namespace SKAuto.Core.Services
                 _logger.LogInfo($"Cleaned up temporary directory {extractDir}");
             }
             return result;
+        }
+
+        // ========== DATE PARSING HELPER ==========
+        private DateTime ParseDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return DateTime.Today;
+
+            // ISO format first
+            if (DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+                return result;
+
+            // Common formats
+            string[] formats = { "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-ddTHH:mm:ss" };
+            if (DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out result))
+                return result;
+
+            // General fallback
+            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out result))
+                return result;
+
+            _logger.LogWarning($"Failed to parse date '{value}', using today.");
+            return DateTime.Today;
         }
 
         // ========== CSV HELPER ==========
@@ -355,7 +564,7 @@ namespace SKAuto.Core.Services
             return imported;
         }
 
-        // ========== VEHICLES ==========
+        // ========== VEHICLES (using ClientName) ==========
         private async Task<Dictionary<string, Vehicle>> ImportVehiclesAsync(string folder, BackupImportOptions options,
             Dictionary<string, Client> clients, BackupImportResult result)
         {
@@ -371,9 +580,14 @@ namespace SKAuto.Core.Services
             foreach (var row in rows)
             {
                 var chassis = row.GetValueOrDefault("ChassisNumber")?.Trim();
-                if (string.IsNullOrEmpty(chassis)) continue;
+                if (string.IsNullOrEmpty(chassis))
+                {
+                    result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = "Missing chassis" });
+                    result.RowsSkipped++;
+                    continue;
+                }
 
-                var clientName = row.GetValueOrDefault("Client")?.Trim();
+                var clientName = row.GetValueOrDefault("ClientName")?.Trim();
                 if (string.IsNullOrEmpty(clientName))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = "Missing client name" });
@@ -381,6 +595,7 @@ namespace SKAuto.Core.Services
                     _logger.LogWarning($"Skipped vehicle {chassis}: missing client name");
                     continue;
                 }
+
                 if (!clients.TryGetValue(clientName, out var client))
                 {
                     result.Conflicts.Add(new Conflict { Table = "Vehicles", Key = chassis, ImportedValue = $"Client '{clientName}' not found" });
@@ -423,14 +638,14 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[chassis] = newVehicle;
                     existingDict[chassis] = newVehicle;
-                    _logger.LogInfo($"Inserted new vehicle: {chassis}");
+                    _logger.LogInfo($"Inserted new vehicle: {chassis} for client {client.Name}");
                 }
             }
             _logger.LogInfo($"ImportVehiclesAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
             return imported;
         }
 
-        // ========== WORK ORDERS ==========
+        // ========== WORK ORDERS (using VehicleChassis, ParseDate) ==========
         private async Task<Dictionary<int, WorkOrder>> ImportWorkOrdersAsync(string folder, BackupImportOptions options,
             Dictionary<string, Vehicle> vehicles, BackupImportResult result)
         {
@@ -446,7 +661,7 @@ namespace SKAuto.Core.Services
             foreach (var row in rows)
             {
                 var id = int.TryParse(row.GetValueOrDefault("Id"), out var i) ? i : 0;
-                var chassis = row.GetValueOrDefault("Vehicle")?.Trim();
+                var chassis = row.GetValueOrDefault("VehicleChassis")?.Trim();
                 if (string.IsNullOrEmpty(chassis))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = "Missing vehicle chassis" });
@@ -454,6 +669,7 @@ namespace SKAuto.Core.Services
                     _logger.LogWarning($"Skipped work order ID {id}: missing vehicle chassis");
                     continue;
                 }
+
                 if (!vehicles.TryGetValue(chassis, out var vehicle))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ImportedValue = $"Vehicle '{chassis}' not found" });
@@ -467,10 +683,11 @@ namespace SKAuto.Core.Services
                     result.Conflicts.Add(new Conflict { Table = "WorkOrders", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
                     if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        existing.OrderDate = DateTime.TryParse(row.GetValueOrDefault("OrderDate"), out var d) ? d : DateTime.Today;
+                        existing.OrderDate = ParseDate(row.GetValueOrDefault("OrderDate"));
                         existing.Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned;
                         existing.OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract;
-                        existing.CompletedDate = DateTime.TryParse(row.GetValueOrDefault("CompletedDate"), out var cd) ? cd : (DateTime?)null;
+                        var completedDateStr = row.GetValueOrDefault("CompletedDate");
+                        existing.CompletedDate = string.IsNullOrEmpty(completedDateStr) ? (DateTime?)null : ParseDate(completedDateStr);
                         existing.Notes = row.GetValueOrDefault("Notes");
                         existing.VehicleId = vehicle.Id;
                         existing.TotalAmount = decimal.TryParse(row.GetValueOrDefault("TotalAmount"), out var ta) ? ta : (decimal?)null;
@@ -486,10 +703,10 @@ namespace SKAuto.Core.Services
                     var newOrder = new WorkOrder
                     {
                         Id = id,
-                        OrderDate = DateTime.TryParse(row.GetValueOrDefault("OrderDate"), out var d) ? d : DateTime.Today,
+                        OrderDate = ParseDate(row.GetValueOrDefault("OrderDate")),
                         Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned,
                         OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract,
-                        CompletedDate = DateTime.TryParse(row.GetValueOrDefault("CompletedDate"), out var cd) ? cd : (DateTime?)null,
+                        CompletedDate = string.IsNullOrEmpty(row.GetValueOrDefault("CompletedDate")) ? (DateTime?)null : ParseDate(row.GetValueOrDefault("CompletedDate")),
                         Notes = row.GetValueOrDefault("Notes"),
                         VehicleId = vehicle.Id,
                         TotalAmount = decimal.TryParse(row.GetValueOrDefault("TotalAmount"), out var ta) ? ta : (decimal?)null
@@ -498,14 +715,14 @@ namespace SKAuto.Core.Services
                     result.RowsInserted++;
                     imported[newOrder.Id] = newOrder;
                     existingDict[newOrder.Id] = newOrder;
-                    _logger.LogInfo($"Inserted new work order ID {id}");
+                    _logger.LogInfo($"Inserted new work order ID {id} for vehicle {chassis}");
                 }
             }
             _logger.LogInfo($"ImportWorkOrdersAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
             return imported;
         }
 
-        // ========== WORK TASKS ==========
+        // ========== WORK TASKS (using AccessoryName) ==========
         private async Task ImportWorkTasksAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, Dictionary<string, Accessory> accessories, BackupImportResult result)
         {
@@ -529,7 +746,7 @@ namespace SKAuto.Core.Services
                     continue;
                 }
 
-                var accessoryName = row.GetValueOrDefault("Accessory")?.Trim();
+                var accessoryName = row.GetValueOrDefault("AccessoryName")?.Trim();
                 if (string.IsNullOrEmpty(accessoryName))
                 {
                     result.Conflicts.Add(new Conflict { Table = "WorkTasks", Key = id.ToString(), ImportedValue = "Missing accessory name" });
@@ -589,7 +806,7 @@ namespace SKAuto.Core.Services
             _logger.LogInfo($"ImportWorkTasksAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
         }
 
-        // ========== TRAVELS ==========
+        // ========== TRAVELS (using ParseDate) ==========
         private async Task ImportTravelsAsync(string folder, BackupImportOptions options,
             Dictionary<int, WorkOrder> workOrders, BackupImportResult result)
         {
@@ -618,7 +835,7 @@ namespace SKAuto.Core.Services
                     result.Conflicts.Add(new Conflict { Table = "Travels", Key = id.ToString(), ExistingValue = existing.Id.ToString(), ImportedValue = id.ToString() });
                     if (options.Conflict == ConflictResolution.Overwrite)
                     {
-                        existing.TravelDate = DateTime.TryParse(row.GetValueOrDefault("TravelDate"), out var d) ? d : DateTime.Today;
+                        existing.TravelDate = ParseDate(row.GetValueOrDefault("TravelDate"));
                         existing.Destination = row.GetValueOrDefault("Destination");
                         existing.DistanceKm = decimal.TryParse(row.GetValueOrDefault("DistanceKm"), out var km) ? km : (decimal?)null;
                         existing.TravelCost = decimal.TryParse(row.GetValueOrDefault("TravelCost"), out var cost) ? cost : (decimal?)null;
@@ -635,7 +852,7 @@ namespace SKAuto.Core.Services
                     var newTravel = new Travel
                     {
                         Id = id,
-                        TravelDate = DateTime.TryParse(row.GetValueOrDefault("TravelDate"), out var d) ? d : DateTime.Today,
+                        TravelDate = ParseDate(row.GetValueOrDefault("TravelDate")),
                         Destination = row.GetValueOrDefault("Destination"),
                         DistanceKm = decimal.TryParse(row.GetValueOrDefault("DistanceKm"), out var km) ? km : (decimal?)null,
                         TravelCost = decimal.TryParse(row.GetValueOrDefault("TravelCost"), out var cost) ? cost : (decimal?)null,

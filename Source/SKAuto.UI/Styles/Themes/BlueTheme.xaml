@@ -1,0 +1,125 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ===== BASE BACKGROUNDS ===== -->
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#E8EEF4"/>
+
+    <!-- ===== FOREGROUNDS ===== -->
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#1A365D"/>
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#2C5282"/>
+    <SolidColorBrush x:Key="HeaderForegroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#A0AEC0"/>
+    <SolidColorBrush x:Key="PlaceholderForegroundBrush" Color="#718096"/>
+
+    <!-- ===== ACCENTS ===== -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#2B6CB0"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#38A169"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#D69E2E"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#E53E3E"/>
+
+    <!-- ===== BORDERS ===== -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#CBD5E0"/>
+    <SolidColorBrush x:Key="LightBorderBrush" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="DarkBorderBrush" Color="#A0AEC0"/>
+
+    <!-- ===== CARDS ===== -->
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#CBD5E0"/>
+    <CornerRadius x:Key="CardCornerRadius">4</CornerRadius>
+    <Thickness x:Key="CardPadding">12</Thickness>
+    <Thickness x:Key="CardMargin">0,0,0,12</Thickness>
+
+    <!-- ===== BUTTONS ===== -->
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#3182CE"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHoverBackground" Color="#2B6CB0"/>
+    <SolidColorBrush x:Key="ButtonPrimaryPressedBackground" Color="#2C5282"/>
+
+    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#38A169"/>
+    <SolidColorBrush x:Key="ButtonSuccessHoverBackground" Color="#2F855A"/>
+
+    <SolidColorBrush x:Key="ButtonWarningBackground" Color="#D69E2E"/>
+    <SolidColorBrush x:Key="ButtonWarningHoverBackground" Color="#B7791F"/>
+
+    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#E53E3E"/>
+    <SolidColorBrush x:Key="ButtonDangerHoverBackground" Color="#C53030"/>
+
+    <SolidColorBrush x:Key="ButtonSecondaryBackground" Color="#718096"/>
+    <SolidColorBrush x:Key="ButtonSecondaryHoverBackground" Color="#5A6A7E"/>
+
+    <SolidColorBrush x:Key="ButtonDisabledBackground" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="ButtonDisabledForeground" Color="#A0AEC0"/>
+
+    <!-- ===== DATA GRID ===== -->
+    <SolidColorBrush x:Key="DataGridHeaderBackground" Color="#2C3E50"/>
+    <SolidColorBrush x:Key="DataGridHeaderForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="DataGridHeaderBorderBrush" Color="#1A252F"/>
+    <SolidColorBrush x:Key="DataGridRowBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="DataGridAlternatingRowBackground" Color="#E8F0FE"/>
+    <SolidColorBrush x:Key="DataGridSelectedRowBackground" Color="#B2D4FF"/>
+    <SolidColorBrush x:Key="DataGridSelectedRowForeground" Color="#1A365D"/>
+    <SolidColorBrush x:Key="DataGridRowBorderBrush" Color="#CBD5E0"/>
+
+    <!-- ===== MENU ===== -->
+    <SolidColorBrush x:Key="MenuBackground" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="MenuBorderBrush" Color="#CBD5E0"/>
+    <SolidColorBrush x:Key="MenuItemBackground" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="MenuItemHoverBackground" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="MenuItemPressedBackground" Color="#CBD5E0"/>
+    <SolidColorBrush x:Key="MenuItemForeground" Color="#1A365D"/>
+
+    <!-- ===== TOOLBAR ===== -->
+    <SolidColorBrush x:Key="ToolbarBackground" Color="#2C3E50"/>
+    <SolidColorBrush x:Key="ToolbarForeground" Color="#FFFFFF"/>
+
+    <!-- ===== INPUTS ===== -->
+    <SolidColorBrush x:Key="InputBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="InputForeground" Color="#1A365D"/>
+    <SolidColorBrush x:Key="InputBorderBrush" Color="#CBD5E0"/>
+    <SolidColorBrush x:Key="InputFocusedBorderBrush" Color="#3182CE"/>
+
+    <!-- ===== EXPANDER ===== -->
+    <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="ExpanderHeaderForeground" Color="#1A365D"/>
+
+    <!-- ===== GROUP BOX ===== -->
+    <SolidColorBrush x:Key="GroupBoxBorderBrush" Color="#CBD5E0"/>
+
+    <!-- ===== TAB CONTROL ===== -->
+    <SolidColorBrush x:Key="TabControlBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TabItemBackground" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="TabItemSelectedBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TabItemForeground" Color="#1A365D"/>
+    <SolidColorBrush x:Key="TabItemBorderBrush" Color="#CBD5E0"/>
+
+    <!-- ===== SCROLL BAR ===== -->
+    <SolidColorBrush x:Key="ScrollBarBackground" Color="#EDF2F7"/>
+    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#A0AEC0"/>
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBackground" Color="#718096"/>
+
+    <!-- ===== TOOLTIP ===== -->
+    <SolidColorBrush x:Key="ToolTipBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ToolTipForeground" Color="#1A365D"/>
+    <SolidColorBrush x:Key="ToolTipBorderBrush" Color="#CBD5E0"/>
+
+    <!-- ===== HYPERLINK ===== -->
+    <SolidColorBrush x:Key="HyperlinkForeground" Color="#3182CE"/>
+    <SolidColorBrush x:Key="HyperlinkHoverForeground" Color="#2B6CB0"/>
+
+    <!-- ===== STATUS BAR ===== -->
+    <SolidColorBrush x:Key="StatusBarBackground" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="StatusBarForeground" Color="#718096"/>
+    <SolidColorBrush x:Key="StatusBarBorderBrush" Color="#CBD5E0"/>
+
+    <!-- ===== FONTS ===== -->
+    <FontFamily x:Key="DefaultFontFamily">Segoe UI, Verdana, Arial</FontFamily>
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI, Verdana, Arial</FontFamily>
+    <FontFamily x:Key="TitleFontFamily">Segoe UI, Verdana, Arial</FontFamily>
+
+    <sys:Double x:Key="HeaderFontSize">14</sys:Double>
+    <sys:Double x:Key="NormalFontSize">12</sys:Double>
+    <sys:Double x:Key="SmallFontSize">10</sys:Double>
+    <sys:Double x:Key="TitleFontSize">18</sys:Double>
+</ResourceDictionary>

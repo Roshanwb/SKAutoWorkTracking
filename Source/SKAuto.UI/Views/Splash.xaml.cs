@@ -71,7 +71,7 @@ namespace SKAuto.UI.Views
                 else System.Diagnostics.Debug.WriteLine($"Splash error: {ex}");
 
                 // Show error and close without launching main window
-                MessageBox.Show($"Initialization error: {ex.Message}\n\nCheck log for details.", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Initialization error: {ex.Message}\n\nCheck log for details.", "Startup Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 Close();
                 // Do not call _onComplete
             }

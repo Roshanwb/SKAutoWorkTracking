@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
@@ -10,6 +10,7 @@ using SKAuto.Export.Excel;
 using SKAuto.Export.Pdf;
 using SKAuto.Import.Parsers;
 using SKAuto.Import.Validators;
+using SKAuto.UI.Localization;
 using SKAuto.UI.ViewModels;
 using SKAuto.UI.Views;
 using System;
@@ -20,12 +21,12 @@ using System.Windows;
 
 namespace SKAuto.UI
 {
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         private readonly IHost _host;
         private ILoggingService _logger;
+        private AppConfig _currentAppConfig; // ADDED: to store config for later use
 
-        // ✅ Make setter public so LoginViewModel can set it
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
 
@@ -53,6 +54,7 @@ namespace SKAuto.UI
                     services.AddScoped<IEODValidationService, EODValidationService>();
                     services.AddSingleton<ILoggingService, LoggingService>();
                     services.AddSingleton<IConfigurationService, JsonConfigurationService>();
+                    services.AddSingleton<IEmailService, SmtpEmailService>();
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
@@ -64,7 +66,7 @@ namespace SKAuto.UI
 
             await _host.StartAsync();
             _logger = _host.Services.GetRequiredService<ILoggingService>();
-            _logger.LogInfo("Application starting...");
+            _logger.LogInfo(LocalizationManager.Instance["ApplicationStarting"]);
 
             var splash = new Splash(
                 loadResources: () =>
@@ -73,7 +75,7 @@ namespace SKAuto.UI
                     {
                         var initializer = _host.Services.GetRequiredService<DatabaseInitializer>();
                         initializer.InitializeAsync().GetAwaiter().GetResult();
-                        _logger.LogInfo("Database initialized.");
+                        _logger.LogInfo(LocalizationManager.Instance["DatabaseInitialized"]);
 
                         var configService = _host.Services.GetRequiredService<IConfigurationService>();
                         var appConfig = configService.GetAsync<AppConfig>("AppConfig").GetAwaiter().GetResult();
@@ -81,8 +83,9 @@ namespace SKAuto.UI
                         {
                             appConfig = new AppConfig();
                             configService.SetAsync("AppConfig", appConfig).GetAwaiter().GetResult();
-                            _logger.LogInfo("Created default configuration.");
+                            _logger.LogInfo(LocalizationManager.Instance["CreatedDefaultConfiguration"]);
                         }
+                        _currentAppConfig = appConfig; // STORE IT
                         CurrentConfig = appConfig;
 
                         string fixedLanguage = appConfig.Language;
@@ -98,18 +101,42 @@ namespace SKAuto.UI
                             var culture = new CultureInfo(fixedLanguage);
                             CultureInfo.DefaultThreadCurrentCulture = culture;
                             CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            LocalizationManager.Instance.CurrentCulture = culture;
                             _logger.LogInfo($"Culture set to {fixedLanguage}");
                         }
                         catch
                         {
+                            // fallback
+                            var culture = new CultureInfo("fr-FR");
+                            CultureInfo.DefaultThreadCurrentCulture = culture;
+                            CultureInfo.DefaultThreadCurrentUICulture = culture;
+                            LocalizationManager.Instance.CurrentCulture = culture;
                             _logger.LogWarning($"Invalid culture, falling back to fr-FR");
-                            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
-                            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
                         }
+
+                        // ---- GOOGLE DRIVE AUTO-AUTH ----
+                        try
+                        {
+                            var driveSettings = configService.GetAsync<GoogleDriveSettings>("GoogleDrive").GetAwaiter().GetResult();
+                            if (driveSettings != null && !string.IsNullOrEmpty(driveSettings.ClientId) && !string.IsNullOrEmpty(driveSettings.ClientSecret))
+                            {
+                                var driveService = _host.Services.GetRequiredService<IGoogleDriveService>();
+                                bool authenticated = driveService.AuthenticateAsync(driveSettings).GetAwaiter().GetResult();
+                                if (authenticated)
+                                    _logger.LogInfo(LocalizationManager.Instance["GoogleDriveAutoAuthenticatedSuccessfully"]);
+                                else
+                                    _logger.LogWarning(LocalizationManager.Instance["GoogleDriveAutoAuthenticationFailed"]);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning($"Google Drive auto-authentication error: {ex.Message}");
+                        }
+                        // ---- END AUTO-AUTH ----
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Resource loading failed", ex);
+                        _logger.LogError(LocalizationManager.Instance["ResourceLoadingFailed"], ex);
                         throw;
                     }
                 },
@@ -117,7 +144,7 @@ namespace SKAuto.UI
                 {
                     try
                     {
-                        // ---- SHOW LOGIN ----
+                        // Show login
                         User loggedInUser = null;
                         using (var scope = _host.Services.CreateScope())
                         {
@@ -127,14 +154,20 @@ namespace SKAuto.UI
                             var loginView = new LoginView(loginVM);
                             if (loginView.ShowDialog() != true)
                             {
-                                _logger.LogInfo("Login cancelled or failed. Exiting.");
+                                _logger.LogInfo(LocalizationManager.Instance["LoginCancelledOrFailed"]);
                                 Shutdown();
                                 return;
                             }
                             loggedInUser = App.CurrentUser;
                         }
 
-                        // ---- GET MAIN VIEW MODEL AND SET USER ----
+                        // ---- APPLY THEME HERE (after login, before showing main window) ----
+                        if (_currentAppConfig != null)
+                        {
+                            ApplicationThemeManager.ApplyTheme(_currentAppConfig.Theme ?? "Light");
+                            _logger.LogInfo($"Applied theme: {_currentAppConfig.Theme ?? "Light"}");
+                        }
+
                         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
                         if (mainWindow.DataContext is MainViewModel mainVM)
                         {
@@ -145,14 +178,13 @@ namespace SKAuto.UI
                         mainWindow.Show();
                         mainWindow.Activate();
                         mainWindow.Focus();
-                        _logger.LogInfo("Main window shown and activated.");
-                        Application.Current.MainWindow.WindowState = WindowState.Maximized;
-                        mainWindow.Title = $"SKAuto - {loggedInUser.Username} ({loggedInUser.Role})";
+                        _logger.LogInfo(LocalizationManager.Instance["MainWindowShownAndActivated"]);
+                        System.Windows.Application.Current.MainWindow.WindowState = WindowState.Maximized;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Failed to show main window", ex);
-                        MessageBox.Show($"Fatal error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _logger.LogError(LocalizationManager.Instance["FailedToShowMainWindow"], ex);
+                        System.Windows.MessageBox.Show($"Fatal error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         Environment.Exit(1);
                     }
                 },
@@ -167,19 +199,26 @@ namespace SKAuto.UI
         {
             _logger?.LogInfo("Application exiting.");
 
-            try
+            if (App.CurrentUser != null)
             {
-                var backupService = _host.Services.GetRequiredService<IBackupService>();
-                var backupFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "SKAuto",
-                    "Backups");
-                var backupPath = await backupService.BackupDatabaseAsync(backupFolder);
-                _logger.LogInfo($"Automatic backup created on exit: {backupPath}");
+                try
+                {
+                    var backupService = _host.Services.GetRequiredService<IBackupService>();
+                    var backupFolder = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "SKAuto",
+                        "Backups");
+                    var backupPath = await backupService.BackupDatabaseAsync(backupFolder);
+                    _logger.LogInfo($"Automatic backup created on exit: {backupPath}");
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError("Automatic backup failed on exit", ex);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                _logger?.LogError("Automatic backup failed on exit", ex);
+                _logger?.LogInfo("No user logged in � skipping backup on exit.");
             }
 
             await _host.StopAsync();

@@ -1,15 +1,15 @@
-﻿<Window x:Class="SKAuto.UI.Views.ReportsView"
+<Window x:Class="SKAuto.UI.Views.ReportsView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:SKAuto.UI.ViewModels"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
+        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         mc:Ignorable="d"
-        Title="Reports" Height="600" Width="750"
+        Title="{loc:Translate Reports_Title}"
+        Height="600" Width="750"
         WindowStartupLocation="CenterOwner"
         Background="#f5f5f5">
-
     <Window.Resources>
         <converters:NullableEnumToStringConverter x:Key="NullableEnumToStringConverter"/>
         <converters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
@@ -47,16 +47,16 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <TextBlock Grid.Row="0" Text="Generate Reports" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Grid.Row="0" Text="{loc:Translate ReportsView_GenerateReports}" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
 
         <!-- Report Type Card -->
         <Border Grid.Row="1" Style="{StaticResource CardBorder}">
             <StackPanel>
-                <TextBlock Text="Report Type" Style="{StaticResource SectionHeader}"/>
-                <RadioButton Content="Work Orders" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=WorkOrders}" Margin="5,0,0,5"/>
-                <RadioButton Content="Tasks" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Tasks}" Margin="5,0,0,5"/>
-                <RadioButton Content="Clients" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Clients}" Margin="5,0,0,5"/>
-                <RadioButton Content="Vehicles" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Vehicles}" Margin="5,0,0,0"/>
+                <TextBlock Text="{loc:Translate ReportsView_ReportType}" Style="{StaticResource SectionHeader}"/>
+                <RadioButton Content="{loc:Translate ReportsView_WorkOrders}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=WorkOrders}" Margin="5,0,0,5"/>
+                <RadioButton Content="{loc:Translate ReportsView_Tasks}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Tasks}" Margin="5,0,0,5"/>
+                <RadioButton Content="{loc:Translate ImportView_Clients}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Clients}" Margin="5,0,0,5"/>
+                <RadioButton Content="{loc:Translate ReportsView_Vehicles}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Vehicles}" Margin="5,0,0,0"/>
             </StackPanel>
         </Border>
 
@@ -64,7 +64,7 @@
         <Border Grid.Row="2" Style="{StaticResource CardBorder}"
                 Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}">
             <StackPanel>
-                <TextBlock Text="Date Range" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="{loc:Translate PriceUpdateView_DateRange}" Style="{StaticResource SectionHeader}"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -72,9 +72,9 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="From:" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <Label Grid.Column="0" Content="{loc:Translate PriceUpdateView_From}" Margin="0,0,5,0" VerticalAlignment="Center"/>
                     <DatePicker Grid.Column="1" SelectedDate="{Binding FromDate}" Margin="0,0,10,0"/>
-                    <Label Grid.Column="2" Content="To:" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <Label Grid.Column="2" Content="{loc:Translate PriceUpdateView_To}" Margin="0,0,5,0" VerticalAlignment="Center"/>
                     <DatePicker Grid.Column="3" SelectedDate="{Binding ToDate}"/>
                 </Grid>
             </StackPanel>
@@ -83,7 +83,7 @@
         <!-- Filters Card -->
         <Border Grid.Row="3" Style="{StaticResource CardBorder}" Margin="0,5,0,5">
             <StackPanel>
-                <TextBlock Text="Filters" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="{loc:Translate ReportsView_Filters}" Style="{StaticResource SectionHeader}"/>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -102,7 +102,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Row 0: Task Type & Status -->
-                    <Label Grid.Row="0" Grid.Column="0" Content="Task Type:" Margin="0,5,5,5" VerticalAlignment="Center"/>
+                    <Label Grid.Row="0" Grid.Column="0" Content="{loc:Translate ReportsView_TaskType}" Margin="0,5,5,5" VerticalAlignment="Center"/>
                     <ComboBox Grid.Row="0" Grid.Column="1"
                               ItemsSource="{Binding TaskTypeOptions}"
                               SelectedItem="{Binding SelectedTaskTypeOption}"
@@ -110,7 +110,7 @@
                               Margin="0,5,10,5" MinWidth="120"
                               Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
 
-                    <Label Grid.Row="0" Grid.Column="2" Content="Status:" Margin="0,5,5,5" VerticalAlignment="Center"/>
+                    <Label Grid.Row="0" Grid.Column="2" Content="{loc:Translate ReportsView_Status}" Margin="0,5,5,5" VerticalAlignment="Center"/>
                     <ComboBox Grid.Row="0" Grid.Column="3"
                               ItemsSource="{Binding WorkStatusOptions}"
                               SelectedItem="{Binding SelectedWorkStatusOption}"
@@ -119,7 +119,7 @@
                               Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
 
                     <!-- Row 1: Accessory (only for Work Orders) -->
-                    <Label Grid.Row="1" Grid.Column="0" Content="Task:" Margin="0,5,5,5" VerticalAlignment="Center"
+                    <Label Grid.Row="1" Grid.Column="0" Content="{loc:Translate WorkOrderDetailWindow_Task}" Margin="0,5,5,5" VerticalAlignment="Center"
                            Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
                     <ComboBox Grid.Row="1" Grid.Column="1"
                               ItemsSource="{Binding AccessoryOptions}"
@@ -129,15 +129,15 @@
                               Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
 
                     <!-- Row 2: Group by Week (only for Work Orders) -->
-                    <CheckBox Grid.Row="2" Grid.ColumnSpan="4" Content="Group by Week" IsChecked="{Binding GroupByWeek}" Margin="5,5,0,5"
+                    <CheckBox Grid.Row="2" Grid.ColumnSpan="4" Content="{loc:Translate ReportsView_GroupByWeek}" IsChecked="{Binding GroupByWeek}" Margin="5,5,0,5"
                               Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
 
                     <!-- Row 3: Group by Task Type (only for Tasks) -->
-                    <CheckBox Grid.Row="3" Grid.ColumnSpan="4" Content="Group by Task Type" IsChecked="{Binding GroupByTaskType}" Margin="5,5,0,5"
+                    <CheckBox Grid.Row="3" Grid.ColumnSpan="4" Content="{loc:Translate ReportsView_GroupByTaskType}" IsChecked="{Binding GroupByTaskType}" Margin="5,5,0,5"
                               Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Tasks}"/>
 
                     <!-- Row 4: Summary Only (all types) -->
-                    <CheckBox Grid.Row="4" Grid.ColumnSpan="4" Content="Summary Only (hide details)" IsChecked="{Binding SummaryOnly}" Margin="5,0,0,5"/>
+                    <CheckBox Grid.Row="4" Grid.ColumnSpan="4" Content="{loc:Translate ReportsView_SummaryOnly}" IsChecked="{Binding SummaryOnly}" Margin="5,0,0,5"/>
 
                     <!-- Row 5: Status Message -->
                     <TextBlock Grid.Row="5" Grid.ColumnSpan="4" Text="{Binding StatusMessage}" 
@@ -146,11 +146,13 @@
 
                     <!-- Row 6: Action Buttons -->
                     <StackPanel Grid.Row="6" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                        <Button Content="Generate Excel" Command="{Binding GenerateExcelCommand}"
-                                Style="{StaticResource ActionButton}" Background="#27ae60" Width="120" Margin="5"/>
-                        <Button Content="Generate PDF" Command="{Binding GeneratePdfCommand}"
-                                Style="{StaticResource ActionButton}" Background="#e67e22" Width="120" Margin="5"/>
-                        <Button Content="Close" Command="{Binding CloseCommand}"
+                        <Button Content="{loc:Translate ReportsView_GenerateExcel}" Command="{Binding GenerateExcelCommand}"
+                                Style="{StaticResource ActionButton}" Background="#27ae60" Width="120" Margin="5"
+                                IsEnabled="{Binding !IsBusy}"/>
+                        <Button Content="{loc:Translate ReportsView_GeneratePDF}" Command="{Binding GeneratePdfCommand}"
+                                Style="{StaticResource ActionButton}" Background="#e67e22" Width="120" Margin="5"
+                                IsEnabled="{Binding !IsBusy}"/>
+                        <Button Content="{loc:Translate ClientManagementView_Close}" Command="{Binding CloseCommand}"
                                 Style="{StaticResource ActionButton}" Background="#6c757d" Width="80" Margin="5"/>
                     </StackPanel>
                 </Grid>
