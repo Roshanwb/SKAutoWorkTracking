@@ -88,7 +88,7 @@
 
     <DockPanel LastChildFill="True">
         <!-- ===== MENU ===== -->
-        <Menu DockPanel.Dock="Top" Background="{DynamicResource LightBackgroundBrush}" BorderBrush="{DynamicResource LightBorderBrush}" BorderThickness="0,0,0,1">
+        <Menu DockPanel.Dock="Top" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
             <MenuItem Header="{loc:Translate MainWindow_File}">
                 <MenuItem Header="{loc:Translate MainWindow_Import}" Command="{Binding ImportDataCommand}"/>
                 <Separator/>
@@ -131,15 +131,15 @@
             </Grid.RowDefinitions>
 
             <!-- ===== TOOLBAR ===== -->
-            <Border Grid.Row="0" Background="{DynamicResource PrimaryBackgroundBrush}" Padding="8,6">
+            <Border Grid.Row="0" Background="#2C3E50" Padding="8,6">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Style="{StaticResource IconButton}" Command="{Binding PreviousWeekCommand}" Content="&#xeb9e;" ToolTip="{loc:Translate MainWindow_PreviousWeek}"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding PreviousDayCommand}" Content="&#xE76B;" Margin="4,0,0,0" ToolTip="{loc:Translate MainWindow_PreviousDay}"/>
                     <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="8,0" Background="White" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding NextDayCommand}" Content="&#xE76C;" Margin="0,0,4,0" ToolTip="{loc:Translate MainWindow_NextDay}"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding NextWeekCommand}" Content="&#xeb9d;" ToolTip="{loc:Translate MainWindow_NextWeek}"/>
-                    <Button Content="{loc:Translate MainWindow_Refresh}" Command="{Binding LoadTodayWorkCommand}" Style="{StaticResource ActionButton}" Background="{DynamicResource AccentBrush}" Width="70" Margin="16,0,0,0"/>
-                    <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource DisabledForegroundBrush}" Margin="16,0,0,0" VerticalAlignment="Center" FontStyle="Italic" FontSize="12"/>
+                    <Button Content="{loc:Translate MainWindow_Refresh}" Command="{Binding LoadTodayWorkCommand}" Style="{StaticResource ActionButton}" Background="#2196F3" Width="70" Margin="16,0,0,0"/>
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#BDC3C7" Margin="16,0,0,0" VerticalAlignment="Center" FontStyle="Italic" FontSize="12"/>
                 </StackPanel>
             </Border>
 
@@ -158,16 +158,16 @@
                           IsReadOnly="True"
                           SelectionMode="Single"
                           BorderThickness="1"
-                          BorderBrush="{DynamicResource BorderBrush}"
-                          RowBackground="{DynamicResource HeaderForegroundBrush}"
-                          AlternatingRowBackground="{DynamicResource LightBackgroundBrush}"
+                          BorderBrush="#DEE2E6"
+                          RowBackground="#FFFFFF"
+                          AlternatingRowBackground="#F8F9FA"
                           ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{loc:Translate MainWindow_ID}" Binding="{Binding Id}" Width="45"/>
                         <DataGridTemplateColumn Header="{loc:Translate MainWindow_Edit}" Width="45">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="{loc:Translate MainWindow_EditIcon}" Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource AccentBrush}" FontSize="14" Cursor="Hand"/>
+                                    <Button Content="{loc:Translate MainWindow_EditIcon}" Command="{Binding DataContext.EditWorkOrderCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}" Background="Transparent" BorderThickness="0" Foreground="#3498DB" FontSize="14" Cursor="Hand"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -195,17 +195,17 @@
                 <!-- ===== RIGHT PANEL ===== -->
                 <StackPanel Grid.Column="1" Width="210" Margin="12,0,0,0">
                     <!-- Summary Cards -->
-                    <Border Background="White" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+                    <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
                         <StackPanel>
-                            <TextBlock Text="{loc:Translate MainWindow_Today}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryBackgroundBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{loc:Translate MainWindow_Today}" FontWeight="SemiBold" FontSize="13" Foreground="#2C3E50" Margin="0,0,0,4"/>
                             <TextBlock Text="{Binding TotalOrdersToday, StringFormat='Orders: {0}'}" FontSize="12"/>
                             <TextBlock Text="{Binding TotalRevenueToday, StringFormat='Revenue: {0:C}'}" FontSize="12"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Background="White" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+                    <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
                         <StackPanel>
-                            <TextBlock Text="{loc:Translate MainWindow_Week}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryBackgroundBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{loc:Translate MainWindow_Week}" FontWeight="SemiBold" FontSize="13" Foreground="#2C3E50" Margin="0,0,0,4"/>
                             <TextBlock FontSize="11">
                                 <TextBlock.Text>
                                     <MultiBinding StringFormat="Week of {0:dd/MM}   {1:dd/MM}">
@@ -215,13 +215,13 @@
                                 </TextBlock.Text>
                             </TextBlock>
                             <TextBlock Text="{Binding WeeklySummary.TotalWorkOrders, StringFormat='Total Orders: {0}'}" FontSize="11"/>
-                            <TextBlock Text="{Binding WeeklySummary.TotalRevenue, StringFormat='Revenue: {0:C}'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}"/>
-                            <Expander Header="{loc:Translate MainWindow_TopClients}" IsExpanded="False" Margin="0,5,0,0" BorderBrush="{DynamicResource LightBorderBrush}">
+                            <TextBlock Text="{Binding WeeklySummary.TotalRevenue, StringFormat='Revenue: {0:C}'}" FontSize="11" FontWeight="SemiBold" Foreground="#27AE60"/>
+                            <Expander Header="{loc:Translate MainWindow_TopClients}" IsExpanded="False" Margin="0,5,0,0" BorderBrush="#e0e0e0">
                                 <ItemsControl ItemsSource="{Binding WeeklySummary.ClientSummaries}" MaxHeight="150">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
-                                                <TextBlock Text="{Binding ClientName}" Width="110" TextWrapping="NoWrap" Foreground="{DynamicResource PrimaryBackgroundBrush}"/>
+                                                <TextBlock Text="{Binding ClientName}" Width="110" TextWrapping="NoWrap" Foreground="#2c3e50"/>
                                                 <TextBlock Text="{Binding OrderCount}" Width="30" HorizontalAlignment="Right" FontWeight="Bold"/>
                                                 <TextBlock Text="{Binding TotalAmount, StringFormat=C}" Width="60" HorizontalAlignment="Right"/>
                                             </StackPanel>
@@ -233,43 +233,43 @@
                     </Border>
 
                     <!-- Primary Actions -->
-                    <Button Content="{loc:Translate MainWindow_NewWorkOrder}" Style="{StaticResource ActionButton}" Background="{DynamicResource DangerBrush}" Height="55" FontSize="15" FontWeight="Bold" Command="{Binding CreateWorkOrderCommand}"/>
+                    <Button Content="{loc:Translate MainWindow_NewWorkOrder}" Style="{StaticResource ActionButton}" Background="#E91E63" Height="55" FontSize="15" FontWeight="Bold" Command="{Binding CreateWorkOrderCommand}"/>
 
                     <!-- Secondary Actions -->
-                    <Button Content="{loc:Translate MainWindow_ImportData}" Style="{StaticResource ActionButton}" Background="{DynamicResource SuccessBrush}" Command="{Binding ImportDataCommand}"/>
-                    <Button Content="{loc:Translate ReportsView_GenerateReports}" Style="{StaticResource ActionButton}" Background="{DynamicResource SuccessBrush}" Command="{Binding OpenReportsCommand}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <Button Content="{loc:Translate MainWindow_ImportData}" Style="{StaticResource ActionButton}" Background="#8BC34A" Command="{Binding ImportDataCommand}"/>
+                    <Button Content="{loc:Translate ReportsView_GenerateReports}" Style="{StaticResource ActionButton}" Background="#27AE60" Command="{Binding OpenReportsCommand}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
                     <!-- Admin Only -->
                     <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Button Content="{loc:Translate ClientManagementView_ManageClients}" Style="{StaticResource ActionButton}" Background="{DynamicResource AccentBrush}" Command="{Binding OpenClientManagementCommand}"/>
-                        <Button Content="{loc:Translate VehicleManagementView_ManageVehicles}" Style="{StaticResource ActionButton}" Background="{DynamicResource AccentBrush}" Command="{Binding OpenVehicleManagementCommand}"/>
+                        <Button Content="{loc:Translate ClientManagementView_ManageClients}" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding OpenClientManagementCommand}"/>
+                        <Button Content="{loc:Translate VehicleManagementView_ManageVehicles}" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding OpenVehicleManagementCommand}"/>
                     </StackPanel>
 
                     <!-- Status Updates -->
-                    <TextBlock Text="{loc:Translate MainWindow_UpdateStatus}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBackgroundBrush}" Margin="0,8,0,4"/>
-                    <Button Content="{loc:Translate MainWindow_InProgress}" Style="{StaticResource StatusButton}" Background="{DynamicResource WarningBrush}" Command="{Binding UpdateStatusCommand}" CommandParameter="InProgress"/>
-                    <Button Content="{loc:Translate MainWindow_Blocked}" Style="{StaticResource StatusButton}" Background="{DynamicResource DangerBrush}" Command="{Binding UpdateStatusCommand}" CommandParameter="Blocked"/>
-                    <Button Content="{loc:Translate MainWindow_Done}" Style="{StaticResource StatusButton}" Background="{DynamicResource SuccessBrush}" Command="{Binding UpdateStatusCommand}" CommandParameter="Done"/>
+                    <TextBlock Text="{loc:Translate MainWindow_UpdateStatus}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
+                    <Button Content="{loc:Translate MainWindow_InProgress}" Style="{StaticResource StatusButton}" Background="#F39C12" Command="{Binding UpdateStatusCommand}" CommandParameter="InProgress"/>
+                    <Button Content="{loc:Translate MainWindow_Blocked}" Style="{StaticResource StatusButton}" Background="#E74C3C" Command="{Binding UpdateStatusCommand}" CommandParameter="Blocked"/>
+                    <Button Content="{loc:Translate MainWindow_Done}" Style="{StaticResource StatusButton}" Background="#2ECC71" Command="{Binding UpdateStatusCommand}" CommandParameter="Done"/>
 
-                    <TextBlock Text="{loc:Translate MainWindow_Danger}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBackgroundBrush}" Margin="0,8,0,4"/>
-                    <Button Content="{loc:Translate MainWindow_DeleteWorkOrder}" Style="{StaticResource StatusButton}" Background="{DynamicResource DangerBrush}" Command="{Binding DeleteWorkOrderCommand}"/>
+                    <TextBlock Text="{loc:Translate MainWindow_Danger}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
+                    <Button Content="{loc:Translate MainWindow_DeleteWorkOrder}" Style="{StaticResource StatusButton}" Background="#DC3545" Command="{Binding DeleteWorkOrderCommand}"/>
                 </StackPanel>
             </Grid>
 
             <!-- ===== FOOTER ===== -->
-            <Border Grid.Row="2" Background="{DynamicResource LightBackgroundBrush}" Padding="6,4" BorderBrush="{DynamicResource LightBorderBrush}" BorderThickness="0,1,0,0">
+            <Border Grid.Row="2" Background="#F8F9FA" Padding="6,4" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" Grid.Column="0">
-                        <TextBlock Text="{loc:Translate MainWindow_Footer}" FontSize="11" Foreground="{DynamicResource DisabledForegroundBrush}" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                        <TextBlock Text="{loc:Translate MainWindow_Title}" FontSize="11" Foreground="{DynamicResource DisabledForegroundBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Translate MainWindow_Footer}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <TextBlock Text="{loc:Translate MainWindow_Title}" FontSize="11" Foreground="#7F8C8D" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
-                        <TextBlock Text="{Binding SyncStatus}" Margin="0,0,8,0" FontSize="11" Foreground="{DynamicResource DisabledForegroundBrush}"/>
-                        <Button Content="{loc:Translate MainWindow_Drive}" Command="{Binding OpenDriveSettingsCommand}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource AccentBrush}" Cursor="Hand" FontSize="11"/>
+                        <TextBlock Text="{Binding SyncStatus}" Margin="0,0,8,0" FontSize="11" Foreground="#7F8C8D"/>
+                        <Button Content="{loc:Translate MainWindow_Drive}" Command="{Binding OpenDriveSettingsCommand}" Background="Transparent" BorderThickness="0" Foreground="#3498DB" Cursor="Hand" FontSize="11"/>
                     </StackPanel>
                 </Grid>
             </Border>
