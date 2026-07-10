@@ -112,7 +112,7 @@ CREATE TABLE WorkOrders (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     VehicleId INTEGER NOT NULL,
     OrderReference TEXT NULL UNIQUE,
-    OrderType TEXT NOT NULL DEFAULT 'Direct_Fitting' CHECK(OrderType IN ('PSA_Contract', 'Direct_Fitting', 'Direct_Sale')),
+    OrderType TEXT NOT NULL DEFAULT 'Direct_Contract' CHECK(OrderType IN ('PSA_Contract', 'Direct_Contract')),
     OrderDate TEXT NOT NULL,
     PlannedDate TEXT NULL,
     CompletedDate TEXT NULL,

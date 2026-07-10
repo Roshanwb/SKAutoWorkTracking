@@ -110,9 +110,8 @@ namespace SKAuto.Import.Parsers
             return value?.ToLower() switch
             {
                 "psa" or "psa_contract" => OrderType.PSA_Contract,
-                "direct_fitting" => OrderType.Direct_Fitting,
-                "direct_sale" => OrderType.Direct_Sale,
-                _ => OrderType.Direct_Fitting
+                "Direct_Contract" => OrderType.Direct_Contract,
+                _ => OrderType.Direct_Contract
             };
         }
 
