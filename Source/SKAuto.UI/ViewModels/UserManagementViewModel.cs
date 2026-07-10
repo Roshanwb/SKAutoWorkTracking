@@ -1,21 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Spreadsheet;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
-using SKAuto.UI.Views;
-using System;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Windows;
-
 using SKAuto.UI.Localization;
+using SKAuto.UI.Views;
+using System.Collections.ObjectModel;
+using System.Windows;
 namespace SKAuto.UI.ViewModels
 {
     public partial class UserManagementViewModel : ObservableObject

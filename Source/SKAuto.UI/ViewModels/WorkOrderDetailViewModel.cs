@@ -4,14 +4,10 @@ using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
-using SKAuto.UI.Views;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-
 using SKAuto.UI.Localization;
+using SKAuto.UI.Views;
+using System.Collections.ObjectModel;
+using System.Windows;
 namespace SKAuto.UI.ViewModels
 {
     public partial class WorkOrderDetailViewModel : ObservableObject
@@ -123,7 +119,7 @@ namespace SKAuto.UI.ViewModels
             _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories matched");
         }
 
-        
+
 
         // ========== ADD TRAVEL ==========
         private void AddTravel()

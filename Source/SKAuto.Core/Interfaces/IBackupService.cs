@@ -1,6 +1,4 @@
 ﻿using SKAuto.Core.DTOs;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SKAuto.Core.Interfaces
 {

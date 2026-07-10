@@ -1,5 +1,3 @@
-using SKAuto.Core.Entities;
-using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 
 namespace SKAuto.Import.Validators

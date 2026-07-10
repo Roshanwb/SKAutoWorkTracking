@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SKAuto.Core.Interfaces
+﻿namespace SKAuto.Core.Interfaces
 {
     public interface IConfigurationService
     {

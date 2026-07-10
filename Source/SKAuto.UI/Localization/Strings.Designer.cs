@@ -857,7 +857,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A verification code has been sent to.
+        ///   Looks up a localized string similar to A verification code has been sent to .
         /// </summary>
         internal static string CodeSentMessageBodySuccessPart1 {
             get {
@@ -2513,15 +2513,6 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version: 1.0.0 (latest).
-        /// </summary>
-        internal static string HelpView_Version {
-            get {
-                return ResourceManager.GetString("HelpView_Version", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Welcome to SKAuto Work Tracking.
         /// </summary>
         internal static string HelpView_Welcome {
@@ -2716,6 +2707,15 @@ namespace SKAuto.UI.Localization {
         internal static string InitializeAsyncStarted {
             get {
                 return ResourceManager.GetString("InitializeAsyncStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to © 2026 Insights®.
+        /// </summary>
+        internal static string Insights {
+            get {
+                return ResourceManager.GetString("Insights", resourceCulture);
             }
         }
         
@@ -2995,15 +2995,6 @@ namespace SKAuto.UI.Localization {
         internal static string MainWindow_File {
             get {
                 return ResourceManager.GetString("MainWindow_File", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SK Auto Work Tracking v1.0 – © 2026 Insights®.
-        /// </summary>
-        internal static string MainWindow_Footer {
-            get {
-                return ResourceManager.GetString("MainWindow_Footer", resourceCulture);
             }
         }
         
@@ -4453,6 +4444,15 @@ namespace SKAuto.UI.Localization {
         internal static string VerifyReset {
             get {
                 return ResourceManager.GetString("VerifyReset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version: 3.0.0 (Latest).
+        /// </summary>
+        internal static string Version {
+            get {
+                return ResourceManager.GetString("Version", resourceCulture);
             }
         }
         

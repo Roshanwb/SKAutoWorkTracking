@@ -4,12 +4,6 @@ using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SKAuto.Data.Repository;
 
 namespace SKAuto.Data.Repository
 {

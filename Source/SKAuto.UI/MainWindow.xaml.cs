@@ -1,8 +1,6 @@
 ﻿using SKAuto.Core.Interfaces;
 using SKAuto.UI.ViewModels;
-using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows;

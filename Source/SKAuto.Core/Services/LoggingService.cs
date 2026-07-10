@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SKAuto.Core.Interfaces;
-using System;
-using System.IO;
+﻿using SKAuto.Core.Interfaces;
 
 namespace SKAuto.Core.Services
 {

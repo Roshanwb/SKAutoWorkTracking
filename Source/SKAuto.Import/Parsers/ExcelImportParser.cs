@@ -1,9 +1,6 @@
 ﻿using ClosedXML.Excel;
 using SKAuto.Core.DTOs; // Add this using
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace SKAuto.Import.Parsers
 {

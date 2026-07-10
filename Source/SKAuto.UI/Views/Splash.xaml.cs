@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using SKAuto.Core.Interfaces;
 using System.Windows;
 using System.Windows.Media.Animation;
-using SKAuto.Core.Interfaces;
 
 namespace SKAuto.UI.Views
 {

@@ -1,5 +1,4 @@
 ﻿using SKAuto.Core.Enums;
-using System;
 
 namespace SKAuto.Core.DTOs
 {

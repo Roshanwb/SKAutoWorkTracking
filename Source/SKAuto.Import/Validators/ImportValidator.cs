@@ -1,8 +1,6 @@
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SKAuto.Import.Validators
 {
@@ -94,7 +92,7 @@ namespace SKAuto.Import.Validators
             }
 
             // Direct order validations
-            if (workOrder.OrderType == OrderType.Direct_Contract )
+            if (workOrder.OrderType == OrderType.Direct_Contract)
             {
                 if (workOrder.WorkTasks.Any(t => !t.Price.HasValue))
                 {

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SKAuto.Core.Entities;
-using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
 
 namespace SKAuto.Data.Repository

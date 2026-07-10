@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using SKAuto.Core.Entities;
+﻿using SKAuto.Core.Entities;
 using SKAuto.UI.ViewModels;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SKAuto.UI.Views
 {

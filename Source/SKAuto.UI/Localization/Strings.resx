@@ -988,7 +988,7 @@
     <value>Verification Code:</value>
   </data>
   <data name="Version" xml:space="preserve">
-    <value>Version: 1.0.0 (Latest)</value>
+    <value>Version: 3.0.0 (Latest)</value>
   </data>
   <data name="MainWindow_Week" xml:space="preserve">
     <value>Week</value>
@@ -1632,7 +1632,7 @@
     <value>Code Sent</value>
   </data>
   <data name="CodeSentMessageBodySuccessPart1" xml:space="preserve">
-    <value>A verification code has been sent to</value>
+    <value>A verification code has been sent to </value>
   </data>
   <data name="CodeSentMessageBodyFailed" xml:space="preserve">
     <value>Email could not be sent.</value>

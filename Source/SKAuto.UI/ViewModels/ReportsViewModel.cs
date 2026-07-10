@@ -1,17 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using SKAuto.Core.DTOs;
-using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Export.Pdf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using SKAuto.UI.Localization;
 using System.Windows;
-using System.Windows.Input;   using SKAuto.UI.Localization;
+using System.Windows.Input;
 // For Cursors
 
 namespace SKAuto.UI.ViewModels

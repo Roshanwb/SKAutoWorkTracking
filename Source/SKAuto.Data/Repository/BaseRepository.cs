@@ -2,14 +2,9 @@
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
-using SKAuto.Data.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using SKAuto.Core.Services;
+using SKAuto.Data.Database;
+using System.Linq.Expressions;
 
 namespace SKAuto.Data.Repository
 {

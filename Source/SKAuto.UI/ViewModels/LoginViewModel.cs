@@ -1,12 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SKAuto.Core.Entities;
 using SKAuto.Core.Helpers;
 using SKAuto.Core.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace SKAuto.UI.ViewModels
 {

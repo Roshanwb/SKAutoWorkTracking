@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -17,7 +16,7 @@ namespace SKAuto.UI.Localization
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
             // Return a binding to the LocalizationManager's indexer
-            var binding =  new System.Windows.Data.Binding
+            var binding = new System.Windows.Data.Binding
             {
                 Source = LocalizationManager.Instance,
                 Path = new PropertyPath($"Item[{_key}]"), // indexer

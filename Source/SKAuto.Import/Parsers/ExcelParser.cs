@@ -1,10 +1,7 @@
 using ClosedXML.Excel;
-using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
-using System;
-using System.Collections.Generic;
 
 namespace SKAuto.Import.Parsers
 {

@@ -2,11 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
-using System;
-using System.Threading.Tasks;
-using System.Windows;
-
 using SKAuto.UI.Localization;
+using System.Windows;
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleEditViewModel : ObservableObject

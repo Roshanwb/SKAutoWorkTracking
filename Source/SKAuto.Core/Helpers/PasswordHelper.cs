@@ -1,8 +1,6 @@
-﻿using BCrypt.Net;
-
-namespace SKAuto.Core.Helpers
+﻿namespace SKAuto.Core.Helpers
 {
- 
+
     public static class PasswordHelper
     {
         public static string HashPassword(string password)

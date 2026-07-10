@@ -1,5 +1,4 @@
 using SKAuto.Core.DTOs;
-using System.Threading.Tasks;
 
 namespace SKAuto.Core.Interfaces
 {

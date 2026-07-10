@@ -1,21 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
 using SKAuto.Import.Parsers;
-using System;
+using SKAuto.UI.Localization;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-
-using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleManagementViewModel : ObservableObject

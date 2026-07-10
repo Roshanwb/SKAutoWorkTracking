@@ -2,20 +2,16 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.DTOs;
+using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
-using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.Export.Pdf;
+using SKAuto.UI.Localization;
 using SKAuto.UI.Views;
-using SKAuto.Core.Enums;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using SKAuto.Core.Entities; using SKAuto.UI.Localization;
 // for System.Windows.MessageBox
 
 namespace SKAuto.UI.ViewModels

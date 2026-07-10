@@ -10,8 +10,16 @@
 	<UseWindowsForms>true</UseWindowsForms>
 	<Copyright>Insights</Copyright>
 	<PackageIcon>logo.ico</PackageIcon>
-	<AssemblyVersion>2.0.0.0</AssemblyVersion>
-	<FileVersion>2.0.0.0</FileVersion>
+	<AssemblyVersion>3.0.0.0</AssemblyVersion>
+	<FileVersion>3.0.0.0</FileVersion>
+	<PackageId>SKAuto</PackageId>
+	<Version>3.0.0.0</Version>
+	<Authors>Roshan BIYAGAMA</Authors>
+	<Company>Insights</Company>
+	<Product>SK Auto Work Tracking</Product>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageProjectUrl>https://github.com/Roshanwb/SKAutoWorkTracking</PackageProjectUrl>
+	<AssemblyName>SKAuto</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Views\VehicleLookupView.xaml.cs" />
@@ -35,6 +43,10 @@
 
   <ItemGroup>
     <None Include="..\..\logo.ico">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

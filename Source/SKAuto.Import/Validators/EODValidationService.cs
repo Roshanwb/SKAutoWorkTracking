@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SKAuto.Core.Entities;
-using SKAuto.Core.Enums;
+﻿using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 
 namespace SKAuto.Import.Validators

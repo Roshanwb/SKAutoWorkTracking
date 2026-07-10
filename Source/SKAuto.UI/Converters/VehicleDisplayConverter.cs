@@ -1,7 +1,6 @@
-﻿using System;
+﻿using SKAuto.Core.Entities;
 using System.Globalization;
 using System.Windows.Data;
-using SKAuto.Core.Entities;
 
 namespace SKAuto.UI.Converters
 {
