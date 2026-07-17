@@ -11,6 +11,7 @@ using SKAuto.Export.Pdf;
 using SKAuto.Import.Parsers;
 using SKAuto.Import.Validators;
 using SKAuto.UI.Localization;
+using SKAuto.UI.Services;
 using SKAuto.UI.ViewModels;
 using SKAuto.UI.Views;
 using System.Globalization;
@@ -24,6 +25,7 @@ namespace SKAuto.UI
         private readonly IHost _host;
         private ILoggingService _logger;
         private AppConfig _currentAppConfig; // ADDED: to store config for later use
+        public static IServiceProvider? ServiceProvider { get; private set; }
 
         public static User CurrentUser { get; set; }
         public static AppConfig CurrentConfig { get; private set; }
@@ -33,6 +35,8 @@ namespace SKAuto.UI
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    services.AddSingleton<IDispatcherService, WindowsDispatcherService>();
+                    services.AddSingleton<IMessageBoxService, WindowsMessageBoxService>();
                     services.AddTransient<DatabaseContext>();
                     services.AddSingleton<DatabaseInitializer>();
                     var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SKAuto", "SKAuto.db");
@@ -63,6 +67,7 @@ namespace SKAuto.UI
             ShutdownMode = ShutdownMode.OnMainWindowClose;
 
             await _host.StartAsync();
+            ServiceLocator.SetProvider(_host.Services);
             _logger = _host.Services.GetRequiredService<ILoggingService>();
             _logger.LogInfo(LocalizationManager.Instance["ApplicationStarting"]);
 
