@@ -1651,4 +1651,52 @@
   <data name="CodeSentMessageBodySuccessPart2" xml:space="preserve">
     <value>Please check your inbox.</value>
   </data>
+  <data name="Sync_InternetRequired" xml:space="preserve">
+    <value>Internet connection is required to verify the database state. Please check your connection and try again.</value>
+  </data>
+  <data name="Sync_ConnectionError" xml:space="preserve">
+    <value>Connection Error</value>
+  </data>
+  <data name="Sync_InternetUnavailable" xml:space="preserve">
+    <value>Internet connection is not available. The application cannot start.</value>
+  </data>
+  <data name="Sync_LockActive" xml:space="preserve">
+    <value>The application is currently in use by {0} on machine {1}. Only one user can use the application at a time.</value>
+  </data>
+  <data name="Sync_LockTitle" xml:space="preserve">
+    <value>Application in Use</value>
+  </data>
+  <data name="Sync_StaleLockPrompt" xml:space="preserve">
+    <value>A previous session from {0} timed out unexpectedly. This may be due to a crash or network interruption. Do you want to force unlock and continue?</value>
+  </data>
+  <data name="Sync_LockFailed" xml:space="preserve">
+    <value>Failed to acquire cloud lock. Please check your network connection and try again.</value>
+  </data>
+  <data name="Sync_ErrorTitle" xml:space="preserve">
+    <value>Synchronization Error</value>
+  </data>
+  <data name="Sync_ConflictMessage" xml:space="preserve">
+    <value>A version conflict was detected between your local database (v{0}) and the remote database (v{1}).\n\nYour local changes have been backed up to:\n{2}\n\nDo you want to download the remote version (recommended)?</value>
+  </data>
+  <data name="Sync_ConflictTitle" xml:space="preserve">
+    <value>Version Conflict</value>
+  </data>
+  <data name="Sync_Error" xml:space="preserve">
+    <value>Synchronization failed: {0}</value>
+  </data>
+  <data name="Sync_ExitError" xml:space="preserve">
+    <value>Failed to synchronize database on exit: {0}. Your local changes may not be available on other machines.</value>
+  </data>
+  <data name="Sync_ForceUnlockQuestion" xml:space="preserve">
+    <value>The application appears to be in use by another user or a previous session may have crashed.\n\nDo you want to force unlock and continue? (Use with caution!)</value>
+  </data>
+  <data name="Sync_ForceUnlockFailed" xml:space="preserve">
+    <value>Failed to force unlock. Please try again later.</value>
+  </data>
+  <data name="Sync_ExitSuccess" xml:space="preserve">
+    <value>Application closed successfully and database synchronized.</value>
+  </data>
+  <data name="Sync_SuccessTitle" xml:space="preserve">
+    <value>Success</value>
+  </data>
 </root>

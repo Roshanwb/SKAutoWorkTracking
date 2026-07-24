@@ -1,9 +1,13 @@
 ﻿using SKAuto.Core.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SKAuto.Core.Interfaces
 {
     public interface IGoogleDriveService
     {
+        // --- Existing methods ---
         Task<bool> AuthenticateAsync(GoogleDriveSettings settings);
         Task<bool> TestConnectionAsync();
         Task<string> UploadFileAsync(string localPath, string remoteFileName = null);
@@ -13,11 +17,14 @@ namespace SKAuto.Core.Interfaces
         void SetLastSync(DateTime time);
         Task<bool> TestFolderAccessAsync(string folderId);
         Task<string> UploadFileAsync(string localPath, string remoteFileName = null, string folderId = null);
-
-        // NEW: List backup files from Google Drive
         Task<List<BackupFileInfo>> ListDriveBackupsAsync();
-
-        // NEW: Download a backup file from Drive to local path (returns local path)
         Task<string> DownloadDriveBackupAsync(string fileId);
+
+        // --- NEW methods for sync ---
+        Task<bool> IsConnectedAsync();
+        Task<Google.Apis.Drive.v3.Data.File?> GetFileByNameAsync(string fileName);
+        Task<string> DownloadFileContentAsync(string fileId);
+        Task UploadFileContentAsync(string fileName, string content);
+        Task DeleteFileAsync(string fileId);
     }
 }

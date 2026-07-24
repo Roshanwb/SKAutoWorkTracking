@@ -4106,6 +4106,150 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A version conflict was detected between your local database (v{0}) and the remote database (v{1}).\n\nYour local changes have been backed up to:\n{2}\n\nDo you want to download the remote version (recommended)?.
+        /// </summary>
+        internal static string Sync_ConflictMessage {
+            get {
+                return ResourceManager.GetString("Sync_ConflictMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version Conflict.
+        /// </summary>
+        internal static string Sync_ConflictTitle {
+            get {
+                return ResourceManager.GetString("Sync_ConflictTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection Error.
+        /// </summary>
+        internal static string Sync_ConnectionError {
+            get {
+                return ResourceManager.GetString("Sync_ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synchronization failed: {0}.
+        /// </summary>
+        internal static string Sync_Error {
+            get {
+                return ResourceManager.GetString("Sync_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synchronization Error.
+        /// </summary>
+        internal static string Sync_ErrorTitle {
+            get {
+                return ResourceManager.GetString("Sync_ErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to synchronize database on exit: {0}. Your local changes may not be available on other machines..
+        /// </summary>
+        internal static string Sync_ExitError {
+            get {
+                return ResourceManager.GetString("Sync_ExitError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application closed successfully and database synchronized..
+        /// </summary>
+        internal static string Sync_ExitSuccess {
+            get {
+                return ResourceManager.GetString("Sync_ExitSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to force unlock. Please try again later..
+        /// </summary>
+        internal static string Sync_ForceUnlockFailed {
+            get {
+                return ResourceManager.GetString("Sync_ForceUnlockFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application appears to be in use by another user or a previous session may have crashed.\n\nDo you want to force unlock and continue? (Use with caution!).
+        /// </summary>
+        internal static string Sync_ForceUnlockQuestion {
+            get {
+                return ResourceManager.GetString("Sync_ForceUnlockQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internet connection is required to verify the database state. Please check your connection and try again..
+        /// </summary>
+        internal static string Sync_InternetRequired {
+            get {
+                return ResourceManager.GetString("Sync_InternetRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internet connection is not available. The application cannot start..
+        /// </summary>
+        internal static string Sync_InternetUnavailable {
+            get {
+                return ResourceManager.GetString("Sync_InternetUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application is currently in use by {0} on machine {1}. Only one user can use the application at a time..
+        /// </summary>
+        internal static string Sync_LockActive {
+            get {
+                return ResourceManager.GetString("Sync_LockActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to acquire cloud lock. Please check your network connection and try again..
+        /// </summary>
+        internal static string Sync_LockFailed {
+            get {
+                return ResourceManager.GetString("Sync_LockFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application in Use.
+        /// </summary>
+        internal static string Sync_LockTitle {
+            get {
+                return ResourceManager.GetString("Sync_LockTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A previous session from {0} timed out unexpectedly. This may be due to a crash or network interruption. Do you want to force unlock and continue?.
+        /// </summary>
+        internal static string Sync_StaleLockPrompt {
+            get {
+                return ResourceManager.GetString("Sync_StaleLockPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        internal static string Sync_SuccessTitle {
+            get {
+                return ResourceManager.GetString("Sync_SuccessTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sync failed.
         /// </summary>
         internal static string SyncFailed {

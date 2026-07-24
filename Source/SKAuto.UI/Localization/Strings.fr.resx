@@ -1651,4 +1651,52 @@
   <data name="CodeSentMessageBodySuccessPart2" xml:space="preserve">
     <value>Veuillez consulter votre boîte de réception.</value>
   </data>
+  <data name="Sync_InternetRequired" xml:space="preserve">
+    <value>Une connexion Internet est requise pour vérifier l'état de la base de données. Veuillez vérifier votre connexion et réessayer.</value>
+  </data>
+  <data name="Sync_ConnectionError" xml:space="preserve">
+    <value>Erreur de connexion</value>
+  </data>
+  <data name="Sync_InternetUnavailable" xml:space="preserve">
+    <value>La connexion Internet n'est pas disponible. L'application ne peut pas démarrer.</value>
+  </data>
+  <data name="Sync_LockActive" xml:space="preserve">
+    <value>L'application est actuellement utilisée par {0} sur la machine {1}. Un seul utilisateur peut utiliser l'application à la fois.</value>
+  </data>
+  <data name="Sync_LockTitle" xml:space="preserve">
+    <value>Application en cours d'utilisation</value>
+  </data>
+  <data name="Sync_StaleLockPrompt" xml:space="preserve">
+    <value>Une session précédente de {0} a expiré de manière inattendue. Cela peut être dû à un plantage ou à une interruption réseau. Voulez-vous forcer le déverrouillage et continuer ?</value>
+  </data>
+  <data name="Sync_LockFailed" xml:space="preserve">
+    <value>Échec de l'acquisition du verrou cloud. Veuillez vérifier votre connexion réseau et réessayer.</value>
+  </data>
+  <data name="Sync_ErrorTitle" xml:space="preserve">
+    <value>Erreur de synchronisation</value>
+  </data>
+  <data name="Sync_ConflictMessage" xml:space="preserve">
+    <value>Un conflit de version a été détecté entre votre base de données locale (v{0}) et la base de données distante (v{1}).\n\nVos modifications locales ont été sauvegardées dans :\n{2}\n\nVoulez-vous télécharger la version distante (recommandé) ?</value>
+  </data>
+  <data name="Sync_ConflictTitle" xml:space="preserve">
+    <value>Conflit de version</value>
+  </data>
+  <data name="Sync_Error" xml:space="preserve">
+    <value>La synchronisation a échoué : {0}</value>
+  </data>
+  <data name="Sync_ExitError" xml:space="preserve">
+    <value>Échec de la synchronisation de la base de données à la sortie : {0}. Vos modifications locales peuvent ne pas être disponibles sur d'autres machines.</value>
+  </data>
+  <data name="Sync_ForceUnlockQuestion" xml:space="preserve">
+    <value>L'application semble être utilisée par un autre utilisateur ou une session précédente a peut‑être planté.\n\nVoulez‑vous forcer le déverrouillage et continuer ? (À utiliser avec prudence !)</value>
+  </data>
+  <data name="Sync_ForceUnlockFailed" xml:space="preserve">
+    <value>Échec du déverrouillage forcé. Veuillez réessayer plus tard.</value>
+  </data>
+  <data name="Sync_ExitSuccess" xml:space="preserve">
+    <value>Application fermée avec succès et base de données synchronisée.</value>
+  </data>
+  <data name="Sync_SuccessTitle" xml:space="preserve">
+    <value>Succès</value>
+  </data>
 </root>

@@ -1,5 +1,3 @@
-using System;
-using System.Windows;
 using SKAuto.Core.Services;
 
 namespace SKAuto.UI.Services

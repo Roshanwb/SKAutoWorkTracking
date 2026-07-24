@@ -1,5 +1,3 @@
-using System;
-
 namespace SKAuto.Core.Services
 {
     public interface IDispatcherService
