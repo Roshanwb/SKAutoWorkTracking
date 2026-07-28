@@ -17,7 +17,6 @@ namespace SKAuto.Export.Excel
             _logger = logger;
         }
 
-
         // ========== DAILY REPORT ==========
         public async Task<byte[]> GenerateDailyReportAsync(DateTime date)
         {
@@ -238,7 +237,7 @@ namespace SKAuto.Export.Excel
             return stream.ToArray();
         }
 
-        // ========== WORK ORDERS SUMMARY REPORT (with correct filtering) ==========
+        // ========== GENERATE WORK ORDERS REPORT ==========
         public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
         {
             _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
@@ -277,32 +276,61 @@ namespace SKAuto.Export.Excel
             var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
                 .ToDictionary(a => a.Id, a => a.Name);
 
-            // 4. Build a list of report rows (each row is a line in the final report)
+            // 4. Determine which WorkOrder IDs have Travel
+            var travelOrderIds = allTravels.Select(t => t.WorkOrderId).Distinct().ToHashSet();
+
+            // 5. Build report rows with filtering logic
             var reportRows = new List<ReportRow>();
             foreach (var wo in orders)
             {
-                // --- Task rows ---
+                bool hasTravel = travelOrderIds.Contains(wo.Id);
                 var tasks = allTasks.Where(t => t.WorkOrderId == wo.Id).ToList();
+
+                // Filter tasks based on TaskType
                 if (filter.TaskType.HasValue)
-                    tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
-                if (filter.AccessoryId.HasValue)
+                {
+                    if (filter.TaskType.Value == TaskType.Travel)
+                    {
+                        // Travel filter: include all tasks from WorkOrders that have Travel
+                        if (!hasTravel)
+                            tasks.Clear();
+                        // else keep all tasks
+                    }
+                    else
+                    {
+                        // Specific type: include only tasks of that type AND exclude tasks from Travel WorkOrders
+                        if (hasTravel)
+                            tasks.Clear();
+                        else
+                            tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
+                    }
+                }
+                // else: All – include all tasks regardless of type
+
+                // Apply accessory filter (if any)
+                if (filter.AccessoryId.HasValue && tasks.Any())
                     tasks = tasks.Where(t => t.AccessoryId == filter.AccessoryId.Value).ToList();
 
+                // Add task rows
                 foreach (var task in tasks)
                 {
                     decimal amount = (task.Price ?? 0) * task.Quantity;
                     string desc = accessories.GetValueOrDefault(task.AccessoryId, "?");
+                    if (hasTravel)
+                        desc = "Travel – " + desc;
                     reportRows.Add(new ReportRow
                     {
                         WorkOrder = wo,
                         Description = desc,
                         Amount = amount,
                         Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
-                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null
+                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null,
+                        HasTravel = hasTravel,
+                        IsTravelRow = false
                     });
                 }
 
-                // --- Travel rows – only if TaskType filter is null or equals Travel ---
+                // Add Travel rows (only if filter is All or Travel)
                 if (!filter.TaskType.HasValue || filter.TaskType.Value == TaskType.Travel)
                 {
                     var travels = allTravels.Where(t => t.WorkOrderId == wo.Id).ToList();
@@ -316,11 +344,16 @@ namespace SKAuto.Export.Excel
                             Description = desc,
                             Amount = amount,
                             Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
-                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null
+                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null,
+                            HasTravel = true,
+                            IsTravelRow = true
                         });
                     }
                 }
             }
+
+            // Remove empty work orders (no rows)
+            reportRows = reportRows.Where(r => r.Amount > 0 || !string.IsNullOrEmpty(r.Description)).ToList();
 
             if (!reportRows.Any())
             {
@@ -410,6 +443,9 @@ namespace SKAuto.Export.Excel
 
         private void WriteReportRows(IXLWorksheet ws, ref int row, List<ReportRow> rows)
         {
+            // Sort by WorkOrder Id to group
+            rows = rows.OrderBy(r => r.WorkOrder.Id).ThenBy(r => r.IsTravelRow ? 0 : 1).ToList();
+
             string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Description", "Amount" };
             for (int i = 0; i < headers.Length; i++)
             {
@@ -419,9 +455,33 @@ namespace SKAuto.Export.Excel
             }
             row++;
 
-            bool alternate = false;
+            int? currentOrderId = null;
+            bool groupAlternate = false;
+            XLColor groupBgColor = XLColor.White;
+
             foreach (var r in rows)
             {
+                // Detect new WorkOrder group
+                if (currentOrderId != r.WorkOrder.Id)
+                {
+                    currentOrderId = r.WorkOrder.Id;
+                    groupAlternate = !groupAlternate;
+                    groupBgColor = groupAlternate ? XLColor.FromArgb(240, 240, 240) : XLColor.White;
+
+                    // Add a thin separator line between groups (if not the first)
+                    if (row > 2)
+                    {
+                        ws.Row(row - 1).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
+                        ws.Row(row - 1).Style.Border.BottomBorderColor = XLColor.DarkGray;
+                    }
+                }
+
+                // Apply group background to the entire row
+                for (int i = 1; i <= 7; i++)
+                {
+                    ws.Cell(row, i).Style.Fill.BackgroundColor = groupBgColor;
+                }
+
                 ws.Cell(row, 1).Value = r.WorkOrder.Id;
                 ws.Cell(row, 2).Value = r.WorkOrder.OrderDate.ToString("dd/MM/yyyy");
                 ws.Cell(row, 3).Value = r.Client?.Name ?? "";
@@ -431,13 +491,14 @@ namespace SKAuto.Export.Excel
                 ws.Cell(row, 7).Value = r.Amount;
                 ws.Cell(row, 7).Style.NumberFormat.Format = "€#,##0.00";
 
-                if (alternate)
-                {
-                    for (int i = 1; i <= 7; i++)
-                        ws.Cell(row, i).Style.Fill.BackgroundColor = XLColor.LightGray;
-                }
                 row++;
-                alternate = !alternate;
+            }
+
+            // Final separator
+            if (rows.Any())
+            {
+                ws.Row(row - 1).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
+                ws.Row(row - 1).Style.Border.BottomBorderColor = XLColor.DarkGray;
             }
             row++;
         }
@@ -449,6 +510,8 @@ namespace SKAuto.Export.Excel
             public decimal Amount { get; set; }
             public Vehicle Vehicle { get; set; }
             public Client Client { get; set; }
+            public bool HasTravel { get; set; }
+            public bool IsTravelRow { get; set; }
         }
 
         // ========== CLIENTS REPORT ==========
@@ -606,6 +669,7 @@ namespace SKAuto.Export.Excel
                 var avgAct = group.Average(t => t.ActualMinutes!.Value);
                 var efficiency = avgEst > 0 ? (avgEst / avgAct) * 100 : 100;
                 worksheet.Cell(row, 1).Value = group.Key;
+                worksheet.Cell(row, 1).Style.NumberFormat.Format = "0";
                 worksheet.Cell(row, 2).Value = avgEst;
                 worksheet.Cell(row, 2).Style.NumberFormat.Format = "0";
                 worksheet.Cell(row, 3).Value = avgAct;
@@ -645,18 +709,6 @@ namespace SKAuto.Export.Excel
             return csv.ToString();
         }
 
-        // ========== HELPER METHODS ==========
-        private int GetIsoWeek(DateTime date)
-        {
-            return System.Globalization.CultureInfo.CurrentCulture.Calendar
-                .GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-        }
-
-        private DateTime GetStartOfWeek(DateTime date)
-        {
-            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-            return date.AddDays(-diff).Date;
-        }
         // ========== TASKS REPORT (Accessories) ==========
         public async Task<byte[]> GenerateTasksReportAsync(ReportFilter filter)
         {
@@ -758,6 +810,19 @@ namespace SKAuto.Export.Excel
                 ws.Cell(row, 8).Value = t.IsActive ? "Yes" : "No";
                 row++;
             }
+        }
+
+        // ========== HELPER METHODS ==========
+        private int GetIsoWeek(DateTime date)
+        {
+            return System.Globalization.CultureInfo.CurrentCulture.Calendar
+                .GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
+
+        private DateTime GetStartOfWeek(DateTime date)
+        {
+            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+            return date.AddDays(-diff).Date;
         }
     }
 }

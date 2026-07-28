@@ -55,7 +55,6 @@ namespace SKAuto.Export.Pdf
 
         private Cell CreateCell(string text, PdfFont font, Color borderColor, TextAlignment alignment = TextAlignment.LEFT)
         {
-            // FIX: convert null to empty string to avoid "Text content cannot be null"
             string safeText = text ?? "";
             return new Cell()
                 .Add(new Paragraph(safeText).SetFont(font).SetFontSize(9))
@@ -93,7 +92,6 @@ namespace SKAuto.Export.Pdf
             document.Add(new Paragraph(" ").SetFont(normalFont));
         }
 
-
         private void AddFilterSummary(Document document, ReportFilter filter, Dictionary<int, string> accessories,
             Color bg, Color border, PdfFont font)
         {
@@ -113,7 +111,7 @@ namespace SKAuto.Export.Pdf
             document.Add(summary);
         }
 
-        // ========== WORK ORDERS SUMMARY REPORT (with correct filtering) ==========
+        // ========== GENERATE WORK ORDERS REPORT ==========
         public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
         {
             _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
@@ -149,32 +147,55 @@ namespace SKAuto.Export.Pdf
             var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
                 .ToDictionary(a => a.Id, a => a.Name);
 
+            // Determine which WorkOrder IDs have Travel
+            var travelOrderIds = allTravels.Select(t => t.WorkOrderId).Distinct().ToHashSet();
+
             // Build report rows
             var reportRows = new List<ReportRow>();
             foreach (var wo in orders)
             {
-                // Tasks
+                bool hasTravel = travelOrderIds.Contains(wo.Id);
                 var tasks = allTasks.Where(t => t.WorkOrderId == wo.Id).ToList();
+
+                // Filter tasks based on TaskType
                 if (filter.TaskType.HasValue)
-                    tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
-                if (filter.AccessoryId.HasValue)
+                {
+                    if (filter.TaskType.Value == TaskType.Travel)
+                    {
+                        if (!hasTravel)
+                            tasks.Clear();
+                    }
+                    else
+                    {
+                        if (hasTravel)
+                            tasks.Clear();
+                        else
+                            tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
+                    }
+                }
+
+                if (filter.AccessoryId.HasValue && tasks.Any())
                     tasks = tasks.Where(t => t.AccessoryId == filter.AccessoryId.Value).ToList();
 
                 foreach (var task in tasks)
                 {
                     decimal amount = (task.Price ?? 0) * task.Quantity;
                     string desc = accessories.GetValueOrDefault(task.AccessoryId, "?");
+                    if (hasTravel)
+                        desc = "Travel – " + desc;
                     reportRows.Add(new ReportRow
                     {
                         WorkOrder = wo,
                         Description = desc,
                         Amount = amount,
                         Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
-                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null
+                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null,
+                        HasTravel = hasTravel,
+                        IsTravelRow = false
                     });
                 }
 
-                // Travels – only if TaskType filter is null or equals Travel
+                // Travel rows
                 if (!filter.TaskType.HasValue || filter.TaskType.Value == TaskType.Travel)
                 {
                     var travels = allTravels.Where(t => t.WorkOrderId == wo.Id).ToList();
@@ -188,11 +209,15 @@ namespace SKAuto.Export.Pdf
                             Description = desc,
                             Amount = amount,
                             Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
-                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null
+                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null,
+                            HasTravel = true,
+                            IsTravelRow = true
                         });
                     }
                 }
             }
+
+            reportRows = reportRows.Where(r => r.Amount > 0 || !string.IsNullOrEmpty(r.Description)).ToList();
 
             if (!reportRows.Any())
             {
@@ -269,8 +294,11 @@ namespace SKAuto.Export.Pdf
         private void WriteReportRows(Document document, List<ReportRow> rows, PdfFont normalFont,
             Color headerBg, Color headerFg, Color borderColor, Color altRowBg)
         {
+            rows = rows.OrderBy(r => r.WorkOrder.Id).ThenBy(r => r.IsTravelRow ? 0 : 1).ToList();
+
             Table table = new Table(7).UseAllAvailableWidth();
             table.SetMarginTop(10).SetMarginBottom(10);
+
             string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Description", "Amount" };
             foreach (string h in headers)
             {
@@ -281,9 +309,19 @@ namespace SKAuto.Export.Pdf
                 table.AddCell(headerCell);
             }
 
-            bool alternate = false;
+            int? currentOrderId = null;
+            bool groupAlternate = false;
+            Color groupBgColor = altRowBg;
+
             foreach (var r in rows)
             {
+                if (currentOrderId != r.WorkOrder.Id)
+                {
+                    currentOrderId = r.WorkOrder.Id;
+                    groupAlternate = !groupAlternate;
+                    groupBgColor = groupAlternate ? altRowBg : ColorConstants.WHITE;
+                }
+
                 Cell idCell = CreateCell(r.WorkOrder.Id.ToString(), normalFont, borderColor);
                 Cell dateCell = CreateCell(r.WorkOrder.OrderDate.ToString("dd/MM/yyyy"), normalFont, borderColor);
                 Cell clientCell = CreateCell(r.Client?.Name ?? "", normalFont, borderColor);
@@ -292,15 +330,24 @@ namespace SKAuto.Export.Pdf
                 Cell descCell = CreateCell(r.Description, normalFont, borderColor);
                 Cell amountCell = CreateCell($"{r.Amount:C}", normalFont, borderColor, TextAlignment.RIGHT);
 
-                if (alternate)
+                idCell.SetBackgroundColor(groupBgColor);
+                dateCell.SetBackgroundColor(groupBgColor);
+                clientCell.SetBackgroundColor(groupBgColor);
+                vehicleCell.SetBackgroundColor(groupBgColor);
+                statusCell.SetBackgroundColor(groupBgColor);
+                descCell.SetBackgroundColor(groupBgColor);
+                amountCell.SetBackgroundColor(groupBgColor);
+
+                // Thicker bottom border after each WorkOrder group
+                if (rows.LastOrDefault() == r || rows.FirstOrDefault(ro => ro.WorkOrder.Id != currentOrderId) == r)
                 {
-                    idCell.SetBackgroundColor(altRowBg);
-                    dateCell.SetBackgroundColor(altRowBg);
-                    clientCell.SetBackgroundColor(altRowBg);
-                    vehicleCell.SetBackgroundColor(altRowBg);
-                    statusCell.SetBackgroundColor(altRowBg);
-                    descCell.SetBackgroundColor(altRowBg);
-                    amountCell.SetBackgroundColor(altRowBg);
+                    idCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    dateCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    clientCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    vehicleCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    statusCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    descCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    amountCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
                 }
 
                 table.AddCell(idCell);
@@ -310,9 +357,8 @@ namespace SKAuto.Export.Pdf
                 table.AddCell(statusCell);
                 table.AddCell(descCell);
                 table.AddCell(amountCell);
-
-                alternate = !alternate;
             }
+
             document.Add(table);
         }
 
@@ -323,6 +369,8 @@ namespace SKAuto.Export.Pdf
             public decimal Amount { get; set; }
             public Vehicle Vehicle { get; set; }
             public Client Client { get; set; }
+            public bool HasTravel { get; set; }
+            public bool IsTravelRow { get; set; }
         }
 
         // ========== CLIENTS REPORT ==========
@@ -457,15 +505,6 @@ namespace SKAuto.Export.Pdf
             return ms.ToArray();
         }
 
-        // ========== HELPER METHODS ==========
-        private int GetIsoWeek(DateTime date) =>
-            CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-
-        private DateTime GetStartOfWeek(DateTime date)
-        {
-            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-            return date.AddDays(-diff).Date;
-        }
         // ========== TASKS REPORT (Accessories) ==========
         public async Task<byte[]> GenerateTasksReportAsync(ReportFilter filter)
         {
@@ -551,7 +590,6 @@ namespace SKAuto.Export.Pdf
             bool alternate = false;
             foreach (var t in tasks)
             {
-                // Safe conversion: replace null with empty string
                 string name = t.Name ?? "";
                 string partNumber = t.PartNumber ?? "";
                 string description = t.Description ?? "";
@@ -596,7 +634,14 @@ namespace SKAuto.Export.Pdf
             document.Add(table);
         }
 
-        // ... (keep existing GenerateClientsReportAsync, GenerateVehiclesReportAsync, GenerateWorkOrdersReportAsync, helpers)
-        // The existing methods are unchanged – only the Tasks report is added.
+        // ========== HELPER METHODS ==========
+        private int GetIsoWeek(DateTime date) =>
+            CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+
+        private DateTime GetStartOfWeek(DateTime date)
+        {
+            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+            return date.AddDays(-diff).Date;
+        }
     }
 }
