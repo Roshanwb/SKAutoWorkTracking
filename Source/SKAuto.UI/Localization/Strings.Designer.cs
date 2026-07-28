@@ -4592,7 +4592,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version: 3.0.0 (Latest).
+        ///   Looks up a localized string similar to Version: 3.0.1 (Latest).
         /// </summary>
         internal static string Version {
             get {

@@ -3,10 +3,11 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Animation;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SKAuto.UI.Views
 {
-    public partial class Splash : Window
+    public partial class Splash : System.Windows.Window
     {
         private readonly Action _loadResources;
         private readonly Func<Task> _onComplete;
@@ -39,6 +40,7 @@ namespace SKAuto.UI.Views
         {
             try
             {
+                this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 StatusText.Text = "Loading configuration...";
                 if (_logger != null) _logger.LogInfo("Splash: loading resources...");
                 await Task.Delay(100);

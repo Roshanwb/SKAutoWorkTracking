@@ -364,18 +364,24 @@ namespace SKAuto.UI
         // --- Public method for MainWindow to trigger shutdown ---
         public async void BeginShutdown()
         {
+
+            _logger.LogInfo("Shutdown initiated.");
             if (_isShuttingDown) return;
             _isShuttingDown = true;
 
             // Show the splash screen again (if not already visible)
             if (_splash != null)
             {
-                if (!_splash.IsVisible)
-                {
-                    _splash.Show();
-                    _splash.Topmost = true; // Ensure it's on top
-                    _splash.Activate();
-                }
+                _splash.Hide(); // Hide first to reset any previous state
+                _splash.Show();
+                _splash.Visibility= Visibility.Visible;
+                // Ensure it's on top and visible
+              
+                _splash.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                _splash.Topmost = true; // Keep on top
+                _splash.Activate();
+                // Small delay to let the window render
+                await Task.Delay(100);
                 _splash.UpdateStatus("Shutting down...", 0);
             }
 
@@ -444,10 +450,11 @@ namespace SKAuto.UI
                 _host.Dispose();
                 (_lockService as IDisposable)?.Dispose();
 
+                // --- Final splash status with 1-second visibility ---
                 if (_splash != null)
                 {
                     _splash.UpdateStatus("Done.", 100);
-                    await Task.Delay(300);
+                    await Task.Delay(1000); // Keep splash visible for 1 second after everything is done
                     _splash.Close();
                 }
 
