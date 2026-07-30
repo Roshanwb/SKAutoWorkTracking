@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.DTOs;
@@ -12,7 +12,6 @@ using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-// for System.Windows.MessageBox
 
 namespace SKAuto.UI.ViewModels
 {
@@ -98,7 +97,6 @@ namespace SKAuto.UI.ViewModels
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
             ImportDataCommand = new RelayCommand(OpenImport);
-            //GenerateReportsCommand = new AsyncRelayCommand(GenerateReportsAsync);
             UpdateStatusCommand = new AsyncRelayCommand<string>(UpdateStatusAsync);
             RescheduleCommand = new AsyncRelayCommand(RescheduleAsync);
             EditClientCommand = new AsyncRelayCommand(EditClient, () => SelectedWorkOrder != null);
@@ -180,9 +178,10 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenAbout()
         {
-            System.Windows.MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights�",
-                            LocalizationManager.Instance["MainWindow_About"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights®",
+                            LocalizationManager.Instance["MainWindow_About"], MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
         private async void OpenPriceUpdate()
         {
             var logger = App.GetService<ILoggingService>();
@@ -191,7 +190,6 @@ namespace SKAuto.UI.ViewModels
             var result = window.ShowDialog();
             if (result == true)
             {
-                // Refresh today's work orders to show updated prices
                 await LoadTodayWorkAsync();
                 StatusMessage = LocalizationManager.Instance["PricesUpdatedAndGridRefreshed"];
             }
@@ -212,10 +210,8 @@ namespace SKAuto.UI.ViewModels
 
         private async Task SyncNowAsync()
         {
-            // Call backup service to create backup and upload via drive service
-            // For now, just update status
             SyncStatus = "Syncing...";
-            await Task.Delay(2000); // simulate
+            await Task.Delay(2000);
             SyncStatus = "Last sync: just now";
         }
 
@@ -227,13 +223,13 @@ namespace SKAuto.UI.ViewModels
             {
                 var days = (DateTime.Now - settings.LastSync.Value).Days;
                 if (days >= 7)
-                    SyncStatus = $"?? Sync needed (last: {settings.LastSync.Value:dd/MM}) � click to sync";
+                    SyncStatus = $"⚠️ Sync needed (last: {settings.LastSync.Value:dd/MM}) – click to sync";
                 else
-                    SyncStatus = $"? Last sync: {settings.LastSync.Value:dd/MM}";
+                    SyncStatus = $"✅ Last sync: {settings.LastSync.Value:dd/MM}";
             }
             else
             {
-                SyncStatus = "?? Configure Google Drive";
+                SyncStatus = "❌ Configure Google Drive";
             }
         }
 
@@ -245,6 +241,7 @@ namespace SKAuto.UI.ViewModels
             var win = new BackupView { DataContext = vm };
             win.Show();
         }
+
         private async Task LoadTodayWorkAsync()
         {
             await LoadWorkForDateAsync(SelectedDate);
@@ -257,7 +254,6 @@ namespace SKAuto.UI.ViewModels
                 StatusMessage = $"Loading work for {date:dd/MM/yyyy}...";
                 var workOrderRepo = (WorkOrderRepository)_unitOfWork.WorkOrders;
                 var orders = await workOrderRepo.GetDailyWorkOrdersAsync(date);
-                // Sort by ID descending (latest work orders first)
                 TodayWorkOrders = new ObservableCollection<WorkOrderDto>(orders.OrderByDescending(o => o.VehicleChassis));
 
                 var summary = await workOrderRepo.GetDailySummaryAsync(date);
@@ -287,11 +283,9 @@ namespace SKAuto.UI.ViewModels
         private void CreateWorkOrder()
         {
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, 0);
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
-            // ? Set the owner to the current MainWindow
             window.Owner = System.Windows.Application.Current.MainWindow;
-            // ? Set startup location (already in XAML, but ensure it's set)
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (window.ShowDialog() == true)
             {
@@ -319,7 +313,7 @@ namespace SKAuto.UI.ViewModels
             var serviceProvider = App.GetService<IServiceProvider>();
 
             var importVM = new ImportViewModel(
-                null,               // IUnitOfWork � not used inside ImportViewModel; safe to pass null
+                null,
                 loggingService,
                 serviceProvider,
                 scopeFactory
@@ -370,7 +364,7 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
             var view = new AccessoryManagementView
             {
-                DataContext = new AccessoryManagementViewModel(_unitOfWork, logger)
+                DataContext = new AccessoryManagementViewModel(_unitOfWork, logger, _configService)
             };
 
             var window = new Window
@@ -436,7 +430,7 @@ namespace SKAuto.UI.ViewModels
             if (SelectedWorkOrder == null) return;
 
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, SelectedWorkOrder.Id);
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
@@ -475,8 +469,8 @@ namespace SKAuto.UI.ViewModels
             if (SelectedWorkOrder == null) return;
 
             var result = System.Windows.MessageBox.Show($"Delete work order #{SelectedWorkOrder.Id}? This action cannot be undone.",
-                "Confirm Delete", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
 
             try
             {
@@ -516,21 +510,18 @@ namespace SKAuto.UI.ViewModels
             var vm = new VehicleManagementViewModel(_unitOfWork);
             var win = new VehicleManagementView { DataContext = vm };
             win.Show();
-            // Vehicles might affect work orders? Not directly, but could be needed.
             LoadTodayWorkCommand.Execute(null);
         }
 
         private async Task EditWorkOrderAsync(int workOrderId)
         {
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, workOrderId);
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
                 await LoadWorkForDateAsync(SelectedDate);
             }
         }
-
-
     }
 }

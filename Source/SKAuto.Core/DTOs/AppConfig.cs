@@ -5,10 +5,12 @@
         public string Language { get; set; } = "fr-FR";
         public ReportColors ReportColors { get; set; } = new();
         public ReportFonts ReportFonts { get; set; } = new();
-        public int MaxBackupsToKeep { get; set; } = 20;   // Number of backups to keep
-                                                          // NEW: Email settings for password reset
+        public int MaxBackupsToKeep { get; set; } = 20;
         public EmailConfig Email { get; set; } = new();
         public string Theme { get; set; } = "Light";
+
+        // NEW: PSA Rate (€ per hour)
+        public decimal PsaRate { get; set; } = 66.0m;
     }
 
     public class EmailConfig

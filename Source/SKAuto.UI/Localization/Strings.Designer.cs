@@ -4754,6 +4754,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Time (min) .
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Time {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to TRAVELS.
         /// </summary>
         internal static string WorkOrderDetailWindow_Travels {

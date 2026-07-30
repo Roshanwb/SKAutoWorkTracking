@@ -1,16 +1,20 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.UI.Localization;
 using System.Collections.ObjectModel;
+using System.Windows;
+
 namespace SKAuto.UI.ViewModels
 {
     public partial class AccessoryManagementViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _logger;
+        private readonly IConfigurationService _configService;
 
         private IRelayCommand<Accessory>? _editAccessoryCommand;
         private IAsyncRelayCommand? _deleteAccessoryCommand;
@@ -31,7 +35,7 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _isEditMode;
 
-        // Separate properties for editing (avoids partial method issues)
+        // Separate properties for editing
         [ObservableProperty]
         private string _editName = string.Empty;
 
@@ -56,6 +60,13 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private bool _editIsActive = true;
 
+        // NEW: PSA Rate
+        [ObservableProperty]
+        private decimal _psaRate;
+
+        [ObservableProperty]
+        private bool _isAdmin;
+
         public Array TaskTypeValues => Enum.GetValues(typeof(TaskType));
 
         public IAsyncRelayCommand LoadAccessoriesCommand { get; }
@@ -65,10 +76,16 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand SaveAccessoryCommand => _saveAccessoryCommand!;
         public IRelayCommand CancelEditCommand { get; }
 
-        public AccessoryManagementViewModel(IUnitOfWork unitOfWork, ILoggingService logger)
+        public AccessoryManagementViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _configService = configService;
+
+            var currentUser = App.CurrentUser;
+            IsAdmin = currentUser != null && currentUser.Role == UserRole.Admin;
+
+            _ = LoadPsaRateAsync();
 
             _logger.LogInfo(LocalizationManager.Instance["AccessoryManagementInitializing"]);
 
@@ -81,6 +98,42 @@ namespace SKAuto.UI.ViewModels
 
             _logger.LogInfo(LocalizationManager.Instance["AccessoryManagementInitializationComplete"]);
             LoadAccessoriesCommand.Execute(null);
+        }
+
+        private async Task LoadPsaRateAsync()
+        {
+            try
+            {
+                var config = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+                PsaRate = config.PsaRate;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to load PSA rate", ex);
+                PsaRate = 66.0m;
+            }
+        }
+
+        partial void OnPsaRateChanged(decimal value)
+        {
+            if (!IsAdmin) return;
+            _ = SavePsaRateAsync(value);
+        }
+
+        private async Task SavePsaRateAsync(decimal rate)
+        {
+            try
+            {
+                var config = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+                config.PsaRate = rate;
+                await _configService.SetAsync("AppConfig", config);
+                _logger.LogInfo($"PSA rate saved: {rate:C}/h");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to save PSA rate", ex);
+                System.Windows.MessageBox.Show($"Failed to save PSA rate: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         partial void OnSelectedAccessoryChanged(Accessory? value)
@@ -97,7 +150,6 @@ namespace SKAuto.UI.ViewModels
         {
             if (value != null)
             {
-                // Populate edit fields from the accessory
                 EditName = value.Name ?? "";
                 EditTaskType = value.TaskType;
                 EditPartNumber = value.PartNumber ?? "";
@@ -110,7 +162,6 @@ namespace SKAuto.UI.ViewModels
             }
             else
             {
-                // Clear edit fields
                 EditName = "";
                 EditTaskType = TaskType.Fit;
                 EditPartNumber = "";
@@ -137,7 +188,7 @@ namespace SKAuto.UI.ViewModels
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
                 var activeAccessories = accessories.Where(x => x.IsActive).OrderBy(x => x.Name).ToList();
 
-                await App.Current.Dispatcher.InvokeAsync(() =>
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     Accessories.Clear();
                     foreach (var a in activeAccessories)
@@ -149,7 +200,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(LocalizationManager.Instance["LoadAccessoriesAsyncFailed"], ex);
-                System.Windows.MessageBox.Show($"Error loading accessories: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error loading accessories: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -199,10 +250,10 @@ namespace SKAuto.UI.ViewModels
             var result = System.Windows.MessageBox.Show(
                 $"Delete accessory '{accessoryToDelete.Name}'?",
                 "Confirm Delete",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Warning);
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
 
-            if (result != System.Windows.MessageBoxResult.Yes)
+            if (result != MessageBoxResult.Yes)
             {
                 _logger.LogInfo($"Deletion cancelled for accessory ID {accessoryToDelete.Id}");
                 return;
@@ -220,7 +271,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to delete accessory ID {accessoryToDelete.Id}", ex);
-                System.Windows.MessageBox.Show($"Cannot delete: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Cannot delete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -240,13 +291,12 @@ namespace SKAuto.UI.ViewModels
             if (string.IsNullOrWhiteSpace(newName))
             {
                 _logger.LogWarning(LocalizationManager.Instance["SaveAttemptedWithEmptyAccessoryName"]);
-                System.Windows.MessageBox.Show(LocalizationManager.Instance["AccessoryNameEmptyError"], "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(LocalizationManager.Instance["AccessoryNameEmptyError"], "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             try
             {
-                // Duplicate name check
                 bool nameChanged = isNew || !string.Equals(accessoryToSave.Name, newName, StringComparison.OrdinalIgnoreCase);
                 if (nameChanged)
                 {
@@ -254,12 +304,11 @@ namespace SKAuto.UI.ViewModels
                     if (existing != null && (isNew || existing.Id != accessoryToSave.Id))
                     {
                         _logger.LogWarning($"Duplicate accessory name '{newName}' – existing ID {existing.Id}");
-                        System.Windows.MessageBox.Show($"An accessory with the name '{newName}' already exists. Please use a different name.", "Duplicate Name", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show($"An accessory with the name '{newName}' already exists. Please use a different name.", "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
 
-                // Update accessory with edited values
                 accessoryToSave.Name = newName;
                 accessoryToSave.TaskType = EditTaskType;
                 accessoryToSave.PartNumber = EditPartNumber;
@@ -289,7 +338,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to save accessory ID {accessoryToSave.Id}", ex);
-                System.Windows.MessageBox.Show($"Error saving accessory: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error saving accessory: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

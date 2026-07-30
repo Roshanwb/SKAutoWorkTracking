@@ -1699,4 +1699,7 @@
   <data name="Sync_SuccessTitle" xml:space="preserve">
     <value>Succès</value>
   </data>
+  <data name="WorkOrderDetailWindow_Time" xml:space="preserve">
+    <value>Temps (min)</value>
+  </data>
 </root>
