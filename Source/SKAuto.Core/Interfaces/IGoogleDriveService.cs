@@ -20,11 +20,14 @@ namespace SKAuto.Core.Interfaces
         Task<List<BackupFileInfo>> ListDriveBackupsAsync();
         Task<string> DownloadDriveBackupAsync(string fileId);
 
-        // --- NEW methods for sync ---
+        // --- Sync methods ---
         Task<bool> IsConnectedAsync();
         Task<Google.Apis.Drive.v3.Data.File?> GetFileByNameAsync(string fileName);
         Task<string> DownloadFileContentAsync(string fileId);
         Task UploadFileContentAsync(string fileName, string content);
         Task DeleteFileAsync(string fileId);
+
+        // NEW: Get subfolder ID under a parent folder
+        Task<string> GetSubFolderIdAsync(string parentFolderId, string folderName);
     }
 }

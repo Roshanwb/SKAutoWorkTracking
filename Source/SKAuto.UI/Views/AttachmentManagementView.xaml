@@ -1,0 +1,40 @@
+﻿<Window x:Class="SKAuto.UI.Views.AttachmentManagementView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Manage Attachments" Height="450" Width="600"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style TargetType="Button" BasedOn="{StaticResource ActionButton}"/>
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Add Files..." Command="{Binding AddAttachmentCommand}" Background="#3498DB" Width="100" IsEnabled="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=inverse}"/>
+            <Button Content="Delete" Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Width="80" Margin="5,0,0,0"/>
+            <Button Content="Download" Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Width="80" Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Attachments}" SelectedItem="{Binding SelectedAttachment}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                  BorderBrush="#DEE2E6" BorderThickness="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Filename" Binding="{Binding OriginalFilename}" Width="*"/>
+                <DataGridTextColumn Header="Size (KB)" Binding="{Binding FileSize, StringFormat={}{0:N0}}" Width="80"/>
+                <DataGridTextColumn Header="Uploaded" Binding="{Binding UploadDate, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding ContentType}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Close" Command="{Binding CloseCommand}" Background="#95A5A6" Width="80"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -98,6 +98,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -204,8 +205,30 @@
             </StackPanel>
         </Border>
 
+        <!-- ===== NEW: Attachments Group ===== -->
+        <GroupBox Grid.Row="2" Header="Attachments">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Content="Add File..." Command="{Binding AddAttachmentCommand}" Background="#3498DB" Width="100" Style="{StaticResource ActionButton}" Height="28"/>
+                    <Button Content="Delete" Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Width="80" Margin="5,0,0,0" Style="{StaticResource ActionButton}" Height="28"/>
+                    <Button Content="Download" Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Width="80" Margin="5,0,0,0" Style="{StaticResource ActionButton}" Height="28"/>
+                </StackPanel>
+                <DataGrid ItemsSource="{Binding Attachments}" SelectedItem="{Binding SelectedAttachment}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                          BorderBrush="#DEE2E6" BorderThickness="1"
+                          MaxHeight="120" VerticalAlignment="Top">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Filename" Binding="{Binding OriginalFilename}" Width="*"/>
+                        <DataGridTextColumn Header="Size (KB)" Binding="{Binding FileSize, StringFormat={}{0:N0}}" Width="70"/>
+                        <DataGridTextColumn Header="Uploaded" Binding="{Binding UploadDate, StringFormat=dd/MM/yyyy HH:mm}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </GroupBox>
+
         <!-- Tasks & Travels -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="5"/>
@@ -271,7 +294,7 @@
         </Grid>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <Button Content="{loc:Translate ClientManagementView_Delete}" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}"
                     Width="80" Height="34" Margin="5,0" TabIndex="9"/>
             <Button Content="{loc:Translate VehicleEditWindow_Save}" Command="{Binding SaveCommand}" Style="{StaticResource SuccessButton}"

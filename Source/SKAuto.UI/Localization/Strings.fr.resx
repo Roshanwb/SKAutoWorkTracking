@@ -1702,4 +1702,22 @@
   <data name="WorkOrderDetailWindow_Time" xml:space="preserve">
     <value>Temps (min)</value>
   </data>
+  <data name="MainWindow_BillingDone" xml:space="preserve">
+    <value>Fait</value>
+  </data>
+  <data name="MainWindow_BillingToDo" xml:space="preserve">
+    <value>À faire</value>
+  </data>
+  <data name="MainWindow_BillingPending" xml:space="preserve">
+    <value>En attente</value>
+  </data>
+  <data name="WorkOrderDetailWindow_Attachments" xml:space="preserve">
+    <value>Pièces jointes</value>
+  </data>
+  <data name="WorkOrderDetailWindow_AddAttachment" xml:space="preserve">
+    <value>Ajouter un fichier</value>
+  </data>
+  <data name="MainWindow_BillingTitle" xml:space="preserve">
+    <value>Facturation</value>
+  </data>
 </root>

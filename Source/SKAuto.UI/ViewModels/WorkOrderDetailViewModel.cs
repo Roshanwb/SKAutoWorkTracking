@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
@@ -8,6 +9,7 @@ using SKAuto.Data.Repository;
 using SKAuto.UI.Localization;
 using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 
 namespace SKAuto.UI.ViewModels
@@ -17,6 +19,7 @@ namespace SKAuto.UI.ViewModels
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _logger;
         private readonly IConfigurationService _configService;
+        private readonly IGoogleDriveService _driveService;
         private readonly bool _isNew;
         private decimal _psaRate;
 
@@ -53,7 +56,6 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private int _quantity = 1;
 
-        // NEW: Per-task time and price
         [ObservableProperty]
         private int _taskMinutes = 0;
 
@@ -65,6 +67,12 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<Travel> _travels = new();
+
+        [ObservableProperty]
+        private ObservableCollection<SourceDocument> _attachments = new();
+
+        [ObservableProperty]
+        private SourceDocument? _selectedAttachment;
 
         public Array OrderTypeValues => Enum.GetValues(typeof(OrderType));
         public Array WorkStatusValues => Enum.GetValues(typeof(WorkStatus));
@@ -82,11 +90,16 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand IncrementTimeCommand { get; }
         public IRelayCommand DecrementTimeCommand { get; }
 
-        public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService, int workOrderId = 0)
+        public IAsyncRelayCommand AddAttachmentCommand { get; }
+        public IAsyncRelayCommand<SourceDocument> RemoveAttachmentCommand { get; }
+        public IAsyncRelayCommand<SourceDocument> DownloadAttachmentCommand { get; }
+
+        public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService, IGoogleDriveService driveService, int workOrderId = 0)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _configService = configService;
+            _driveService = driveService;
             _isNew = workOrderId == 0;
 
             _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}");
@@ -102,16 +115,12 @@ namespace SKAuto.UI.ViewModels
             OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
             OpenAddTaskCommand = new RelayCommand(OpenAddTask);
 
-            IncrementTimeCommand = new RelayCommand(() =>
-            {
-                // Increment by 5 minutes, max 999
-                TaskMinutes = Math.Min(999, TaskMinutes + 5);
-            });
-            DecrementTimeCommand = new RelayCommand(() =>
-            {
-                // Decrement by 5 minutes, min 0
-                TaskMinutes = Math.Max(0, TaskMinutes - 5);
-            });
+            IncrementTimeCommand = new RelayCommand(() => TaskMinutes = Math.Min(999, TaskMinutes + 5));
+            DecrementTimeCommand = new RelayCommand(() => TaskMinutes = Math.Max(0, TaskMinutes - 5));
+
+            AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync);
+            RemoveAttachmentCommand = new AsyncRelayCommand<SourceDocument>(RemoveAttachmentAsync);
+            DownloadAttachmentCommand = new AsyncRelayCommand<SourceDocument>(DownloadAttachmentAsync);
 
             _ = InitializeAsync(workOrderId);
             _ = LoadPsaRateAsync();
@@ -186,7 +195,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== ADD TRAVEL ==========
         private void AddTravel()
         {
             _logger.LogInfo(LocalizationManager.Instance["AddTravelCalled"]);
@@ -222,7 +230,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== REMOVE TRAVEL ==========
         private void RemoveTravel(Travel? travel)
         {
             if (travel == null) return;
@@ -231,7 +238,6 @@ namespace SKAuto.UI.ViewModels
             WorkOrder.Travels.Remove(travel);
         }
 
-        // ========== OPEN ADD TASK ==========
         private async void OpenAddTask()
         {
             try
@@ -280,7 +286,6 @@ namespace SKAuto.UI.ViewModels
             });
         }
 
-        // ========== OPEN VEHICLE EDIT ==========
         private async void OpenVehicleEdit()
         {
             if (SelectedVehicle == null) return;
@@ -309,7 +314,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== INITIALIZE ==========
         private async Task InitializeAsync(int workOrderId)
         {
             try
@@ -350,7 +354,9 @@ namespace SKAuto.UI.ViewModels
                     }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
                     Travels = new ObservableCollection<Travel>(WorkOrder.Travels);
-                    _logger.LogInfo($"Loaded {Tasks.Count} tasks and {Travels.Count} travels for work order");
+                    var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == workOrderId);
+                    Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
+                    _logger.LogInfo($"Loaded {Tasks.Count} tasks, {Travels.Count} travels, {Attachments.Count} attachments");
                 }
                 else
                 {
@@ -362,6 +368,7 @@ namespace SKAuto.UI.ViewModels
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                     Travels = new ObservableCollection<Travel>();
+                    Attachments = new ObservableCollection<SourceDocument>();
                     _logger.LogInfo(LocalizationManager.Instance["CreatedNewWorkOrder"]);
                 }
             }
@@ -373,7 +380,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== SEARCH VEHICLE ==========
         private async Task SearchVehicleAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;
@@ -482,7 +488,6 @@ namespace SKAuto.UI.ViewModels
                 _logger.LogInfo($"Selected client changed to {value.Name} (ID {value.Id})");
         }
 
-        // ========== ADD TASK ==========
         private void AddTask()
         {
             if (SelectedAccessory == null)
@@ -514,7 +519,6 @@ namespace SKAuto.UI.ViewModels
             _logger.LogInfo($"Added task: Accessory '{task.Accessory.Name}', Type '{task.TaskType}', Quantity {Quantity}, Price {task.Price}, EstMin {task.EstimatedMinutes}");
         }
 
-        // ========== REMOVE TASK ==========
         private void RemoveTask(WorkTask? task)
         {
             if (task != null)
@@ -526,7 +530,123 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== SAVE ==========
+        private async Task AddAttachmentAsync()
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Multiselect = true,
+                Title = "Select files to attach"
+            };
+
+            if (openFileDialog.ShowDialog() != true) return;
+
+            try
+            {
+                var baseFolderId = await _driveService.GetFolderIdAsync("SKAuto Attachments");
+                var workOrderFolderId = await _driveService.GetSubFolderIdAsync(baseFolderId, WorkOrder.Id.ToString());
+
+                foreach (var filePath in openFileDialog.FileNames)
+                {
+                    var fileName = Path.GetFileName(filePath);
+                    var fileId = await _driveService.UploadFileAsync(filePath, fileName, workOrderFolderId);
+
+                    var doc = new SourceDocument
+                    {
+                        WorkOrderId = WorkOrder.Id,
+                        OriginalFilename = fileName,
+                        GoogleDriveFileId = fileId,
+                        FileHash = ComputeFileHash(filePath),
+                        FileSize = new FileInfo(filePath).Length,
+                        UploadDate = DateTime.UtcNow,
+                        ContentType = GetMimeType(filePath),
+                        DocumentType = "Attachment"
+                    };
+                    await _unitOfWork.SourceDocuments.AddAsync(doc);
+                }
+                await _unitOfWork.CompleteAsync();
+                var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == WorkOrder.Id);
+                Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
+                _logger.LogInfo($"Added {openFileDialog.FileNames.Length} attachment(s)");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to add attachment", ex);
+                System.Windows.MessageBox.Show($"Error adding attachment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task RemoveAttachmentAsync(SourceDocument? doc)
+        {
+            if (doc == null) return;
+            if (System.Windows.MessageBox.Show($"Delete attachment '{doc.OriginalFilename}'? This action cannot be undone.", "Confirm Delete",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(doc.GoogleDriveFileId))
+                    await _driveService.DeleteFileAsync(doc.GoogleDriveFileId);
+
+                await _unitOfWork.SourceDocuments.DeleteAsync(doc);
+                await _unitOfWork.CompleteAsync();
+                var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == WorkOrder.Id);
+                Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
+                _logger.LogInfo($"Deleted attachment {doc.OriginalFilename} (ID {doc.Id})");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to delete attachment", ex);
+                System.Windows.MessageBox.Show($"Error deleting attachment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task DownloadAttachmentAsync(SourceDocument? doc)
+        {
+            if (doc == null) return;
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = doc.OriginalFilename,
+                Filter = "All files|*.*"
+            };
+            if (saveDialog.ShowDialog() != true) return;
+
+            try
+            {
+                await _driveService.DownloadFileAsync(doc.GoogleDriveFileId, saveDialog.FileName);
+                System.Windows.MessageBox.Show($"File downloaded to {saveDialog.FileName}", "Download Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to download attachment", ex);
+                System.Windows.MessageBox.Show($"Error downloading attachment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string ComputeFileHash(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var hashBytes = sha256.ComputeHash(stream);
+            return Convert.ToHexString(hashBytes).ToLowerInvariant();
+        }
+
+        private string GetMimeType(string filePath)
+        {
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            return ext switch
+            {
+                ".pdf" => "application/pdf",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".txt" => "text/plain",
+                ".zip" => "application/zip",
+                _ => "application/octet-stream"
+            };
+        }
+
         private async Task SaveAsync()
         {
             try
@@ -574,7 +694,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== DELETE ==========
         private async Task DeleteAsync()
         {
             if (_isNew) return;
@@ -598,7 +717,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== CLOSE WINDOW ==========
         private void CloseWindow(bool success = false)
         {
             _logger.LogInfo($"Closing window, success={success}");

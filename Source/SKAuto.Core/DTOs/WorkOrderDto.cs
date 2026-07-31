@@ -17,6 +17,8 @@ namespace SKAuto.Core.DTOs
         public int TaskCount { get; set; }
         public bool HasTravel { get; set; }
         public string? Notes { get; set; }
+        public BillingStatus BillingStatus { get; set; }
+        public int AttachmentCount { get; set; }
 
         public static WorkOrderDto FromEntity(WorkOrder workOrder)
         {
@@ -33,7 +35,9 @@ namespace SKAuto.Core.DTOs
                 TotalAmount = workOrder.TotalAmount,
                 TaskCount = workOrder.WorkTasks?.Count ?? 0,
                 HasTravel = workOrder.Travels?.Any() ?? false,
-                Notes = workOrder.Notes
+                Notes = workOrder.Notes,
+                BillingStatus = workOrder.BillingStatus,
+                AttachmentCount = workOrder.SourceDocuments?.Count ?? 0
             };
         }
     }

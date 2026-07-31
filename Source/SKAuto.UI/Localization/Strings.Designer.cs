@@ -2873,6 +2873,42 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Done.
+        /// </summary>
+        internal static string MainWindow_BillingDone {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pending.
+        /// </summary>
+        internal static string MainWindow_BillingPending {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingPending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Billing.
+        /// </summary>
+        internal static string MainWindow_BillingTitle {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To Do.
+        /// </summary>
+        internal static string MainWindow_BillingToDo {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingToDo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Blocked.
         /// </summary>
         internal static string MainWindow_Blocked {
@@ -4610,6 +4646,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add File.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_AddAttachment {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_AddAttachment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add Task.
         /// </summary>
         internal static string WorkOrderDetailWindow_AddTask {
@@ -4624,6 +4669,15 @@ namespace SKAuto.UI.Localization {
         internal static string WorkOrderDetailWindow_AddTravel {
             get {
                 return ResourceManager.GetString("WorkOrderDetailWindow_AddTravel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attachments.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Attachments {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Attachments", resourceCulture);
             }
         }
         

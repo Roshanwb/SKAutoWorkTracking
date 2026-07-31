@@ -327,6 +327,33 @@ namespace SKAuto.Core.Services
 
             return input;
         }
+
+        public async Task<string> GetSubFolderIdAsync(string parentFolderId, string folderName)
+        {
+            if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+
+            // Search for existing folder with given name under parent
+            var request = _driveService.Files.List();
+            request.Q = $"mimeType='application/vnd.google-apps.folder' and name='{folderName}' and '{parentFolderId}' in parents and trashed=false";
+            request.Fields = "files(id, name)";
+            var result = await request.ExecuteAsync();
+
+            var folder = result.Files.FirstOrDefault();
+            if (folder != null)
+                return folder.Id;
+
+            // Create new folder
+            var folderMetadata = new Google.Apis.Drive.v3.Data.File()
+            {
+                Name = folderName,
+                MimeType = "application/vnd.google-apps.folder",
+                Parents = new[] { parentFolderId }
+            };
+            var createRequest = _driveService.Files.Create(folderMetadata);
+            createRequest.Fields = "id";
+            var newFolder = await createRequest.ExecuteAsync();
+            return newFolder.Id;
+        }
     }
 }
 #pragma warning restore CS0618

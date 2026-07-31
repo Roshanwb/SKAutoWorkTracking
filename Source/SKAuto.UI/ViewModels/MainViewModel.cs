@@ -20,6 +20,7 @@ namespace SKAuto.UI.ViewModels
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfigurationService _configService;
         private readonly ILoggingService _logger;
+        private readonly IGoogleDriveService _driveService;
 
         [ObservableProperty]
         private ObservableCollection<WorkOrderDto> _todayWorkOrders = new();
@@ -88,11 +89,18 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand ShowUserManagementCommand { get; }
         public IRelayCommand ChangePasswordCommand { get; }
 
-        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService, ILoggingService logger)
+        // NEW: Billing status command
+        public IAsyncRelayCommand<string> UpdateBillingStatusCommand { get; }
+
+        // NEW: Attachments command
+        public IAsyncRelayCommand<WorkOrderDto> OpenAttachmentsCommand { get; }
+
+        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService, ILoggingService logger, IGoogleDriveService driveService)
         {
             _unitOfWork = unitOfWork;
             _configService = configService;
             _logger = logger;
+            _driveService = driveService; // <-- This was missing – now injected!
 
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
@@ -121,9 +129,54 @@ namespace SKAuto.UI.ViewModels
             ShowUserManagementCommand = new RelayCommand(ShowUserManagement, () => IsAdmin);
             ChangePasswordCommand = new RelayCommand(ChangePassword);
 
+            // NEW: Billing status command with CanExecute
+            UpdateBillingStatusCommand = new AsyncRelayCommand<string>(UpdateBillingStatusAsync, s => SelectedWorkOrder != null);
+
+            // NEW: Attachments command
+            OpenAttachmentsCommand = new AsyncRelayCommand<WorkOrderDto>(OpenAttachmentsAsync);
+
             LoadTodayWorkCommand.Execute(null);
         }
 
+        // ===== BILLING STATUS =====
+        private async Task UpdateBillingStatusAsync(string? statusString)
+        {
+            if (SelectedWorkOrder == null || string.IsNullOrEmpty(statusString)) return;
+
+            if (Enum.TryParse<BillingStatus>(statusString, out var billingStatus))
+            {
+                try
+                {
+                    var workOrder = await _unitOfWork.WorkOrders.GetByIdAsync(SelectedWorkOrder.Id);
+                    if (workOrder != null)
+                    {
+                        workOrder.BillingStatus = billingStatus;
+                        await _unitOfWork.WorkOrders.UpdateAsync(workOrder);
+                        await _unitOfWork.CompleteAsync();
+                        StatusMessage = $"Updated billing status to {billingStatus} for order {SelectedWorkOrder.Id}";
+                        await LoadWorkForDateAsync(SelectedDate);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage = $"Error updating billing status: {ex.Message}";
+                }
+            }
+        }
+
+        // ===== OPEN ATTACHMENTS =====
+        private async Task OpenAttachmentsAsync(WorkOrderDto? workOrder)
+        {
+            if (workOrder == null) return;
+
+            var vm = new AttachmentManagementViewModel(_unitOfWork, _driveService, _logger, workOrder.Id);
+            var view = new AttachmentManagementView(vm);
+            view.Owner = System.Windows.Application.Current.MainWindow;
+            view.ShowDialog();
+            await LoadWorkForDateAsync(SelectedDate);
+        }
+
+        // ===== EXISTING METHODS (unchanged) =====
         private void ShowUserManagement()
         {
             var logger = App.GetService<ILoggingService>();
@@ -283,7 +336,7 @@ namespace SKAuto.UI.ViewModels
         private void CreateWorkOrder()
         {
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, 0);
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -430,7 +483,7 @@ namespace SKAuto.UI.ViewModels
             if (SelectedWorkOrder == null) return;
 
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, SelectedWorkOrder.Id);
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
@@ -494,6 +547,7 @@ namespace SKAuto.UI.ViewModels
             DeleteWorkOrderCommand?.NotifyCanExecuteChanged();
             EditClientCommand?.NotifyCanExecuteChanged();
             OpenWorkOrderDetailCommand?.NotifyCanExecuteChanged();
+            UpdateBillingStatusCommand?.NotifyCanExecuteChanged();
         }
 
         private void OpenClientManagement()
@@ -516,7 +570,7 @@ namespace SKAuto.UI.ViewModels
         private async Task EditWorkOrderAsync(int workOrderId)
         {
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, workOrderId);
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             if (window.ShowDialog() == true)
             {
