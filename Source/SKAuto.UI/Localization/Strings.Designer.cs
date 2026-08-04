@@ -992,6 +992,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download.
+        /// </summary>
+        internal static string DownloadText {
+            get {
+                return ResourceManager.GetString("DownloadText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to EditAccessory called with null accessory.
         /// </summary>
         internal static string EditAccessoryCalledWithNull {

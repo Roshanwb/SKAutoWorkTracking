@@ -198,12 +198,11 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <!-- NEW: Attachments Column -->
-                        <DataGridTemplateColumn Header="📎" Width="50">
+                        <DataGridTemplateColumn Header="📋" Width="50">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="📎" Visibility="{Binding AttachmentCount, Converter={StaticResource GreaterThanZeroToVisibilityConverter}}" Margin="0,0,5,0" Foreground="#3498DB"/>
-                                        <Button Content="📎" Command="{Binding DataContext.OpenAttachmentsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" FontSize="14" Cursor="Hand" ToolTip="Manage attachments" Foreground="#3498DB"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">                                        
+                                        <Button Content="📋" Command="{Binding DataContext.OpenAttachmentsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" FontSize="14" Cursor="Hand" ToolTip="Manage attachments" Foreground="#3498DB" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -274,11 +273,11 @@
                     <Button Content="{loc:Translate MainWindow_Done}" Style="{StaticResource StatusButton}" Background="#2ECC71" Command="{Binding UpdateStatusCommand}" CommandParameter="Done"/>
 
                     <!-- NEW: Billing Status -->
-                    <TextBlock Text="{loc:Translate MainWindow_Done}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
-                    <Button Content="{loc:Translate MainWindow_BillingDone}" Style="{StaticResource StatusButton}" Background="#2ECC71"        Command="{Binding UpdateBillingStatusCommand}" CommandParameter="Done"/>
+                    <TextBlock Text="{loc:Translate MainWindow_BillingTitle}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
                     <Button Content="{loc:Translate MainWindow_BillingToDo}" Style="{StaticResource StatusButton}" Background="#F39C12"         Command="{Binding UpdateBillingStatusCommand}" CommandParameter="ToDo"/>
                     <Button Content="{loc:Translate MainWindow_BillingPending}" Style="{StaticResource StatusButton}" Background="#E74C3C"         Command="{Binding UpdateBillingStatusCommand}" CommandParameter="Pending"/>
-                    
+                    <Button Content="{loc:Translate MainWindow_BillingDone}" Style="{StaticResource StatusButton}" Background="#2ECC71"        Command="{Binding UpdateBillingStatusCommand}" CommandParameter="Done"/>
+
 
 
                     <TextBlock Text="{loc:Translate MainWindow_Danger}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>

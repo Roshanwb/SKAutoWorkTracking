@@ -1720,4 +1720,7 @@
   <data name="MainWindow_BillingTitle" xml:space="preserve">
     <value>Facturation</value>
   </data>
+  <data name="DownloadText" xml:space="preserve">
+    <value>Télécharger</value>
+  </data>
 </root>

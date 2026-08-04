@@ -16,9 +16,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="Add Files..." Command="{Binding AddAttachmentCommand}" Background="#3498DB" Width="100" IsEnabled="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=inverse}"/>
-            <Button Content="Delete" Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Width="80" Margin="5,0,0,0"/>
-            <Button Content="Download" Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Width="80" Margin="5,0,0,0"/>
+            <Button Content="{loc:Translate WorkOrderDetailWindow_AddAttachment}" Command="{Binding AddAttachmentCommand}" Background="#3498DB" Width="100" IsEnabled="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=inverse}"/>
+            <Button Content="{loc:Translate ClientManagementView_Delete}"  Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Width="80" Margin="5,0,0,0"/>
+            <Button Content="{loc:Translate DownloadText}"  Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Width="80" Margin="5,0,0,0"/>
         </StackPanel>
 
         <DataGrid Grid.Row="1" ItemsSource="{Binding Attachments}" SelectedItem="{Binding SelectedAttachment}"
