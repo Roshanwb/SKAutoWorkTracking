@@ -843,7 +843,7 @@ namespace SKAuto.UI.ViewModels
                                     OrderDate = dto.OrderDate,
                                     Status = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done,
                                     CompletedDate = dto.OrderDate,
-                                    OrderType = OrderType.PSA_Contract,
+                                    OrderType = OrderType.PSA_Sur_Site ,
                                     Notes = $"Imported from {dto.Source}"
                                 };
                                 workOrdersToAdd.Add(workOrder);

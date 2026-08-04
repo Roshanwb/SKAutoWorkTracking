@@ -20,6 +20,9 @@ namespace SKAuto.Core.DTOs
         public BillingStatus BillingStatus { get; set; }
         public int AttachmentCount { get; set; }
 
+        // NEW: Friendly display name for OrderType
+        public string OrderTypeDisplay => OrderType.GetDisplayName();
+
         public static WorkOrderDto FromEntity(WorkOrder workOrder)
         {
             return new WorkOrderDto

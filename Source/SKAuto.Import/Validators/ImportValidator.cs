@@ -78,7 +78,7 @@ namespace SKAuto.Import.Validators
             }
 
             // PSA specific validations
-            if (workOrder.OrderType == OrderType.PSA_Contract)
+            if (workOrder.OrderType == OrderType.PSA_Sur_Site)
             {
                 if (workOrder.WorkTasks.Any(t => t.Price.HasValue))
                 {
@@ -92,7 +92,7 @@ namespace SKAuto.Import.Validators
             }
 
             // Direct order validations
-            if (workOrder.OrderType == OrderType.Direct_Contract)
+            if (workOrder.OrderType == OrderType.Direct_Sur_Site)
             {
                 if (workOrder.WorkTasks.Any(t => !t.Price.HasValue))
                 {
@@ -179,7 +179,7 @@ namespace SKAuto.Import.Validators
                     result.AddError($"WO-{order.Id}", $"Negative total amount: {order.TotalAmount:C}");
                 }
 
-                if (order.OrderType == OrderType.Direct_Contract && !order.TotalAmount.HasValue)
+                if ((order.OrderType == OrderType.Direct_Sur_Site || order.OrderType == OrderType.Direct_Exterieur) && !order.TotalAmount.HasValue)
                 {
                     result.AddWarning($"WO-{order.Id}", "Direct sale order has no total amount");
                 }

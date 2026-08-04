@@ -50,7 +50,6 @@ namespace SKAuto.Import.Parsers
 
         private WorkOrder? ParseWorkOrderRow(IXLWorksheet worksheet, int row)
         {
-            // Basic validation
             var chassis = worksheet.Cell(row, 1).GetString();
             var clientName = worksheet.Cell(row, 2).GetString();
 
@@ -65,7 +64,6 @@ namespace SKAuto.Import.Parsers
                 Notes = worksheet.Cell(row, 6).GetString()
             };
 
-            // Parse tasks if present
             var taskColumn = 7;
             while (!worksheet.Cell(row, taskColumn).IsEmpty())
             {
@@ -73,7 +71,7 @@ namespace SKAuto.Import.Parsers
                 if (task != null)
                     workOrder.WorkTasks.Add(task);
 
-                taskColumn += 4; // Move to next task group (assumes 4 columns per task)
+                taskColumn += 4;
             }
 
             return workOrder;
@@ -89,12 +87,11 @@ namespace SKAuto.Import.Parsers
             {
                 TaskType = ParseTaskType(worksheet.Cell(row, startColumn + 1).GetString()),
                 Quantity = ParseInt(worksheet.Cell(row, startColumn + 2).GetString()) ?? 1,
-                Price = ParseDecimal(worksheet.Cell(row, startColumn + 3).GetString()),   // single price
+                Price = ParseDecimal(worksheet.Cell(row, startColumn + 3).GetString()),
                 EstimatedMinutes = ParseInt(worksheet.Cell(row, startColumn + 4).GetString())
             };
         }
 
-        // Helper methods
         private DateTime? ParseDate(string value)
         {
             if (DateTime.TryParse(value, out DateTime date))
@@ -106,9 +103,11 @@ namespace SKAuto.Import.Parsers
         {
             return value?.ToLower() switch
             {
-                "psa" or "psa_contract" => OrderType.PSA_Contract,
-                "Direct_Contract" => OrderType.Direct_Contract,
-                _ => OrderType.Direct_Contract
+                "psa" or "psa_contract" or "psa_sur_site" => OrderType.PSA_Sur_Site,
+                "psa_exterieur" => OrderType.PSA_Exterieur,
+                "direct_contract" or "direct_sur_site" => OrderType.Direct_Sur_Site,
+                "direct_exterieur" => OrderType.Direct_Exterieur,
+                _ => OrderType.Direct_Sur_Site
             };
         }
 

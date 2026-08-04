@@ -7,6 +7,7 @@ using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
 using SKAuto.UI.Localization;
+using SKAuto.UI.Models;    
 using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -21,7 +22,7 @@ namespace SKAuto.UI.ViewModels
         private readonly IConfigurationService _configService;
         private readonly IGoogleDriveService _driveService;
         private readonly bool _isNew;
-        private decimal _psaRate;
+        private decimal _psaRate; 
 
         [ObservableProperty]
         private WorkOrder _workOrder;
@@ -74,7 +75,23 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private SourceDocument? _selectedAttachment;
 
-        public Array OrderTypeValues => Enum.GetValues(typeof(OrderType));
+        // OrderType options with friendly names
+        public List<SelectableOption<OrderType>> OrderTypeOptions { get; }
+         
+
+        private SelectableOption<OrderType> _selectedOrderTypeOption;
+        public SelectableOption<OrderType> SelectedOrderTypeOption
+        {
+            get => _selectedOrderTypeOption;
+            set
+            {
+                if (SetProperty(ref _selectedOrderTypeOption, value) && value != null)
+                {
+                    WorkOrder.OrderType = value.Value;
+                }
+            }
+        }
+
         public Array WorkStatusValues => Enum.GetValues(typeof(WorkStatus));
 
         public IAsyncRelayCommand SearchVehicleCommand { get; }
@@ -103,6 +120,12 @@ namespace SKAuto.UI.ViewModels
             _isNew = workOrderId == 0;
 
             _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}");
+
+            // Build OrderType options with friendly names
+            OrderTypeOptions = Enum.GetValues(typeof(OrderType))
+                .Cast<OrderType>()
+                .Select(ot => new SelectableOption<OrderType> { Value = ot, Display = ot.GetDisplayName() })
+                .ToList();
 
             SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync);
             AddTaskCommand = new RelayCommand(AddTask);
@@ -357,6 +380,9 @@ namespace SKAuto.UI.ViewModels
                     var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == workOrderId);
                     Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
                     _logger.LogInfo($"Loaded {Tasks.Count} tasks, {Travels.Count} travels, {Attachments.Count} attachments");
+
+                    // Set selected OrderType option
+                    SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == WorkOrder.OrderType);
                 }
                 else
                 {
@@ -364,12 +390,15 @@ namespace SKAuto.UI.ViewModels
                     {
                         OrderDate = DateTime.Today,
                         Status = WorkStatus.Planned,
-                        OrderType = OrderType.PSA_Contract
+                        OrderType = OrderType.PSA_Sur_Site
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                     Travels = new ObservableCollection<Travel>();
                     Attachments = new ObservableCollection<SourceDocument>();
                     _logger.LogInfo(LocalizationManager.Instance["CreatedNewWorkOrder"]);
+
+                    // Set default OrderType option
+                    SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == OrderType.PSA_Sur_Site);
                 }
             }
             catch (Exception ex)
@@ -728,5 +757,16 @@ namespace SKAuto.UI.ViewModels
                     break;
                 }
         }
+    }
+
+  
+}
+// Helper class for dropdown options
+namespace SKAuto.UI.Models
+{
+    public class SelectableOption<T>
+    {
+        public T? Value { get; set; }
+        public string Display { get; set; } = string.Empty;
     }
 }

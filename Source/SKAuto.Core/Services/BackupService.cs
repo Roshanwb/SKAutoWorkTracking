@@ -680,7 +680,7 @@ namespace SKAuto.Core.Services
                     {
                         existing.OrderDate = ParseDate(row.GetValueOrDefault("OrderDate"));
                         existing.Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned;
-                        existing.OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract;
+                        existing.OrderType = ParseOrderType(row.GetValueOrDefault("OrderType"));
                         var completedDateStr = row.GetValueOrDefault("CompletedDate");
                         existing.CompletedDate = string.IsNullOrEmpty(completedDateStr) ? (DateTime?)null : ParseDate(completedDateStr);
                         existing.Notes = row.GetValueOrDefault("Notes");
@@ -700,7 +700,7 @@ namespace SKAuto.Core.Services
                         Id = id,
                         OrderDate = ParseDate(row.GetValueOrDefault("OrderDate")),
                         Status = Enum.TryParse<WorkStatus>(row.GetValueOrDefault("Status"), out var s) ? s : WorkStatus.Planned,
-                        OrderType = Enum.TryParse<OrderType>(row.GetValueOrDefault("OrderType"), out var ot) ? ot : OrderType.PSA_Contract,
+                        OrderType = ParseOrderType(row.GetValueOrDefault("OrderType")),
                         CompletedDate = string.IsNullOrEmpty(row.GetValueOrDefault("CompletedDate")) ? (DateTime?)null : ParseDate(row.GetValueOrDefault("CompletedDate")),
                         Notes = row.GetValueOrDefault("Notes"),
                         VehicleId = vehicle.Id,
@@ -1043,6 +1043,19 @@ namespace SKAuto.Core.Services
                 }
             }
             _logger.LogInfo($"ImportSourceDocumentsAsync finished: {result.RowsInserted} inserted, {result.RowsUpdated} updated, {result.RowsSkipped} skipped");
+        }
+
+        private OrderType ParseOrderType(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return OrderType.Direct_Sur_Site;
+            return value?.ToLower() switch
+            {
+                "psa_contract" or "psa_sur_site" => OrderType.PSA_Sur_Site,
+                "psa_exterieur" => OrderType.PSA_Exterieur,
+                "direct_contract" or "direct_sur_site" => OrderType.Direct_Sur_Site,
+                "direct_exterieur" => OrderType.Direct_Exterieur,
+                _ => OrderType.Direct_Sur_Site
+            };
         }
     }
 }

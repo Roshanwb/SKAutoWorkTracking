@@ -171,13 +171,13 @@
                 <ComboBox x:Name="ClientCombo" Grid.Row="0" Grid.Column="1"
                           ItemsSource="{Binding Clients}" SelectedItem="{Binding SelectedClient}"
                           DisplayMemberPath="Name" IsEditable="True"
-                          Height="28" Margin="0,4,8,4" TabIndex="15"/>
+                          Height="28" Margin="0,4,8,4" TabIndex="5"/>
 
                 <Label Grid.Row="0" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_OrderDate}" Target="{Binding ElementName=OrderDatePicker}"
                        Margin="10,0,6,0" VerticalAlignment="Center"/>
                 <DatePicker x:Name="OrderDatePicker" Grid.Row="0" Grid.Column="3"
                             SelectedDate="{Binding WorkOrder.OrderDate}"
-                            Height="28" Margin="0,4,0,4" TabIndex="15"/>
+                            Height="28" Margin="0,4,0,4" TabIndex="2"/>
 
                 <Label Grid.Row="1" Grid.Column="0" Content="{loc:Translate MainWindow_Chassis}" Target="{Binding ElementName=ChassisTextBox}"
                        Margin="0,0,6,0" VerticalAlignment="Center"/>
@@ -200,8 +200,10 @@
                 <Label Grid.Row="2" Grid.Column="0" Content="{loc:Translate WorkOrderDetailWindow_OrderType}" Target="{Binding ElementName=OrderTypeCombo}"
                        Margin="0,0,6,0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="OrderTypeCombo" Grid.Row="2" Grid.Column="1"
-                          ItemsSource="{Binding OrderTypeValues}" SelectedItem="{Binding WorkOrder.OrderType}"
-                          Height="28" Margin="0,4,8,4" TabIndex="2"/>
+                          ItemsSource="{Binding OrderTypeOptions}"
+                          SelectedItem="{Binding SelectedOrderTypeOption}"
+                          DisplayMemberPath="Display"
+                          Height="28" Margin="0,4,8,4" TabIndex="7"/>
 
                 <Label Grid.Row="2" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_Status}" Target="{Binding ElementName=StatusCombo}"
                        Margin="10,0,6,0" VerticalAlignment="Center"/>
@@ -297,8 +299,8 @@
                     <!-- Buttons -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <Button Content="{loc:Translate WorkOrderDetailWindow_AddAttachment}" Command="{Binding AddAttachmentCommand}" Background="#3498DB" Padding="8,3" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
-                        <Button Content="{loc:Translate ClientManagementView_Delete}"  Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Padding="8,3" Margin="4,0,0,0" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
-                        <Button Content="{loc:Translate DownloadText}"  Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Padding="8,3" Margin="4,0,0,0" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
+                        <Button Content="{loc:Translate ClientManagementView_Delete}" Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Padding="8,3" Margin="4,0,0,0" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
+                        <Button Content="{loc:Translate DownloadText}" Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Padding="8,3" Margin="4,0,0,0" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
                     </StackPanel>
                     <!-- DataGrid -->
                     <DataGrid ItemsSource="{Binding Attachments}" SelectedItem="{Binding SelectedAttachment}"
@@ -361,3 +363,4 @@
         </StackPanel>
     </Grid>
 </Window>
+  

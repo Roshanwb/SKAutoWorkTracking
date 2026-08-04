@@ -44,12 +44,12 @@ CREATE INDEX IX_Clients_Name ON Clients(Name);
 CREATE INDEX IX_Clients_ParentClientId ON Clients(ParentClientId);
 
 -- ============================================
--- VEHICLES (now with ClientId – one client per vehicle)
+-- VEHICLES (each vehicle belongs to one client)
 -- ============================================
 CREATE TABLE Vehicles (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     ChassisNumber TEXT NOT NULL COLLATE NOCASE UNIQUE,
-    ClientId INTEGER NOT NULL,                     -- each vehicle belongs to one client
+    ClientId INTEGER NOT NULL,
     Make TEXT NULL,
     Model TEXT NULL,
     Year INTEGER NULL,
@@ -66,7 +66,7 @@ CREATE INDEX IX_Vehicles_Model ON Vehicles(Model);
 CREATE INDEX IX_Vehicles_ClientId ON Vehicles(ClientId);
 
 -- ============================================
--- ACCESSORIES CATALOG (with category and single price)
+-- ACCESSORIES CATALOG (single price, no duplicate)
 -- ============================================
 CREATE TABLE Accessories (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,9 +74,8 @@ CREATE TABLE Accessories (
     Name TEXT NOT NULL COLLATE NOCASE UNIQUE,
     Description TEXT NULL,
     Category TEXT NULL,                  -- e.g., 'Fitting', 'Selling', 'Preparation', 'Déplacement'
-    Price DECIMAL(10,2) NULL,            -- single price (instead of separate Price/FittingPrice)
-    Time INTEGER NULL,     -- minutes (PSA duration)
-    Price DECIMAL(10,2) NULL,    -- optional, if needed
+    Price DECIMAL(10,2) NULL,            -- single price (removed duplicate column)
+    Time INTEGER NULL,                   -- minutes (PSA duration)
     RequiresPassword BOOLEAN DEFAULT 0,
     IsActive BOOLEAN DEFAULT 1,
     CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -86,10 +85,8 @@ CREATE TABLE Accessories (
 CREATE INDEX IX_Accessories_Name ON Accessories(Name);
 CREATE INDEX IX_Accessories_Category ON Accessories(Category);
 
-
-
 -- ============================================
--- PROTECTED RATES (keep if still needed)
+-- PROTECTED RATES
 -- ============================================
 CREATE TABLE ProtectedRates (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,19 +103,22 @@ CREATE TABLE ProtectedRates (
 CREATE INDEX IX_ProtectedRates_AccessoryId ON ProtectedRates(AccessoryId);
 
 -- ============================================
--- WORK ORDERS (no longer have ClientId – client is determined via vehicle)
+-- WORK ORDERS (with new OrderType values and BillingStatus)
 -- ============================================
 CREATE TABLE WorkOrders (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     VehicleId INTEGER NOT NULL,
     OrderReference TEXT NULL UNIQUE,
-    OrderType TEXT NOT NULL DEFAULT 'Direct_Contract' CHECK(OrderType IN ('PSA_Contract', 'Direct_Contract')),
+    OrderType TEXT NOT NULL DEFAULT 'Direct_Sur_Site' 
+        CHECK(OrderType IN ('PSA_Sur_Site', 'PSA_Exterieur', 'Direct_Sur_Site', 'Direct_Exterieur')),
     OrderDate TEXT NOT NULL,
     PlannedDate TEXT NULL,
     CompletedDate TEXT NULL,
-    Status TEXT NOT NULL DEFAULT 'Planned' CHECK(Status IN ('Planned', 'InProgress', 'Blocked', 'Done')),
+    Status TEXT NOT NULL DEFAULT 'Planned' 
+        CHECK(Status IN ('Planned', 'InProgress', 'Blocked', 'Done')),
     Notes TEXT NULL,
     TotalAmount DECIMAL(10,2) NULL,
+    BillingStatus INTEGER NOT NULL DEFAULT 0,   -- 0=ToDo, 1=Done, 2=Pending
     CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL,
     FOREIGN KEY (VehicleId) REFERENCES Vehicles(Id) ON DELETE RESTRICT
@@ -129,18 +129,20 @@ CREATE INDEX IX_WorkOrders_VehicleId ON WorkOrders(VehicleId);
 CREATE INDEX IX_WorkOrders_Status ON WorkOrders(Status);
 
 -- ============================================
--- WORK TASKS (simplified pricing: only Price column)
+-- WORK TASKS
 -- ============================================
 CREATE TABLE WorkTasks (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     WorkOrderId INTEGER NOT NULL,
     AccessoryId INTEGER NOT NULL,
-    TaskType TEXT NOT NULL DEFAULT 'Fit' CHECK(TaskType IN ('Fit', 'Sell', 'Remove', 'Preparation', 'Déplacement')),
+    TaskType TEXT NOT NULL DEFAULT 'Fit' 
+        CHECK(TaskType IN ('Fit', 'Sell', 'Remove', 'Preparation', 'Déplacement')),
     Quantity INTEGER NOT NULL DEFAULT 1 CHECK(Quantity > 0),
-    Price DECIMAL(10,2) NULL,             -- single price at task level
+    Price DECIMAL(10,2) NULL,
     EstimatedMinutes INTEGER NULL,
     ActualMinutes INTEGER NULL,
-    TaskStatus TEXT NOT NULL DEFAULT 'Planned' CHECK(TaskStatus IN ('Planned', 'InProgress', 'Blocked', 'Done')),
+    TaskStatus TEXT NOT NULL DEFAULT 'Planned' 
+        CHECK(TaskStatus IN ('Planned', 'InProgress', 'Blocked', 'Done')),
     Notes TEXT NULL,
     CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TEXT NULL,
@@ -167,7 +169,7 @@ CREATE TABLE Travels (
 );
 
 -- ============================================
--- SOURCE DOCUMENTS (import tracking, deduplication)
+-- SOURCE DOCUMENTS
 -- ============================================
 CREATE TABLE SourceDocuments (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -183,7 +185,7 @@ CREATE TABLE SourceDocuments (
 CREATE INDEX IX_SourceDocuments_FileHash ON SourceDocuments(FileHash);
 
 -- ============================================
--- VIEW: Daily Work Summary (updated to get client from vehicle)
+-- VIEW: Daily Work Summary
 -- ============================================
 CREATE VIEW DailyWorkSummary AS
 SELECT 
