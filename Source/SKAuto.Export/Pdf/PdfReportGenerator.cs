@@ -32,7 +32,6 @@ namespace SKAuto.Export.Pdf
             _logoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
         }
 
-        // ========== HELPERS ==========
         private Color HexToColor(string hex)
         {
             if (string.IsNullOrEmpty(hex) || !hex.StartsWith("#"))
@@ -111,53 +110,50 @@ namespace SKAuto.Export.Pdf
             document.Add(summary);
         }
 
-        // ========== GENERATE WORK ORDERS REPORT ==========
-        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
+        // ========== WORK ORDERS REPORT ==========
+        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter, bool showPrice, bool showTime)
         {
             _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
-                $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}");
+                $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, " +
+                $"GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}, " +
+                $"ClientIds={(filter.ClientIds != null ? string.Join(",", filter.ClientIds) : "All")}, " +
+                $"OrderType={filter.OrderType}, ShowPrice={showPrice}, ShowTime={showTime}");
 
-            // Load orders
-            var orders = (await _unitOfWork.WorkOrders
-                .FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To))
-                .ToList();
+            var orders = (await _unitOfWork.WorkOrders.FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To)).ToList();
 
             if (filter.WorkStatus.HasValue)
                 orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
 
-            if (!orders.Any())
+            if (filter.ClientIds != null && filter.ClientIds.Any())
             {
-                using var emptyMs = new MemoryStream();
-                using var emptyWriter = new PdfWriter(emptyMs);
-                using var emptyPdf = new PdfDocument(emptyWriter);
-                using var emptyDoc = new Document(emptyPdf);
-                emptyDoc.Add(new Paragraph("No work orders match the date and status filters."));
-                return emptyMs.ToArray();
+                var clientIdSet = filter.ClientIds.ToHashSet();
+                orders = orders.Where(o => o.Vehicle != null && clientIdSet.Contains(o.Vehicle.ClientId)).ToList();
             }
 
-            // Load related data
+            if (filter.OrderType.HasValue)
+                orders = orders.Where(o => o.OrderType == filter.OrderType.Value).ToList();
+
             var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
             var vehicles = (await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id))).ToDictionary(v => v.Id);
             var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
             var clients = (await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id))).ToDictionary(c => c.Id);
+
             var orderIds = orders.Select(o => o.Id).ToList();
             var allTasks = (await _unitOfWork.WorkTasks.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
             var allTravels = (await _unitOfWork.Travels.FindAsync(t => orderIds.Contains(t.WorkOrderId))).ToList();
+
             var accessoryIds = allTasks.Select(t => t.AccessoryId).Distinct().ToList();
             var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
                 .ToDictionary(a => a.Id, a => a.Name);
 
-            // Determine which WorkOrder IDs have Travel
             var travelOrderIds = allTravels.Select(t => t.WorkOrderId).Distinct().ToHashSet();
 
-            // Build report rows
             var reportRows = new List<ReportRow>();
             foreach (var wo in orders)
             {
                 bool hasTravel = travelOrderIds.Contains(wo.Id);
                 var tasks = allTasks.Where(t => t.WorkOrderId == wo.Id).ToList();
 
-                // Filter tasks based on TaskType
                 if (filter.TaskType.HasValue)
                 {
                     if (filter.TaskType.Value == TaskType.Travel)
@@ -191,11 +187,11 @@ namespace SKAuto.Export.Pdf
                         Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
                         Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null,
                         HasTravel = hasTravel,
-                        IsTravelRow = false
+                        IsTravelRow = false,
+                        EstimatedMinutes = task.EstimatedMinutes
                     });
                 }
 
-                // Travel rows
                 if (!filter.TaskType.HasValue || filter.TaskType.Value == TaskType.Travel)
                 {
                     var travels = allTravels.Where(t => t.WorkOrderId == wo.Id).ToList();
@@ -211,23 +207,14 @@ namespace SKAuto.Export.Pdf
                             Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
                             Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null,
                             HasTravel = true,
-                            IsTravelRow = true
+                            IsTravelRow = true,
+                            EstimatedMinutes = null
                         });
                     }
                 }
             }
 
             reportRows = reportRows.Where(r => r.Amount > 0 || !string.IsNullOrEmpty(r.Description)).ToList();
-
-            if (!reportRows.Any())
-            {
-                using var emptyMs = new MemoryStream();
-                using var emptyWriter = new PdfWriter(emptyMs);
-                using var emptyPdf = new PdfDocument(emptyWriter);
-                using var emptyDoc = new Document(emptyPdf);
-                emptyDoc.Add(new Paragraph("No records match the selected filters."));
-                return emptyMs.ToArray();
-            }
 
             var appConfig = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
             var colors = appConfig.ReportColors;
@@ -246,8 +233,54 @@ namespace SKAuto.Export.Pdf
             using var document = new Document(pdf, PageSize.A4.Rotate());
             document.SetMargins(36, 36, 36, 36);
 
-            AddHeader(document, "Work Orders Report", headerFont, normalFont, headerBg, borderColor);
-            AddFilterSummary(document, filter, accessories, altRowBg, borderColor, normalFont);
+            var culture = CultureInfo.CurrentUICulture;
+            bool isFrench = culture.TwoLetterISOLanguageName == "fr";
+
+            string title = isFrench ? "Rapport des ordres de travail" : "Work Orders Report";
+            string noDataMsg = isFrench ? "Aucun enregistrement ne correspond aux filtres sélectionnés." : "No records match the selected filters.";
+
+            AddHeader(document, title, headerFont, normalFont, headerBg, borderColor);
+
+            // Filter summary (localized)
+            Paragraph summary = new Paragraph()
+                .SetBackgroundColor(altRowBg).SetPadding(8).SetBorder(new SolidBorder(borderColor, 1))
+                .SetMarginBottom(15).SetFont(normalFont);
+            summary.Add($"{(isFrench ? "Période" : "Period")}: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}\n");
+            summary.Add($"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}\n");
+            summary.Add($"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}\n");
+            summary.Add($"Order Type: {(filter.OrderType.HasValue ? filter.OrderType.Value.GetDisplayName() : "All")}\n");
+            summary.Add($"Clients: {(filter.ClientIds != null && filter.ClientIds.Any() ? "Selected" : "All")}\n");
+            if (filter.AccessoryId.HasValue && accessories.TryGetValue(filter.AccessoryId.Value, out var accName))
+                summary.Add($"Accessory: {accName}\n");
+            else
+                summary.Add($"Accessory: All\n");
+            summary.Add($"Group by Week: {(filter.GroupByWeek ? "Yes" : "No")}");
+            if (filter.SummaryOnly)
+                summary.Add($"\n{(isFrench ? "Résumé uniquement" : "Summary Only")}: Yes");
+            document.Add(summary);
+
+            if (!reportRows.Any())
+            {
+                // Generate empty report with headers and "No data" message
+                Table emptyTable = new Table(GetColumnCount(showPrice, showTime)).UseAllAvailableWidth();
+                emptyTable.SetMarginTop(10);
+                string[] headers = GetBaseHeaders(culture, showPrice, showTime);
+                foreach (string h in headers)
+                {
+                    Cell headerCell = new Cell()
+                        .Add(new Paragraph(h).SetFont(headerFont).SetFontSize(10).SetFontColor(headerFg))
+                        .SetBackgroundColor(headerBg).SetTextAlignment(TextAlignment.CENTER)
+                        .SetBorder(new SolidBorder(borderColor, 1)).SetPadding(6);
+                    emptyTable.AddCell(headerCell);
+                }
+                Cell noDataCell = new Cell(1, GetColumnCount(showPrice, showTime))
+                    .Add(new Paragraph(noDataMsg).SetFont(normalFont).SetFontSize(11))
+                    .SetTextAlignment(TextAlignment.CENTER);
+                emptyTable.AddCell(noDataCell);
+                document.Add(emptyTable);
+                document.Close();
+                return ms.ToArray();
+            }
 
             if (filter.GroupByWeek)
             {
@@ -262,7 +295,7 @@ namespace SKAuto.Export.Pdf
                         .SetFont(headerFont).SetFontSize(12).SetFontColor(headerBg)
                         .SetMarginTop(15).SetMarginBottom(5);
                     document.Add(weekHeader);
-                    WriteReportRows(document, group.ToList(), normalFont, headerBg, headerFg, borderColor, altRowBg);
+                    WriteReportRows(document, group.ToList(), normalFont, headerBg, headerFg, borderColor, altRowBg, showPrice, showTime);
                     decimal weekTotal = group.Sum(r => r.Amount);
                     Paragraph weekTotalPara = new Paragraph()
                         .Add($"Week Total: {weekTotal:C}").SetFont(headerFont).SetFontSize(11)
@@ -273,7 +306,7 @@ namespace SKAuto.Export.Pdf
             }
             else
             {
-                WriteReportRows(document, reportRows, normalFont, headerBg, headerFg, borderColor, altRowBg);
+                WriteReportRows(document, reportRows, normalFont, headerBg, headerFg, borderColor, altRowBg, showPrice, showTime);
             }
 
             if (!filter.SummaryOnly && reportRows.Any())
@@ -291,15 +324,43 @@ namespace SKAuto.Export.Pdf
             return ms.ToArray();
         }
 
+        private int GetColumnCount(bool showPrice, bool showTime)
+        {
+            int baseCol = 6;
+            if (showPrice) baseCol++;
+            if (showTime) baseCol++;
+            return baseCol;
+        }
+
+        private string[] GetBaseHeaders(CultureInfo culture, bool showPrice, bool showTime)
+        {
+            bool isFrench = culture.TwoLetterISOLanguageName == "fr";
+            var headers = new List<string>();
+            headers.Add("ID");
+            headers.Add(isFrench ? "Date" : "Date");
+            headers.Add(isFrench ? "Client" : "Client");
+            headers.Add(isFrench ? "Véhicule" : "Vehicle");
+            headers.Add(isFrench ? "Statut" : "Status");
+            headers.Add(isFrench ? "Description" : "Description");
+            if (showPrice)
+                headers.Add(isFrench ? "Montant" : "Amount");
+            if (showTime)
+                headers.Add(isFrench ? "Temps (min)" : "Time (min)");
+            return headers.ToArray();
+        }
+
         private void WriteReportRows(Document document, List<ReportRow> rows, PdfFont normalFont,
-            Color headerBg, Color headerFg, Color borderColor, Color altRowBg)
+            Color headerBg, Color headerFg, Color borderColor, Color altRowBg,
+            bool showPrice, bool showTime)
         {
             rows = rows.OrderBy(r => r.WorkOrder.Id).ThenBy(r => r.IsTravelRow ? 0 : 1).ToList();
 
-            Table table = new Table(7).UseAllAvailableWidth();
+            int colCount = GetColumnCount(showPrice, showTime);
+            Table table = new Table(colCount).UseAllAvailableWidth();
             table.SetMarginTop(10).SetMarginBottom(10);
 
-            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Description", "Amount" };
+            var culture = CultureInfo.CurrentUICulture;
+            string[] headers = GetBaseHeaders(culture, showPrice, showTime);
             foreach (string h in headers)
             {
                 Cell headerCell = new Cell()
@@ -319,7 +380,7 @@ namespace SKAuto.Export.Pdf
                 {
                     currentOrderId = r.WorkOrder.Id;
                     groupAlternate = !groupAlternate;
-                    groupBgColor = groupAlternate ? altRowBg : ColorConstants.WHITE;
+                    groupBgColor = groupAlternate ? new DeviceRgb(212, 212, 212) : ColorConstants.WHITE; // darker gray
                 }
 
                 Cell idCell = CreateCell(r.WorkOrder.Id.ToString(), normalFont, borderColor);
@@ -328,7 +389,9 @@ namespace SKAuto.Export.Pdf
                 Cell vehicleCell = CreateCell(r.Vehicle?.ChassisNumber ?? "", normalFont, borderColor);
                 Cell statusCell = CreateCell(r.WorkOrder.Status.ToString(), normalFont, borderColor);
                 Cell descCell = CreateCell(r.Description, normalFont, borderColor);
-                Cell amountCell = CreateCell($"{r.Amount:C}", normalFont, borderColor, TextAlignment.RIGHT);
+                Cell amountCell = showPrice ? CreateCell($"{r.Amount:C}", normalFont, borderColor, TextAlignment.RIGHT) : null;
+                string timeDisplay = (r.EstimatedMinutes.HasValue && r.EstimatedMinutes.Value > 0) ? r.EstimatedMinutes.Value.ToString() : "–";
+                Cell timeCell = showTime ? CreateCell(timeDisplay, normalFont, borderColor) : null;
 
                 idCell.SetBackgroundColor(groupBgColor);
                 dateCell.SetBackgroundColor(groupBgColor);
@@ -336,9 +399,9 @@ namespace SKAuto.Export.Pdf
                 vehicleCell.SetBackgroundColor(groupBgColor);
                 statusCell.SetBackgroundColor(groupBgColor);
                 descCell.SetBackgroundColor(groupBgColor);
-                amountCell.SetBackgroundColor(groupBgColor);
+                if (amountCell != null) amountCell.SetBackgroundColor(groupBgColor);
+                if (timeCell != null) timeCell.SetBackgroundColor(groupBgColor);
 
-                // Thicker bottom border after each WorkOrder group
                 if (rows.LastOrDefault() == r || rows.FirstOrDefault(ro => ro.WorkOrder.Id != currentOrderId) == r)
                 {
                     idCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
@@ -347,7 +410,8 @@ namespace SKAuto.Export.Pdf
                     vehicleCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
                     statusCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
                     descCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
-                    amountCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    if (amountCell != null) amountCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+                    if (timeCell != null) timeCell.SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 2));
                 }
 
                 table.AddCell(idCell);
@@ -356,7 +420,8 @@ namespace SKAuto.Export.Pdf
                 table.AddCell(vehicleCell);
                 table.AddCell(statusCell);
                 table.AddCell(descCell);
-                table.AddCell(amountCell);
+                if (showPrice) table.AddCell(amountCell);
+                if (showTime) table.AddCell(timeCell);
             }
 
             document.Add(table);
@@ -371,6 +436,7 @@ namespace SKAuto.Export.Pdf
             public Client Client { get; set; }
             public bool HasTravel { get; set; }
             public bool IsTravelRow { get; set; }
+            public int? EstimatedMinutes { get; set; }
         }
 
         // ========== CLIENTS REPORT ==========

@@ -7,17 +7,20 @@
         xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         mc:Ignorable="d"
         Title="{loc:Translate Reports_Title}"
-        Height="600" Width="750"
+        Height="600" Width="860"
         WindowStartupLocation="CenterOwner"
         Background="#f5f5f5">
+
     <Window.Resources>
         <converters:NullableEnumToStringConverter x:Key="NullableEnumToStringConverter"/>
         <converters:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
         <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
+
+        <!-- Styles -->
         <Style x:Key="SectionHeader" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="Foreground" Value="#2c3e50"/>
         </Style>
         <Style x:Key="CardBorder" TargetType="Border">
@@ -25,138 +28,221 @@
             <Setter Property="BorderBrush" Value="#ddd"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="12"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
-        <Style x:Key="StatusButton" TargetType="Button">
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="4,2"/>
+            <Setter Property="MinHeight" Value="28"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="15">
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Header -->
             <RowDefinition Height="Auto"/>
+            <!-- Report Type + Date Range -->
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <!-- GridSplitter -->
+            <RowDefinition/>
+            <!-- Filters (scrollable) -->
+            <RowDefinition Height="Auto" />
+            <!-- Status Message -->
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <TextBlock Grid.Row="0" Text="{loc:Translate ReportsView_GenerateReports}" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Grid.Row="0" Text="{loc:Translate ReportsView_GenerateReports}" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
-        <!-- Report Type Card -->
-        <Border Grid.Row="1" Style="{StaticResource CardBorder}">
-            <StackPanel>
-                <TextBlock Text="{loc:Translate ReportsView_ReportType}" Style="{StaticResource SectionHeader}"/>
-                <RadioButton Content="{loc:Translate ReportsView_WorkOrders}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=WorkOrders}" Margin="5,0,0,5"/>
-                <RadioButton Content="{loc:Translate ReportsView_Tasks}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Tasks}" Margin="5,0,0,5"/>
-                <RadioButton Content="{loc:Translate ImportView_Clients}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Clients}" Margin="5,0,0,5"/>
-                <RadioButton Content="{loc:Translate ReportsView_Vehicles}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Vehicles}" Margin="5,0,0,0"/>
-            </StackPanel>
+        <!-- Row 1: Report Type (left) + Date Range (right) -->
+        <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Report Type -->
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{loc:Translate ReportsView_ReportType}" Style="{StaticResource SectionHeader}"/>
+                    <RadioButton Content="{loc:Translate ReportsView_WorkOrders}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=WorkOrders}" Margin="5,0,0,2"/>
+                    <RadioButton Content="{loc:Translate ReportsView_Tasks}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Tasks}" Margin="5,0,0,2"/>
+                    <RadioButton Content="{loc:Translate ImportView_Clients}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Clients}" Margin="5,0,0,2"/>
+                    <RadioButton Content="{loc:Translate ReportsView_Vehicles}" IsChecked="{Binding SelectedReportType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Vehicles}" Margin="5,0,0,0"/>
+                </StackPanel>
+
+                <!-- Separator -->
+                <Border Grid.Column="1" Width="1" Background="#ddd" Margin="10,0"/>
+
+                <!-- Date Range -->
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{loc:Translate PriceUpdateView_DateRange}" Style="{StaticResource SectionHeader}"
+                               Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                    <Grid Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="{loc:Translate PriceUpdateView_From}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <DatePicker Grid.Column="1" SelectedDate="{Binding FromDate}" Margin="0,0,10,0" Height="26"/>
+                        <Label Grid.Column="2" Content="{loc:Translate PriceUpdateView_To}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <DatePicker Grid.Column="3" SelectedDate="{Binding ToDate}" Height="26"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Date Range Card (only for Work Orders) -->
-        <Border Grid.Row="2" Style="{StaticResource CardBorder}"
-                Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}">
-            <StackPanel>
-                <TextBlock Text="{loc:Translate PriceUpdateView_DateRange}" Style="{StaticResource SectionHeader}"/>
+        <!-- GridSplitter between the two cards -->
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Background="#E0E0E0" ResizeDirection="Rows" Margin="0,117,0,0"/>
+
+        <!-- Row 3: Filters (scrollable, two columns with splitter) -->
+        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Margin="0,4,0,3" MaxHeight="350" Grid.RowSpan="3">
+            <ScrollViewer VerticalScrollBarVisibility="Hidden" MaxHeight="350" VerticalAlignment="Top">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="{loc:Translate PriceUpdateView_From}" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                    <DatePicker Grid.Column="1" SelectedDate="{Binding FromDate}" Margin="0,0,10,0"/>
-                    <Label Grid.Column="2" Content="{loc:Translate PriceUpdateView_To}" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                    <DatePicker Grid.Column="3" SelectedDate="{Binding ToDate}"/>
-                </Grid>
-            </StackPanel>
-        </Border>
 
-        <!-- Filters Card -->
-        <Border Grid.Row="3" Style="{StaticResource CardBorder}" Margin="0,5,0,5">
-            <StackPanel>
-                <TextBlock Text="{loc:Translate ReportsView_Filters}" Style="{StaticResource SectionHeader}"/>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <!-- Left Column: Task Type, Status, Accessory, OrderType, Checkboxes -->
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0"  Height="330" MaxHeight="350" VerticalAlignment="Top">
+                        <TextBlock Text="{loc:Translate ReportsView_Filters}" Style="{StaticResource SectionHeader}" Margin="0,0,0,8"/>
 
-                    <!-- Row 0: Task Type & Status -->
-                    <Label Grid.Row="0" Grid.Column="0" Content="{loc:Translate ReportsView_TaskType}" Margin="0,5,5,5" VerticalAlignment="Center"/>
-                    <ComboBox Grid.Row="0" Grid.Column="1"
-                              ItemsSource="{Binding TaskTypeOptions}"
-                              SelectedItem="{Binding SelectedTaskTypeOption}"
-                              DisplayMemberPath="Display"
-                              Margin="0,5,10,5" MinWidth="120"
-                              Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        <!-- Task Type -->
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Width="100" Content="{loc:Translate ReportsView_TaskType}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"/>
+                            <ComboBox Grid.Column="1" HorizontalAlignment="Left"
+                                      ItemsSource="{Binding TaskTypeOptions}"
+                                      SelectedItem="{Binding SelectedTaskTypeOption}"
+                                      DisplayMemberPath="Display"
+                                      Width="140" Height="26"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        </Grid>
 
-                    <Label Grid.Row="0" Grid.Column="2" Content="{loc:Translate ReportsView_Status}" Margin="0,5,5,5" VerticalAlignment="Center"/>
-                    <ComboBox Grid.Row="0" Grid.Column="3"
-                              ItemsSource="{Binding WorkStatusOptions}"
-                              SelectedItem="{Binding SelectedWorkStatusOption}"
-                              DisplayMemberPath="Display"
-                              Margin="0,5,0,5" MinWidth="120"
-                              Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        <!-- Status -->
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0"  Width="100" Content="{loc:Translate ReportsView_Status}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"/>
+                            <ComboBox Grid.Column="1" HorizontalAlignment="Left"
+                                      ItemsSource="{Binding WorkStatusOptions}"
+                                      SelectedItem="{Binding SelectedWorkStatusOption}"
+                                      DisplayMemberPath="Display"
+                                      Width="140" Height="26"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        </Grid>
 
-                    <!-- Row 1: Accessory (only for Work Orders) -->
-                    <Label Grid.Row="1" Grid.Column="0" Content="{loc:Translate WorkOrderDetailWindow_Task}" Margin="0,5,5,5" VerticalAlignment="Center"
-                           Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
-                    <ComboBox Grid.Row="1" Grid.Column="1"
-                              ItemsSource="{Binding AccessoryOptions}"
-                              SelectedItem="{Binding SelectedAccessoryOption}"
-                              DisplayMemberPath="Display"
-                              Margin="0,5,10,5" MinWidth="120" Grid.ColumnSpan="3"
-                              Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        <!-- Accessory -->
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0"  Width="100" Content="{loc:Translate WorkOrderDetailWindow_Task}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"
+                                   Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                            <ComboBox Grid.Column="1" HorizontalAlignment="Left"
+                                      ItemsSource="{Binding AccessoryOptions}"
+                                      SelectedItem="{Binding SelectedAccessoryOption}"
+                                      DisplayMemberPath="Display"
+                                      Width="140" Height="26"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        </Grid>
 
-                    <!-- Row 2: Group by Week (only for Work Orders) -->
-                    <CheckBox Grid.Row="2" Grid.ColumnSpan="4" Content="{loc:Translate ReportsView_GroupByWeek}" IsChecked="{Binding GroupByWeek}" Margin="5,5,0,5"
-                              Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        <!-- Order Type -->
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0"  Width="100" Content="{loc:Translate WorkOrderDetailWindow_OrderType}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"
+                                   Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                            <ComboBox Grid.Column="1" HorizontalAlignment="Left"
+                                      ItemsSource="{Binding OrderTypeOptions}"
+                                      SelectedItem="{Binding SelectedOrderTypeOption}"
+                                      DisplayMemberPath="Display"
+                                      Width="140" Height="26"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                        </Grid>
 
-                    <!-- Row 3: Group by Task Type (only for Tasks) -->
-                    <CheckBox Grid.Row="3" Grid.ColumnSpan="4" Content="{loc:Translate ReportsView_GroupByTaskType}" IsChecked="{Binding GroupByTaskType}" Margin="5,5,0,5"
-                              Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Tasks}"/>
+                        <!-- Checkboxes -->
+                        <StackPanel Margin="0,12,0,0">
+                            <CheckBox Content="{loc:Translate ReportsView_ShowPrice}" IsChecked="{Binding ShowPrice}" Margin="0,2"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                            <CheckBox Content="{loc:Translate ReportsView_ShowTime}" IsChecked="{Binding ShowTime}" Margin="0,2"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                            <CheckBox Content="{loc:Translate ReportsView_GroupByWeek}" IsChecked="{Binding GroupByWeek}" Margin="0,2"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
+                            <CheckBox Content="{loc:Translate ReportsView_GroupByTaskType}" IsChecked="{Binding GroupByTaskType}" Margin="0,2"
+                                      Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Tasks}"/>
+                            <CheckBox Content="{loc:Translate ReportsView_SummaryOnly}" IsChecked="{Binding SummaryOnly}" Margin="0,2"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <!-- Row 4: Summary Only (all types) -->
-                    <CheckBox Grid.Row="4" Grid.ColumnSpan="4" Content="{loc:Translate ReportsView_SummaryOnly}" IsChecked="{Binding SummaryOnly}" Margin="5,0,0,5"/>
+                    <!-- GridSplitter between left and right columns -->
+                    <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#E0E0E0" ResizeDirection="Columns"/>
 
-                    <!-- Row 5: Status Message -->
-                    <TextBlock Grid.Row="5" Grid.ColumnSpan="4" Text="{Binding StatusMessage}" 
-                               Foreground="#27ae60" Margin="0,10,0,5" MinHeight="30"
-                               TextWrapping="Wrap" VerticalAlignment="Center"/>
-
-                    <!-- Row 6: Action Buttons -->
-                    <StackPanel Grid.Row="6" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                        <Button Content="{loc:Translate ReportsView_GenerateExcel}" Command="{Binding GenerateExcelCommand}"
-                                Style="{StaticResource ActionButton}" Background="#27ae60" Width="120" Margin="5"
-                                IsEnabled="{Binding !IsBusy}"/>
-                        <Button Content="{loc:Translate ReportsView_GeneratePDF}" Command="{Binding GeneratePdfCommand}"
-                                Style="{StaticResource ActionButton}" Background="#e67e22" Width="120" Margin="5"
-                                IsEnabled="{Binding !IsBusy}"/>
-                        <Button Content="{loc:Translate ClientManagementView_Close}" Command="{Binding CloseCommand}"
-                                Style="{StaticResource ActionButton}" Background="#6c757d" Width="80" Margin="5"/>
+                    <!-- Right Column: Clients List -->
+                    <StackPanel Grid.Column="2" Margin="10,0,0,0"
+                                Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}">
+                        <TextBlock Text="{loc:Translate ReportsView_Clients}" Style="{StaticResource SectionHeader}" Margin="0,0,0,6"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button Content="{loc:Translate ReportsView_SelectAll}" Command="{Binding SelectAllClientsCommand}" Style="{StaticResource ActionButton}" Background="#3498DB" Padding="6,2" FontSize="11"/>
+                            <Button Content="{loc:Translate ReportsView_DeselectAll}" Command="{Binding DeselectAllClientsCommand}" Style="{StaticResource ActionButton}" Background="#95A5A6" Padding="6,2" FontSize="11"/>
+                        </StackPanel>
+                        <ListBox ItemsSource="{Binding AvailableClients}" 
+                                 Height="150" 
+                                 BorderBrush="#ddd" BorderThickness="1"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="2,0"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
                 </Grid>
-            </StackPanel>
+            </ScrollViewer>
         </Border>
+
+        <!-- Row 4: Status Message -->
+        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" 
+                   Foreground="#27ae60" MinHeight="30"
+                   TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="SemiBold" Height="30"/>
+
+        <!-- Row 5: Action Buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Left" Margin="570,10,0,10" Width="256">
+            <Button Content="{loc:Translate ReportsView_GenerateExcel}" Command="{Binding GenerateExcelCommand}"
+                    Style="{StaticResource ActionButton}" Background="#27ae60" IsEnabled="{Binding !IsBusy}"/>
+            <Button Content="{loc:Translate ReportsView_GeneratePDF}" Command="{Binding GeneratePdfCommand}"
+                    Style="{StaticResource ActionButton}" Background="#e67e22" IsEnabled="{Binding !IsBusy}"/>
+            <Button Content="{loc:Translate ClientManagementView_Close}" Command="{Binding CloseCommand}"
+                    Style="{StaticResource ActionButton}" Background="#6c757d"/>
+        </StackPanel>
     </Grid>
 </Window>

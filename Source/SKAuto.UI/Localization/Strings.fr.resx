@@ -1723,4 +1723,25 @@
   <data name="DownloadText" xml:space="preserve">
     <value>Télécharger</value>
   </data>
+  <data name="ReportsView_OrderType" xml:space="preserve">
+    <value>Type de commande</value>
+  </data>
+  <data name="ReportsView_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="ReportsView_SelectAll" xml:space="preserve">
+    <value>Tout sélectionner</value>
+  </data>
+  <data name="ReportsView_DeselectAll" xml:space="preserve">
+    <value>Tout désélectionner</value>
+  </data>
+  <data name="ReportsView_Time" xml:space="preserve">
+    <value>Temps (min)</value>
+  </data>
+  <data name="ReportsView_ShowPrice" xml:space="preserve">
+    <value>Afficher le prix</value>
+  </data>
+  <data name="ReportsView_ShowTime" xml:space="preserve">
+    <value>Afficher le temps</value>
+  </data>
 </root>

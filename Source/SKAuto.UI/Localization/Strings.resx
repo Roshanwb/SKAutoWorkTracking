@@ -1723,4 +1723,25 @@
   <data name="DownloadText" xml:space="preserve">
     <value>Download</value>
   </data>
+  <data name="ReportsView_OrderType" xml:space="preserve">
+    <value>Order Type</value>
+  </data>
+  <data name="ReportsView_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="ReportsView_SelectAll" xml:space="preserve">
+    <value>Select All</value>
+  </data>
+  <data name="ReportsView_DeselectAll" xml:space="preserve">
+    <value>Deselect All</value>
+  </data>
+  <data name="ReportsView_Time" xml:space="preserve">
+    <value>Time (min)</value>
+  </data>
+  <data name="ReportsView_ShowPrice" xml:space="preserve">
+    <value>Show Price</value>
+  </data>
+  <data name="ReportsView_ShowTime" xml:space="preserve">
+    <value>Show Time</value>
+  </data>
 </root>

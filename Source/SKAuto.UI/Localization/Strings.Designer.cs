@@ -3719,6 +3719,24 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clients.
+        /// </summary>
+        internal static string ReportsView_Clients {
+            get {
+                return ResourceManager.GetString("ReportsView_Clients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deselect All.
+        /// </summary>
+        internal static string ReportsView_DeselectAll {
+            get {
+                return ResourceManager.GetString("ReportsView_DeselectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filters.
         /// </summary>
         internal static string ReportsView_Filters {
@@ -3773,6 +3791,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Order Type.
+        /// </summary>
+        internal static string ReportsView_OrderType {
+            get {
+                return ResourceManager.GetString("ReportsView_OrderType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reports.
         /// </summary>
         internal static string ReportsView_Reports {
@@ -3787,6 +3814,33 @@ namespace SKAuto.UI.Localization {
         internal static string ReportsView_ReportType {
             get {
                 return ResourceManager.GetString("ReportsView_ReportType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All.
+        /// </summary>
+        internal static string ReportsView_SelectAll {
+            get {
+                return ResourceManager.GetString("ReportsView_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Price.
+        /// </summary>
+        internal static string ReportsView_ShowPrice {
+            get {
+                return ResourceManager.GetString("ReportsView_ShowPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Time.
+        /// </summary>
+        internal static string ReportsView_ShowTime {
+            get {
+                return ResourceManager.GetString("ReportsView_ShowTime", resourceCulture);
             }
         }
         
@@ -3823,6 +3877,15 @@ namespace SKAuto.UI.Localization {
         internal static string ReportsView_TaskType {
             get {
                 return ResourceManager.GetString("ReportsView_TaskType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time (min).
+        /// </summary>
+        internal static string ReportsView_Time {
+            get {
+                return ResourceManager.GetString("ReportsView_Time", resourceCulture);
             }
         }
         
