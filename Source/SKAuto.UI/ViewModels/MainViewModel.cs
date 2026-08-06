@@ -242,7 +242,7 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenAbout()
         {
-            System.Windows.MessageBox.Show("SKAuto Work Tracking System\nVersion 1.0.0\nDeveloped by SK Auto\n2026 - Insights®",
+            System.Windows.MessageBox.Show($" \n \nDeveloped by ",
                             LocalizationManager.Instance["MainWindow_About"], MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

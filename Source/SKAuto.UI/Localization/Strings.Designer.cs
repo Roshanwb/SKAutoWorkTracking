@@ -727,6 +727,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Address:.
+        /// </summary>
+        internal static string ClientMergeDialog_Address {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_Address", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit Master Client Details.
         /// </summary>
         internal static string ClientMergeDialog_EditMasterClient {
@@ -2522,6 +2531,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Version: 2.0.0.
+        /// </summary>
+        internal static string HelpView_Version {
+            get {
+                return ResourceManager.GetString("HelpView_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Welcome to SKAuto Work Tracking.
         /// </summary>
         internal static string HelpView_Welcome {
@@ -3098,7 +3116,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MainWindow.
+        ///   Looks up a localized string similar to Main Window.
         /// </summary>
         internal static string MainWindow_MainWindow {
             get {
@@ -3193,6 +3211,15 @@ namespace SKAuto.UI.Localization {
         internal static string MainWindow_Settings {
             get {
                 return ResourceManager.GetString("MainWindow_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string MainWindow_Status {
+            get {
+                return ResourceManager.GetString("MainWindow_Status", resourceCulture);
             }
         }
         
@@ -4709,7 +4736,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version: 3.0.1 (Latest).
+        ///   Looks up a localized string similar to  Version: 2.1.0.0 (Latest) .
         /// </summary>
         internal static string Version {
             get {
@@ -4889,7 +4916,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time (min) .
+        ///   Looks up a localized string similar to Time (min).
         /// </summary>
         internal static string WorkOrderDetailWindow_Time {
             get {
