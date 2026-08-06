@@ -2720,7 +2720,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to © 2026 Insights®.
+        ///   Looks up a localized string similar to    2026 Insights®.
         /// </summary>
         internal static string Insights {
             get {
@@ -3170,7 +3170,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Refresh.
+        ///   Looks up a localized string similar to Today.
         /// </summary>
         internal static string MainWindow_Refresh {
             get {
@@ -3292,6 +3292,15 @@ namespace SKAuto.UI.Localization {
         internal static string MainWindowShownAndActivated {
             get {
                 return ResourceManager.GetString("MainWindowShownAndActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Tasks.
+        /// </summary>
+        internal static string ManageTasks {
+            get {
+                return ResourceManager.GetString("ManageTasks", resourceCulture);
             }
         }
         

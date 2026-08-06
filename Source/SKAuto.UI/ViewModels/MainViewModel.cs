@@ -12,6 +12,7 @@ using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -88,6 +89,7 @@ namespace SKAuto.UI.ViewModels
         public IRelayCommand SyncNowCommand { get; }
         public IRelayCommand ShowUserManagementCommand { get; }
         public IRelayCommand ChangePasswordCommand { get; }
+        public IRelayCommand GoToTodayCommand { get; }
 
         // NEW: Billing status command
         public IAsyncRelayCommand<string> UpdateBillingStatusCommand { get; }
@@ -128,6 +130,7 @@ namespace SKAuto.UI.ViewModels
             OpenAboutCommand = new RelayCommand(OpenAbout);
             ShowUserManagementCommand = new RelayCommand(ShowUserManagement, () => IsAdmin);
             ChangePasswordCommand = new RelayCommand(ChangePassword);
+            GoToTodayCommand = new RelayCommand(() => SelectedDate = DateTime.Today);
 
             // NEW: Billing status command with CanExecute
             UpdateBillingStatusCommand = new AsyncRelayCommand<string>(UpdateBillingStatusAsync, s => SelectedWorkOrder != null);
@@ -181,18 +184,20 @@ namespace SKAuto.UI.ViewModels
         {
             var logger = App.GetService<ILoggingService>();
             var vm = new UserManagementViewModel(_unitOfWork, logger, CurrentUser);
-            var win = new UserManagementView { DataContext = vm };
-            win.Owner = System.Windows.Application.Current.MainWindow;
-            win.ShowDialog();
+            var window = new UserManagementView { DataContext = vm };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.ShowDialog();
         }
 
         private void ChangePassword()
         {
             var logger = App.GetService<ILoggingService>();
             var vm = new UserEditViewModel(_unitOfWork, logger, CurrentUser, null, UserEditMode.ChangePassword);
-            var win = new UserEditView(vm);
-            win.Owner = System.Windows.Application.Current.MainWindow;
-            win.ShowDialog();
+            var window = new UserEditView(vm);
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.ShowDialog();
         }
 
         [RelayCommand]
@@ -201,7 +206,10 @@ namespace SKAuto.UI.ViewModels
             var settingsWindow = new SettingsView();
             settingsWindow.DataContext = new SettingsViewModel(_configService);
             settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
+             settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
+            settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             settingsWindow.Show();
+
         }
 
         public void SetCurrentUser(User user)
@@ -218,15 +226,18 @@ namespace SKAuto.UI.ViewModels
                 App.GetService<IExportService>(),
                 App.GetService<PdfReportGenerator>(),
                 App.GetService<ILoggingService>());
-            var win = new ReportsView { DataContext = vm };
-            win.Show();
+            var window = new ReportsView { DataContext = vm };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Show();
         }
 
         private void OpenHelp()
         {
-            var helpWindow = new HelpView();
-            helpWindow.Owner = System.Windows.Application.Current.MainWindow;
-            helpWindow.Show();
+            var window = new HelpView();
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.ShowDialog();
         }
 
         private void OpenAbout()
@@ -240,8 +251,9 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
             var vm = new PriceUpdateViewModel(_unitOfWork, logger);
             var window = new PriceUpdateView { DataContext = vm, Owner = System.Windows.Application.Current.MainWindow };
-            var result = window.ShowDialog();
-            if (result == true)
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            if (window.ShowDialog() == true)
             {
                 await LoadTodayWorkAsync();
                 StatusMessage = LocalizationManager.Instance["PricesUpdatedAndGridRefreshed"];
@@ -256,9 +268,11 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
 
             var vm = new GoogleDriveSettingsViewModel(driveService, config, backupService, logger);
-            var win = new GoogleDriveSettingsView { DataContext = vm };
-            win.Show();
-            UpdateSyncStatus();
+            var window = new GoogleDriveSettingsView { DataContext = vm };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Show();
+            UpdateSyncStatus();     
         }
 
         private async Task SyncNowAsync()
@@ -291,8 +305,10 @@ namespace SKAuto.UI.ViewModels
             var backupService = App.GetService<IBackupService>();
             var loggingService = App.GetService<ILoggingService>();
             var vm = new BackupViewModel(backupService, loggingService);
-            var win = new BackupView { DataContext = vm };
-            win.Show();
+            var window =   new BackupView { DataContext = vm };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Show();
         }
 
         private async Task LoadTodayWorkAsync()
@@ -372,8 +388,10 @@ namespace SKAuto.UI.ViewModels
                 scopeFactory
             );
 
-            var importView = new ImportView { DataContext = importVM };
-            importView.ShowDialog();
+            var window = new ImportView { DataContext = importVM };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.ShowDialog();
             LoadTodayWorkCommand.Execute(null);
         }
 
@@ -420,7 +438,7 @@ namespace SKAuto.UI.ViewModels
                 DataContext = new AccessoryManagementViewModel(_unitOfWork, logger, _configService)
             };
 
-            var window = new Window
+            var window = new System.Windows.Window
             {
                 Title = "Manage Tasks",
                 Content = view,
@@ -464,8 +482,10 @@ namespace SKAuto.UI.ViewModels
                 if (client != null)
                 {
                     var vm = new ClientEditViewModel(_unitOfWork, client);
-                    var win = new ClientEditWindow { DataContext = vm };
-                    if (win.ShowDialog() == true)
+                    var window = new ClientEditWindow { DataContext = vm };
+                    window.Owner = System.Windows.Application.Current.MainWindow;
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    if (window.ShowDialog() == true)
                     {
                         await LoadWorkForDateAsync(SelectedDate);
                         StatusMessage = LocalizationManager.Instance["ClientUpdatedSuccessfully"];
@@ -485,6 +505,8 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
             var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (window.ShowDialog() == true)
             {
                 await LoadWorkForDateAsync(SelectedDate);
@@ -554,16 +576,20 @@ namespace SKAuto.UI.ViewModels
         {
             var logger = App.GetService<ILoggingService>();
             var vm = new ClientManagementViewModel(_unitOfWork, logger);
-            var win = new ClientManagementView { DataContext = vm };
-            win.Show();
-            LoadTodayWorkCommand.Execute(null);
+            var window = new ClientManagementView { DataContext = vm };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Show();
+                LoadTodayWorkCommand.Execute(null);
         }
 
         private void OpenVehicleManagement()
         {
             var vm = new VehicleManagementViewModel(_unitOfWork);
-            var win = new VehicleManagementView { DataContext = vm };
-            win.Show();
+            var window = new VehicleManagementView { DataContext = vm };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Show();
             LoadTodayWorkCommand.Execute(null);
         }
 
@@ -572,6 +598,8 @@ namespace SKAuto.UI.ViewModels
             var logger = App.GetService<ILoggingService>();
             var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (window.ShowDialog() == true)
             {
                 await LoadWorkForDateAsync(SelectedDate);

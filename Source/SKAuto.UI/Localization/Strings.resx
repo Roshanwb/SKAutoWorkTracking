@@ -727,7 +727,7 @@
     <value>Quick Tips</value>
   </data>
   <data name="MainWindow_Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Today</value>
   </data>
   <data name="BackupView_RefreshDriveList" xml:space="preserve">
     <value>Refresh Drive List</value>
@@ -832,7 +832,7 @@
     <value>SK Auto Work Tracking</value>
   </data>
   <data name="Insights" xml:space="preserve">
-    <value>© 2026 Insights®</value>
+    <value>   2026 Insights®</value>
   </data>
   <data name="Splash_Title" xml:space="preserve">
     <value>SKAuto Work Tracking</value>
@@ -1743,5 +1743,8 @@
   </data>
   <data name="ReportsView_ShowTime" xml:space="preserve">
     <value>Show Time</value>
+  </data>
+  <data name="ManageTasks" xml:space="preserve">
+    <value>Manage Tasks</value>
   </data>
 </root>
