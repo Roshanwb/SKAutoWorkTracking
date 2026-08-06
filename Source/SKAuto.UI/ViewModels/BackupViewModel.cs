@@ -3,14 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
-using System;
+using SKAuto.UI.Localization;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-
-using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class BackupViewModel : ObservableObject

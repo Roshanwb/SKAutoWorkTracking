@@ -2,14 +2,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
-using System;
+using SKAuto.UI.Localization;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-
-using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class PriceUpdateViewModel : ObservableObject

@@ -1,5 +1,4 @@
 using SKAuto.Core.DTOs;
-using System.Threading.Tasks;
 
 namespace SKAuto.Core.Interfaces
 {
@@ -7,8 +6,8 @@ namespace SKAuto.Core.Interfaces
     {
         Task<byte[]> GenerateDailyReportAsync(DateTime date);
         Task<byte[]> GenerateWorkOrderReportAsync(int workOrderId);
-        Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter);
-        Task<byte[]> GenerateTasksReportAsync(ReportFilter filter);   // NEW
+        Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter, bool showPrice = true, bool showTime = true);
+        Task<byte[]> GenerateTasksReportAsync(ReportFilter filter);
         Task<byte[]> GenerateClientsReportAsync();
         Task<byte[]> GenerateVehiclesReportAsync();
         Task<byte[]> GenerateMonthlySummaryAsync(int month, int year);

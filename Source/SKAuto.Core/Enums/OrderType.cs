@@ -1,17 +1,27 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SKAuto.Core.Enums
 {
     public enum OrderType
     {
-        PSA_Contract,    // Work from PSA with fixed rates
-        Direct_Fitting,  // Fitting for direct clients
-        Direct_Sale      // Accessory sales to direct clients
+        PSA_Sur_Site,
+        PSA_Exterieur,
+        Direct_Sur_Site,
+        Direct_Exterieur
+    }
+
+    public static class OrderTypeExtensions
+    {
+        public static string GetDisplayName(this OrderType value)
+        {
+            return value switch
+            {
+                OrderType.PSA_Sur_Site => "PSA Sur Site",
+                OrderType.PSA_Exterieur => "PSA Exterieur",
+                OrderType.Direct_Sur_Site => "Direct Sur Site",
+                OrderType.Direct_Exterieur => "Direct Exterieur",
+                _ => value.ToString().Replace('_', ' ')
+            };
+        }
     }
 }
-
-

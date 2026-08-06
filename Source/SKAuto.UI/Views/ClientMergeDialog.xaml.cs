@@ -1,5 +1,5 @@
-﻿using System.Windows;
-using SKAuto.Core.Entities;
+﻿using SKAuto.Core.Entities;
+using System.Windows;
 
 namespace SKAuto.UI.Views
 {

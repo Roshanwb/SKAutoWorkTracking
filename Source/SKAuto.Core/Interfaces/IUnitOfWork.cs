@@ -12,7 +12,7 @@ namespace SKAuto.Core.Interfaces
         IRepository<Travel> Travels { get; }
         IRepository<SourceDocument> SourceDocuments { get; }
         IRepository<ProtectedRate> ProtectedRates { get; }
-        IRepository<User> Users { get; }  
+        IRepository<User> Users { get; }
 
         Task<int> CompleteAsync();
         Task BeginTransactionAsync();

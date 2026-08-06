@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using SKAuto.Core.DTOs;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace SKAuto.Import.Parsers

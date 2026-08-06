@@ -8,17 +8,13 @@ using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
 using SKAuto.Import.Parsers;
-using System;
+using SKAuto.UI.Localization;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-
-using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class ImportViewModel : ObservableObject
@@ -640,7 +636,7 @@ namespace SKAuto.UI.ViewModels
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
-            Mouse.OverrideCursor =  System.Windows.Input.Cursors.Wait;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
             IProgress<ProgressReport> progress = new Progress<ProgressReport>(p =>
             {
@@ -847,7 +843,7 @@ namespace SKAuto.UI.ViewModels
                                     OrderDate = dto.OrderDate,
                                     Status = dto.Source == "PDF" ? WorkStatus.Planned : WorkStatus.Done,
                                     CompletedDate = dto.OrderDate,
-                                    OrderType = OrderType.PSA_Contract,
+                                    OrderType = OrderType.PSA_Sur_Site ,
                                     Notes = $"Imported from {dto.Source}"
                                 };
                                 workOrdersToAdd.Add(workOrder);

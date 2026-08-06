@@ -3,11 +3,6 @@ using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SKAuto.Import.Parsers
 {
@@ -20,9 +15,8 @@ namespace SKAuto.Import.Parsers
             try
             {
                 using var workbook = new XLWorkbook(filePath);
-                var worksheet = workbook.Worksheet(1); // First sheet
+                var worksheet = workbook.Worksheet(1);
 
-                // Validate PSA template format
                 if (!IsValidPSATemplate(worksheet))
                 {
                     result.Errors.Add("Invalid PSA template format");
@@ -30,7 +24,7 @@ namespace SKAuto.Import.Parsers
                 }
 
                 var workOrders = new List<WorkOrder>();
-                var row = 2; // Assuming row 1 is header
+                var row = 2;
 
                 while (!worksheet.Cell(row, 1).IsEmpty())
                 {
@@ -57,7 +51,6 @@ namespace SKAuto.Import.Parsers
 
         private bool IsValidPSATemplate(IXLWorksheet worksheet)
         {
-            // Check expected headers
             var headers = new[] { "Chassis", "Model", "Client", "Accessory", "Time Estimate" };
             for (int i = 0; i < headers.Length; i++)
             {
@@ -79,7 +72,6 @@ namespace SKAuto.Import.Parsers
                     OrderDate = DateTime.Today
                 };
 
-                // Parse accessory and time
                 var accessoryName = worksheet.Cell(row, 4).GetString();
                 var timeEstimate = worksheet.Cell(row, 5).GetString();
 
@@ -106,7 +98,6 @@ namespace SKAuto.Import.Parsers
         {
             if (string.IsNullOrEmpty(time)) return null;
 
-            // Parse formats like "1h30", "2h", "45min"
             if (time.Contains("h"))
             {
                 var parts = time.Split('h');
@@ -136,12 +127,9 @@ namespace SKAuto.Import.Parsers
             var workOrder = new WorkOrder
             {
                 OrderDate = dto.OrderDate,
-                OrderType = OrderType.PSA_Contract,
+                OrderType = OrderType.PSA_Sur_Site,   // <-- Changed
                 Status = WorkStatus.Planned
             };
-
-            // Note: Client and Vehicle will be linked during validation
-            // Accessories will be resolved during validation
 
             return workOrder;
         }

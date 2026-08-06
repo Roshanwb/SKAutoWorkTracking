@@ -1,11 +1,4 @@
 using SKAuto.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace SKAuto.Core.Entities
 {
@@ -21,8 +14,11 @@ namespace SKAuto.Core.Entities
         public decimal? TotalAmount { get; set; }
         public string? Notes { get; set; }
 
+        // NEW: Billing status
+        public BillingStatus BillingStatus { get; set; } = BillingStatus.ToDo;
+
         // Navigation properties
-        public virtual Vehicle Vehicle { get; set; } = null!;               // client is now accessed via Vehicle.Client
+        public virtual Vehicle Vehicle { get; set; } = null!;
         public virtual ICollection<WorkTask> WorkTasks { get; set; } = new List<WorkTask>();
         public virtual ICollection<Travel> Travels { get; set; } = new List<Travel>();
         public virtual ICollection<SourceDocument> SourceDocuments { get; set; } = new List<SourceDocument>();

@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace SKAuto.Core.Entities
 {
     public class SourceDocument : BaseEntity
     {
         public int WorkOrderId { get; set; }
-        public string DocumentType { get; set; } = string.Empty; // "PSA_Plan", "Client_Order", "Invoice"
+        public string DocumentType { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;
-        public string FileHash { get; set; } = string.Empty; // SHA256
+        public string FileHash { get; set; } = string.Empty;
         public string OriginalFilename { get; set; } = string.Empty;
 
-        // Navigation property
+        // NEW fields for Google Drive storage
+        public string GoogleDriveFileId { get; set; } = string.Empty;
+        public long? FileSize { get; set; }
+        public DateTime? UploadDate { get; set; }
+        public string? ContentType { get; set; }
+
         public virtual WorkOrder WorkOrder { get; set; } = null!;
     }
 }

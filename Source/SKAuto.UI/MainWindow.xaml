@@ -1,5 +1,5 @@
-<Window x:Class="SKAuto.UI.MainWindow"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"       
+﻿<Window x:Class="SKAuto.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"       
         xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -15,7 +15,10 @@
     <Window.Resources>
         <!-- Converters -->
         <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
+        <converters:BillingStatusToColorConverter x:Key="BillingStatusToColorConverter"/>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:GreaterThanZeroToVisibilityConverter x:Key="GreaterThanZeroToVisibilityConverter"/>
+        <converters:EnumToDisplayConverter x:Key="EnumToDisplayConverter"/>
 
         <!-- Icon button base -->
         <Style x:Key="IconButton" TargetType="Button">
@@ -90,13 +93,16 @@
         <!-- ===== MENU ===== -->
         <Menu DockPanel.Dock="Top" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
             <MenuItem Header="{loc:Translate MainWindow_File}">
-                <MenuItem Header="{loc:Translate MainWindow_Import}" Command="{Binding ImportDataCommand}"/>
+                <!-- Import is Admin-only -->
+                <MenuItem Header="{loc:Translate MainWindow_Import}" Command="{Binding ImportDataCommand}"
+                          Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 <Separator/>
                 <MenuItem Header="{loc:Translate MainWindow_ChangePassword}" Command="{Binding ChangePasswordCommand}"/>
                 <MenuItem Header="{loc:Translate MainWindow_Settings}" Command="{Binding OpenSettingsCommand}"/>
                 <Separator/>
                 <MenuItem Header="{loc:Translate MainWindow_Exit}"/>
             </MenuItem>
+            <!-- Manage menu is Admin-only -->
             <MenuItem Header="{loc:Translate MainWindow_Manage}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <MenuItem Header="{loc:Translate MainWindow_Clients}" Command="{Binding OpenClientManagementCommand}"/>
                 <MenuItem Header="{loc:Translate MainWindow_Vehicles}" Command="{Binding OpenVehicleManagementCommand}"/>
@@ -106,9 +112,11 @@
                 <Separator/>
                 <MenuItem Header="{loc:Translate MainWindow_BulkPriceUpdate}" Command="{Binding OpenPriceUpdateCommand}"/>
             </MenuItem>
+            <!-- Reports menu – accessible to all users -->
             <MenuItem Header="{loc:Translate MainWindow_Reports}">
                 <MenuItem Header="{loc:Translate MainWindow_GenerateReport}" Command="{Binding OpenReportsCommand}"/>
             </MenuItem>
+            <!-- Admin menu – Admin-only -->
             <MenuItem Header="{loc:Translate MainWindow_Admin}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <MenuItem Header="{loc:Translate MainWindow_BackupRestore}" Command="{Binding OpenBackupCommand}"/>
             </MenuItem>
@@ -123,11 +131,8 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <!-- Toolbar -->
                 <RowDefinition Height="*"/>
-                <!-- DataGrid + Right Panel -->
                 <RowDefinition Height="Auto"/>
-                <!-- Footer -->
             </Grid.RowDefinitions>
 
             <!-- ===== TOOLBAR ===== -->
@@ -138,7 +143,7 @@
                     <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="8,0" Background="White" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding NextDayCommand}" Content="&#xE76C;" Margin="0,0,4,0" ToolTip="{loc:Translate MainWindow_NextDay}"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding NextWeekCommand}" Content="&#xeb9d;" ToolTip="{loc:Translate MainWindow_NextWeek}"/>
-                    <Button Content="{loc:Translate MainWindow_Refresh}" Command="{Binding LoadTodayWorkCommand}" Style="{StaticResource ActionButton}" Background="#2196F3" Width="70" Margin="16,0,0,0"/>
+                    <Button Content="{loc:Translate MainWindow_Refresh}" Command="{Binding GoToTodayCommand}" Style="{StaticResource ActionButton}" Background="#2196F3" Width="70" Margin="16,0,0,0" ToolTip="Go to today"/>
                     <TextBlock Text="{Binding StatusMessage}" Foreground="#BDC3C7" Margin="16,0,0,0" VerticalAlignment="Center" FontStyle="Italic" FontSize="12"/>
                 </StackPanel>
             </Border>
@@ -174,7 +179,7 @@
                         <DataGridTextColumn Header="{loc:Translate MainWindow_Client}" Binding="{Binding ClientName}" Width="140"/>
                         <DataGridTextColumn Header="{loc:Translate MainWindow_Vehicle}" Binding="{Binding VehicleModel}" Width="80"/>
                         <DataGridTextColumn Header="{loc:Translate MainWindow_Chassis}" Binding="{Binding VehicleChassis}" Width="80"/>
-                        <DataGridTextColumn Header="{loc:Translate ClientManagementView_Type}" Binding="{Binding OrderType}" Width="90"/>
+                        <DataGridTextColumn Header="{loc:Translate ClientManagementView_Type}" Binding="{Binding OrderType, Converter={StaticResource EnumToDisplayConverter}}" Width="90"/>
                         <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Status}" Binding="{Binding Status}" Width="100">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
@@ -186,6 +191,28 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
+                        <!-- Billing Status Column -->
+                        <DataGridTemplateColumn Header="Billing" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding BillingStatus, Converter={StaticResource BillingStatusToColorConverter}}"
+                                            CornerRadius="4" Padding="4,2" Margin="2,0">
+                                        <TextBlock Text="{Binding BillingStatus}" Foreground="White" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- Attachments Column -->
+                        <DataGridTemplateColumn Header="📋" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Button Content="📋" Command="{Binding DataContext.OpenAttachmentsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" FontSize="14" Cursor="Hand" ToolTip="Manage attachments" Foreground="#3498DB" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="{loc:Translate ReportsView_Tasks}" Binding="{Binding TaskCount}" Width="55"/>
                         <DataGridTextColumn Header="{loc:Translate MainWindow_Total}" Binding="{Binding TotalAmount, StringFormat=C}" Width="80" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <DataGridTextColumn Header="{loc:Translate MainWindow_Notes}" Binding="{Binding Notes}" Width="*"/>
@@ -235,14 +262,20 @@
                     <!-- Primary Actions -->
                     <Button Content="{loc:Translate MainWindow_NewWorkOrder}" Style="{StaticResource ActionButton}" Background="#E91E63" Height="55" FontSize="15" FontWeight="Bold" Command="{Binding CreateWorkOrderCommand}"/>
 
-                    <!-- Secondary Actions -->
-                    <Button Content="{loc:Translate MainWindow_ImportData}" Style="{StaticResource ActionButton}" Background="#8BC34A" Command="{Binding ImportDataCommand}"/>
-                    <Button Content="{loc:Translate ReportsView_GenerateReports}" Style="{StaticResource ActionButton}" Background="#27AE60" Command="{Binding OpenReportsCommand}" Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <!-- Secondary Actions – Import is Admin-only -->
+                    <Button Content="{loc:Translate MainWindow_ImportData}" Style="{StaticResource ActionButton}" Background="#8BC34A" 
+                            Command="{Binding ImportDataCommand}"
+                            Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-                    <!-- Admin Only -->
+                    <!-- Reports – accessible to all users -->
+                    <Button Content="{loc:Translate ReportsView_GenerateReports}" Style="{StaticResource ActionButton}" Background="#27AE60" 
+                            Command="{Binding OpenReportsCommand}"/>
+
+                    <!-- Admin Only (Clients, Vehicles, Tasks) -->
                     <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Button Content="{loc:Translate ClientManagementView_ManageClients}" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding OpenClientManagementCommand}"/>
                         <Button Content="{loc:Translate VehicleManagementView_ManageVehicles}" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding OpenVehicleManagementCommand}"/>
+                        <Button Content="{loc:Translate ManageTasks}" Style="{StaticResource ActionButton}" Background="#17A2B8" Command="{Binding ShowAccessoryManagementCommand}"/>
                     </StackPanel>
 
                     <!-- Status Updates -->
@@ -250,6 +283,12 @@
                     <Button Content="{loc:Translate MainWindow_InProgress}" Style="{StaticResource StatusButton}" Background="#F39C12" Command="{Binding UpdateStatusCommand}" CommandParameter="InProgress"/>
                     <Button Content="{loc:Translate MainWindow_Blocked}" Style="{StaticResource StatusButton}" Background="#E74C3C" Command="{Binding UpdateStatusCommand}" CommandParameter="Blocked"/>
                     <Button Content="{loc:Translate MainWindow_Done}" Style="{StaticResource StatusButton}" Background="#2ECC71" Command="{Binding UpdateStatusCommand}" CommandParameter="Done"/>
+
+                    <!-- Billing Status -->
+                    <TextBlock Text="{loc:Translate MainWindow_BillingTitle}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
+                    <Button Content="{loc:Translate MainWindow_BillingToDo}" Style="{StaticResource StatusButton}" Background="#F39C12" Command="{Binding UpdateBillingStatusCommand}" CommandParameter="ToDo"/>
+                    <Button Content="{loc:Translate MainWindow_BillingPending}" Style="{StaticResource StatusButton}" Background="#E74C3C" Command="{Binding UpdateBillingStatusCommand}" CommandParameter="Pending"/>
+                    <Button Content="{loc:Translate MainWindow_BillingDone}" Style="{StaticResource StatusButton}" Background="#2ECC71" Command="{Binding UpdateBillingStatusCommand}" CommandParameter="Done"/>
 
                     <TextBlock Text="{loc:Translate MainWindow_Danger}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,8,0,4"/>
                     <Button Content="{loc:Translate MainWindow_DeleteWorkOrder}" Style="{StaticResource StatusButton}" Background="#DC3545" Command="{Binding DeleteWorkOrderCommand}"/>
@@ -270,6 +309,7 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <TextBlock Text="{Binding SyncStatus}" Margin="0,0,8,0" FontSize="11" Foreground="#7F8C8D"/>
+                        <!-- Google Drive – accessible to all users -->
                         <Button Content="{loc:Translate MainWindow_Drive}" Command="{Binding OpenDriveSettingsCommand}" Background="Transparent" BorderThickness="0" Foreground="#3498DB" Cursor="Hand" FontSize="11"/>
                     </StackPanel>
                 </Grid>

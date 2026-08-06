@@ -1,24 +1,28 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Repository;
+using SKAuto.UI.Localization;
+using SKAuto.UI.Models;    
 using SKAuto.UI.Views;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 
-using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class WorkOrderDetailViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _logger;
+        private readonly IConfigurationService _configService;
+        private readonly IGoogleDriveService _driveService;
         private readonly bool _isNew;
+        private decimal _psaRate; 
 
         [ObservableProperty]
         private WorkOrder _workOrder;
@@ -41,7 +45,6 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<Accessory> _availableAccessories = new();
 
-        // Search properties
         [ObservableProperty]
         private ObservableCollection<Accessory> _filteredAccessories = new();
 
@@ -55,12 +58,40 @@ namespace SKAuto.UI.ViewModels
         private int _quantity = 1;
 
         [ObservableProperty]
+        private int _taskMinutes = 0;
+
+        [ObservableProperty]
+        private decimal? _taskPrice;
+
+        [ObservableProperty]
         private ObservableCollection<WorkTask> _tasks = new();
 
         [ObservableProperty]
         private ObservableCollection<Travel> _travels = new();
 
-        public Array OrderTypeValues => Enum.GetValues(typeof(OrderType));
+        [ObservableProperty]
+        private ObservableCollection<SourceDocument> _attachments = new();
+
+        [ObservableProperty]
+        private SourceDocument? _selectedAttachment;
+
+        // OrderType options with friendly names
+        public List<SelectableOption<OrderType>> OrderTypeOptions { get; }
+         
+
+        private SelectableOption<OrderType> _selectedOrderTypeOption;
+        public SelectableOption<OrderType> SelectedOrderTypeOption
+        {
+            get => _selectedOrderTypeOption;
+            set
+            {
+                if (SetProperty(ref _selectedOrderTypeOption, value) && value != null)
+                {
+                    WorkOrder.OrderType = value.Value;
+                }
+            }
+        }
+
         public Array WorkStatusValues => Enum.GetValues(typeof(WorkStatus));
 
         public IAsyncRelayCommand SearchVehicleCommand { get; }
@@ -73,14 +104,28 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand DeleteCommand { get; }
         public IRelayCommand OpenVehicleEditCommand { get; }
         public IRelayCommand OpenAddTaskCommand { get; }
+        public IRelayCommand IncrementTimeCommand { get; }
+        public IRelayCommand DecrementTimeCommand { get; }
 
-        public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, int workOrderId = 0)
+        public IAsyncRelayCommand AddAttachmentCommand { get; }
+        public IAsyncRelayCommand<SourceDocument> RemoveAttachmentCommand { get; }
+        public IAsyncRelayCommand<SourceDocument> DownloadAttachmentCommand { get; }
+
+        public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService, IGoogleDriveService driveService, int workOrderId = 0)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _configService = configService;
+            _driveService = driveService;
             _isNew = workOrderId == 0;
 
             _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}");
+
+            // Build OrderType options with friendly names
+            OrderTypeOptions = Enum.GetValues(typeof(OrderType))
+                .Cast<OrderType>()
+                .Select(ot => new SelectableOption<OrderType> { Value = ot, Display = ot.GetDisplayName() })
+                .ToList();
 
             SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync);
             AddTaskCommand = new RelayCommand(AddTask);
@@ -93,10 +138,30 @@ namespace SKAuto.UI.ViewModels
             OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
             OpenAddTaskCommand = new RelayCommand(OpenAddTask);
 
+            IncrementTimeCommand = new RelayCommand(() => TaskMinutes = Math.Min(999, TaskMinutes + 5));
+            DecrementTimeCommand = new RelayCommand(() => TaskMinutes = Math.Max(0, TaskMinutes - 5));
+
+            AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync);
+            RemoveAttachmentCommand = new AsyncRelayCommand<SourceDocument>(RemoveAttachmentAsync);
+            DownloadAttachmentCommand = new AsyncRelayCommand<SourceDocument>(DownloadAttachmentAsync);
+
             _ = InitializeAsync(workOrderId);
+            _ = LoadPsaRateAsync();
         }
 
-        // Called when search text changes
+        private async Task LoadPsaRateAsync()
+        {
+            try
+            {
+                var config = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+                _psaRate = config.PsaRate;
+            }
+            catch
+            {
+                _psaRate = 66.0m;
+            }
+        }
+
         partial void OnAccessorySearchTextChanged(string value)
         {
             _logger.LogInfo($"Accessory search text changed: '{value}'");
@@ -109,7 +174,6 @@ namespace SKAuto.UI.ViewModels
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 FilteredAccessories = new ObservableCollection<Accessory>(AvailableAccessories);
-                _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories (no filter)");
                 return;
             }
 
@@ -120,19 +184,45 @@ namespace SKAuto.UI.ViewModels
                 .ToList();
 
             FilteredAccessories = new ObservableCollection<Accessory>(filtered);
-            _logger.LogInfo($"Filter result: {FilteredAccessories.Count} accessories matched");
         }
 
-        
+        partial void OnSelectedAccessoryChanged(Accessory? value)
+        {
+            if (value != null)
+            {
+                TaskMinutes = value.Time ?? 0;
+                TaskPrice = value.Price;
+                _logger.LogInfo($"Selected accessory: {value.Name}, default time {TaskMinutes} min, price {TaskPrice:C}");
+            }
+            else
+            {
+                TaskMinutes = 0;
+                TaskPrice = null;
+            }
+        }
 
-        // ========== ADD TRAVEL ==========
+        partial void OnTaskMinutesChanged(int value)
+        {
+            if (value > 0 && _psaRate > 0)
+            {
+                decimal calculatedPrice = Math.Round((_psaRate / 60) * value, 2);
+                TaskPrice = calculatedPrice;
+                _logger.LogInfo($"Minutes changed to {value}, recalculated price to {calculatedPrice:C} using rate {_psaRate:C}/h");
+            }
+            else
+            {
+                if (SelectedAccessory != null)
+                    TaskPrice = SelectedAccessory.Price;
+                else
+                    TaskPrice = null;
+            }
+        }
+
         private void AddTravel()
         {
             _logger.LogInfo(LocalizationManager.Instance["AddTravelCalled"]);
             var dialog = new TravelDialog();
-            // ? Set the owner to the current MainWindow
             dialog.Owner = System.Windows.Application.Current.MainWindow;
-            // ? Set startup location (already in XAML, but ensure it's set)
             dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             if (dialog.ShowDialog() == true)
             {
@@ -154,7 +244,7 @@ namespace SKAuto.UI.ViewModels
                 catch (Exception ex)
                 {
                     _logger.LogError(LocalizationManager.Instance["FailedToAddTravel"], ex);
-                    System.Windows.MessageBox.Show($"Error adding travel: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Error adding travel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
@@ -163,7 +253,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== REMOVE TRAVEL ==========
         private void RemoveTravel(Travel? travel)
         {
             if (travel == null) return;
@@ -172,13 +261,13 @@ namespace SKAuto.UI.ViewModels
             WorkOrder.Travels.Remove(travel);
         }
 
-        // ========== OPEN ADD TASK (MANAGE TASKS) ==========
         private async void OpenAddTask()
         {
             try
             {
                 var logger = App.GetService<ILoggingService>();
-                var vm = new AccessoryManagementViewModel(_unitOfWork, logger);
+                var configService = App.GetService<IConfigurationService>();
+                var vm = new AccessoryManagementViewModel(_unitOfWork, logger, configService);
                 var view = new AccessoryManagementView { DataContext = vm };
 
                 var window = new Window
@@ -193,9 +282,7 @@ namespace SKAuto.UI.ViewModels
 
                 if (window.ShowDialog() == true)
                 {
-                    // Clear search text so the newly added accessory appears
                     AccessorySearchText = "";
-                    // Ensure the refresh happens on the UI thread
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
                     {
                         await RefreshAccessoriesAsync();
@@ -206,14 +293,13 @@ namespace SKAuto.UI.ViewModels
             {
                 var logger = App.GetService<ILoggingService>();
                 logger?.LogError("Failed to open accessory management", ex);
-                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async Task RefreshAccessoriesAsync()
         {
             _logger.LogInfo(LocalizationManager.Instance["RefreshingAccessoriesList"]);
-            // Run on the UI thread to avoid cross-thread collection issues
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
             {
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
@@ -222,7 +308,7 @@ namespace SKAuto.UI.ViewModels
                 _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories, filtered to {FilteredAccessories.Count}");
             });
         }
-        // ========== OPEN VEHICLE EDIT ==========
+
         private async void OpenVehicleEdit()
         {
             if (SelectedVehicle == null) return;
@@ -251,7 +337,6 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== INITIALIZE ==========
         private async Task InitializeAsync(int workOrderId)
         {
             try
@@ -268,7 +353,7 @@ namespace SKAuto.UI.ViewModels
 
                 var accessories = await _unitOfWork.Accessories.GetAllAsync();
                 AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
-                FilterAccessories(""); // initialize filtered list with all items
+                FilterAccessories("");
                 _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories");
 
                 if (!_isNew)
@@ -278,7 +363,7 @@ namespace SKAuto.UI.ViewModels
                     if (WorkOrder == null)
                     {
                         _logger.LogError($"WorkOrder with ID {workOrderId} not found");
-                        System.Windows.MessageBox.Show($"Work order #{workOrderId} not found.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show($"Work order #{workOrderId} not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         CloseWindow();
                         return;
                     }
@@ -292,7 +377,12 @@ namespace SKAuto.UI.ViewModels
                     }
                     Tasks = new ObservableCollection<WorkTask>(WorkOrder.WorkTasks);
                     Travels = new ObservableCollection<Travel>(WorkOrder.Travels);
-                    _logger.LogInfo($"Loaded {Tasks.Count} tasks and {Travels.Count} travels for work order");
+                    var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == workOrderId);
+                    Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
+                    _logger.LogInfo($"Loaded {Tasks.Count} tasks, {Travels.Count} travels, {Attachments.Count} attachments");
+
+                    // Set selected OrderType option
+                    SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == WorkOrder.OrderType);
                 }
                 else
                 {
@@ -300,22 +390,25 @@ namespace SKAuto.UI.ViewModels
                     {
                         OrderDate = DateTime.Today,
                         Status = WorkStatus.Planned,
-                        OrderType = OrderType.PSA_Contract
+                        OrderType = OrderType.PSA_Sur_Site
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                     Travels = new ObservableCollection<Travel>();
+                    Attachments = new ObservableCollection<SourceDocument>();
                     _logger.LogInfo(LocalizationManager.Instance["CreatedNewWorkOrder"]);
+
+                    // Set default OrderType option
+                    SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == OrderType.PSA_Sur_Site);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(LocalizationManager.Instance["InitializeAsyncFailed"], ex);
-                System.Windows.MessageBox.Show($"Error initializing: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error initializing: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 CloseWindow();
             }
         }
 
-        // ========== SEARCH VEHICLE ==========
         private async Task SearchVehicleAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;
@@ -335,8 +428,8 @@ namespace SKAuto.UI.ViewModels
 
                 _logger.LogWarning($"Vehicle with chassis {ChassisSearch} not found");
                 var result = System.Windows.MessageBox.Show($"Vehicle with chassis {ChassisSearch} not found. Create new vehicle?",
-                    "Create Vehicle", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
-                if (result != System.Windows.MessageBoxResult.Yes) return;
+                    "Create Vehicle", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result != MessageBoxResult.Yes) return;
 
                 if (SelectedClient == null)
                 {
@@ -348,7 +441,7 @@ namespace SKAuto.UI.ViewModels
                     else
                     {
                         _logger.LogWarning(LocalizationManager.Instance["NoClientAvailableCannotCreateVehicle"]);
-                        System.Windows.MessageBox.Show(LocalizationManager.Instance["NoClientExists"], "No Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(LocalizationManager.Instance["NoClientExists"], "No Client", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -356,7 +449,7 @@ namespace SKAuto.UI.ViewModels
                 if (SelectedClient.Id <= 0)
                 {
                     _logger.LogError($"Selected client has invalid ID {SelectedClient.Id}");
-                    System.Windows.MessageBox.Show(LocalizationManager.Instance["SelectedClientNotSavedYet"], "Invalid Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["SelectedClientNotSavedYet"], "Invalid Client", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -364,7 +457,7 @@ namespace SKAuto.UI.ViewModels
                 if (existingClient == null)
                 {
                     _logger.LogError($"Client with ID {SelectedClient.Id} does not exist in database.");
-                    System.Windows.MessageBox.Show(LocalizationManager.Instance["SelectedClientNoLongerExists"], "Client Not Found", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["SelectedClientNoLongerExists"], "Client Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -388,11 +481,10 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"Error searching/creating vehicle: {ChassisSearch}", ex);
-                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // Helper method to refresh the Vehicles collection
         private async Task RefreshVehiclesList()
         {
             var allVehicles = await _unitOfWork.Vehicles.GetAllAsync();
@@ -425,7 +517,6 @@ namespace SKAuto.UI.ViewModels
                 _logger.LogInfo($"Selected client changed to {value.Name} (ID {value.Id})");
         }
 
-        // ========== ADD TASK ==========
         private void AddTask()
         {
             if (SelectedAccessory == null)
@@ -442,15 +533,21 @@ namespace SKAuto.UI.ViewModels
                 Quantity = Quantity,
                 TaskType = SelectedAccessory.TaskType,
                 TaskStatus = WorkStatus.Planned,
-                Price = SelectedAccessory.Price,
-                EstimatedMinutes = SelectedAccessory.Time
+                Price = TaskPrice ?? SelectedAccessory.Price,
+                EstimatedMinutes = TaskMinutes > 0 ? TaskMinutes : SelectedAccessory.Time
             };
+
             Tasks.Add(task);
             WorkOrder.WorkTasks.Add(task);
-            _logger.LogInfo($"Added task: Accessory '{SelectedAccessory.Name}', Type '{SelectedAccessory.TaskType}', Quantity {Quantity}, Price {SelectedAccessory.Price}");
+
+            TaskMinutes = 0;
+            TaskPrice = null;
+            AccessorySearchText = "";
+            SelectedAccessory = null;
+
+            _logger.LogInfo($"Added task: Accessory '{task.Accessory.Name}', Type '{task.TaskType}', Quantity {Quantity}, Price {task.Price}, EstMin {task.EstimatedMinutes}");
         }
 
-        // ========== REMOVE TASK ==========
         private void RemoveTask(WorkTask? task)
         {
             if (task != null)
@@ -462,7 +559,123 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ========== SAVE ==========
+        private async Task AddAttachmentAsync()
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Multiselect = true,
+                Title = "Select files to attach"
+            };
+
+            if (openFileDialog.ShowDialog() != true) return;
+
+            try
+            {
+                var baseFolderId = await _driveService.GetFolderIdAsync("SKAuto Attachments");
+                var workOrderFolderId = await _driveService.GetSubFolderIdAsync(baseFolderId, WorkOrder.Id.ToString());
+
+                foreach (var filePath in openFileDialog.FileNames)
+                {
+                    var fileName = Path.GetFileName(filePath);
+                    var fileId = await _driveService.UploadFileAsync(filePath, fileName, workOrderFolderId);
+
+                    var doc = new SourceDocument
+                    {
+                        WorkOrderId = WorkOrder.Id,
+                        OriginalFilename = fileName,
+                        GoogleDriveFileId = fileId,
+                        FileHash = ComputeFileHash(filePath),
+                        FileSize = new FileInfo(filePath).Length,
+                        UploadDate = DateTime.UtcNow,
+                        ContentType = GetMimeType(filePath),
+                        DocumentType = "Attachment"
+                    };
+                    await _unitOfWork.SourceDocuments.AddAsync(doc);
+                }
+                await _unitOfWork.CompleteAsync();
+                var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == WorkOrder.Id);
+                Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
+                _logger.LogInfo($"Added {openFileDialog.FileNames.Length} attachment(s)");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to add attachment", ex);
+                System.Windows.MessageBox.Show($"Error adding attachment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task RemoveAttachmentAsync(SourceDocument? doc)
+        {
+            if (doc == null) return;
+            if (System.Windows.MessageBox.Show($"Delete attachment '{doc.OriginalFilename}'? This action cannot be undone.", "Confirm Delete",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(doc.GoogleDriveFileId))
+                    await _driveService.DeleteFileAsync(doc.GoogleDriveFileId);
+
+                await _unitOfWork.SourceDocuments.DeleteAsync(doc);
+                await _unitOfWork.CompleteAsync();
+                var docs = await _unitOfWork.SourceDocuments.FindAsync(d => d.WorkOrderId == WorkOrder.Id);
+                Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
+                _logger.LogInfo($"Deleted attachment {doc.OriginalFilename} (ID {doc.Id})");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to delete attachment", ex);
+                System.Windows.MessageBox.Show($"Error deleting attachment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task DownloadAttachmentAsync(SourceDocument? doc)
+        {
+            if (doc == null) return;
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = doc.OriginalFilename,
+                Filter = "All files|*.*"
+            };
+            if (saveDialog.ShowDialog() != true) return;
+
+            try
+            {
+                await _driveService.DownloadFileAsync(doc.GoogleDriveFileId, saveDialog.FileName);
+                System.Windows.MessageBox.Show($"File downloaded to {saveDialog.FileName}", "Download Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to download attachment", ex);
+                System.Windows.MessageBox.Show($"Error downloading attachment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string ComputeFileHash(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var hashBytes = sha256.ComputeHash(stream);
+            return Convert.ToHexString(hashBytes).ToLowerInvariant();
+        }
+
+        private string GetMimeType(string filePath)
+        {
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            return ext switch
+            {
+                ".pdf" => "application/pdf",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".txt" => "text/plain",
+                ".zip" => "application/zip",
+                _ => "application/octet-stream"
+            };
+        }
+
         private async Task SaveAsync()
         {
             try
@@ -472,7 +685,7 @@ namespace SKAuto.UI.ViewModels
                 if (SelectedVehicle == null)
                 {
                     _logger.LogWarning(LocalizationManager.Instance["SaveAttemptedWithoutVehicleSelected"]);
-                    System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectVehicle"], "Validation", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show(LocalizationManager.Instance["PleaseSelectVehicle"], "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -506,19 +719,18 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(LocalizationManager.Instance["SaveAsyncFailed"], ex);
-                System.Windows.MessageBox.Show($"Error saving: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // ========== DELETE ==========
         private async Task DeleteAsync()
         {
             if (_isNew) return;
 
             _logger.LogInfo($"DeleteAsync called for work order #{WorkOrder.Id}");
             var result = System.Windows.MessageBox.Show($"Delete work order #{WorkOrder.Id}? This will also delete all associated tasks and travels.",
-                "Confirm Delete", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
 
             try
             {
@@ -530,11 +742,10 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError($"DeleteAsync failed for work order #{WorkOrder.Id}", ex);
-                System.Windows.MessageBox.Show($"Error deleting: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error deleting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // ========== CLOSE WINDOW ==========
         private void CloseWindow(bool success = false)
         {
             _logger.LogInfo($"Closing window, success={success}");
@@ -546,5 +757,16 @@ namespace SKAuto.UI.ViewModels
                     break;
                 }
         }
+    }
+
+  
+}
+// Helper class for dropdown options
+namespace SKAuto.UI.Models
+{
+    public class SelectableOption<T>
+    {
+        public T? Value { get; set; }
+        public string Display { get; set; } = string.Empty;
     }
 }

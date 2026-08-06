@@ -3,11 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
 using SKAuto.UI.Localization;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Media;
 
 namespace SKAuto.UI.ViewModels
 {

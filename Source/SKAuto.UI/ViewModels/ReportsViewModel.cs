@@ -1,18 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using SKAuto.Core.DTOs;
-using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
 using SKAuto.Export.Pdf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using SKAuto.UI.Localization;
+using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Input;   using SKAuto.UI.Localization;
-// For Cursors
+using System.Windows.Input;
 
 namespace SKAuto.UI.ViewModels
 {
@@ -20,6 +15,15 @@ namespace SKAuto.UI.ViewModels
     {
         public T? Value { get; set; }
         public string Display { get; set; } = "";
+    }
+
+    public partial class ClientSelectionItem : ObservableObject
+    {
+        public int ClientId { get; set; }
+        public string Name { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        private bool _isSelected = true;
     }
 
     public enum ReportType
@@ -68,12 +72,26 @@ namespace SKAuto.UI.ViewModels
         private string _statusMessage;
 
         [ObservableProperty]
-        private bool _isBusy;   // To disable buttons during generation
+        private bool _isBusy;
+
+        // NEW: Show/Hide columns
+        [ObservableProperty]
+        private bool _showPrice = true;
+
+        [ObservableProperty]
+        private bool _showTime = true;
 
         // Options for dropdowns
         public List<SelectableOption<TaskType?>> TaskTypeOptions { get; }
         public List<SelectableOption<WorkStatus?>> WorkStatusOptions { get; }
         public List<SelectableOption<int?>> AccessoryOptions { get; private set; }
+
+        // Client selection
+        [ObservableProperty]
+        private ObservableCollection<ClientSelectionItem> _availableClients = new();
+
+        // OrderType options
+        public List<SelectableOption<OrderType?>> OrderTypeOptions { get; }
 
         // Selected option objects
         private SelectableOption<TaskType?> _selectedTaskTypeOption;
@@ -115,6 +133,18 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
+        // Selected OrderType option
+        private SelectableOption<OrderType?> _selectedOrderTypeOption;
+        public SelectableOption<OrderType?> SelectedOrderTypeOption
+        {
+            get => _selectedOrderTypeOption;
+            set => SetProperty(ref _selectedOrderTypeOption, value);
+        }
+
+        // Commands for client selection
+        public IRelayCommand SelectAllClientsCommand { get; }
+        public IRelayCommand DeselectAllClientsCommand { get; }
+
         public IAsyncRelayCommand GenerateExcelCommand { get; }
         public IAsyncRelayCommand GeneratePdfCommand { get; }
         public IRelayCommand CloseCommand { get; }
@@ -147,16 +177,80 @@ namespace SKAuto.UI.ViewModels
             {
                 new SelectableOption<int?> { Value = null, Display = "All" }
             };
+
+            // Build OrderType options with friendly names
+            OrderTypeOptions = new List<SelectableOption<OrderType?>>();
+            OrderTypeOptions.Add(new SelectableOption<OrderType?> { Value = null, Display = "All" });
+            foreach (OrderType value in Enum.GetValues(typeof(OrderType)))
+            {
+                OrderTypeOptions.Add(new SelectableOption<OrderType?> { Value = value, Display = value.GetDisplayName() });
+            }
+
             // Set default selections to "All"
             SelectedTaskTypeOption = TaskTypeOptions.First();
             SelectedWorkStatusOption = WorkStatusOptions.First();
             SelectedAccessoryOption = AccessoryOptions.First();
+            SelectedOrderTypeOption = OrderTypeOptions.First();
 
-            _ = LoadAccessoriesAsync();
+            // Commands
+            SelectAllClientsCommand = new RelayCommand(() => SetAllClientsSelected(true));
+            DeselectAllClientsCommand = new RelayCommand(() => SetAllClientsSelected(false));
 
             GenerateExcelCommand = new AsyncRelayCommand(GenerateExcelAsync);
             GeneratePdfCommand = new AsyncRelayCommand(GeneratePdfAsync);
             CloseCommand = new RelayCommand(CloseWindow);
+
+            // Load initial data
+            _ = LoadAccessoriesAsync();
+            _ = LoadAvailableClientsAsync();
+        }
+
+        partial void OnFromDateChanged(DateTime value) => _ = LoadAvailableClientsAsync();
+        partial void OnToDateChanged(DateTime value) => _ = LoadAvailableClientsAsync();
+
+        private async Task LoadAvailableClientsAsync()
+        {
+            try
+            {
+                var orders = await _unitOfWork.WorkOrders.FindAsync(w => w.OrderDate >= FromDate && w.OrderDate <= ToDate);
+                if (!orders.Any())
+                {
+                    AvailableClients = new ObservableCollection<ClientSelectionItem>();
+                    return;
+                }
+
+                var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
+                var vehicles = await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id));
+                var clientIds = vehicles.Select(v => v.ClientId).Distinct().ToList();
+                if (!clientIds.Any())
+                {
+                    AvailableClients = new ObservableCollection<ClientSelectionItem>();
+                    return;
+                }
+
+                var allClients = await _unitOfWork.Clients.FindAsync(c => clientIds.Contains(c.Id));
+                var clients = allClients
+                    .OrderBy(c => c.Name)
+                    .Select(c => new ClientSelectionItem
+                    {
+                        ClientId = c.Id,
+                        Name = c.Name,
+                        IsSelected = false
+                    })
+                    .ToList();
+                AvailableClients = new ObservableCollection<ClientSelectionItem>(clients);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to load clients for report filter", ex);
+                StatusMessage = "Error loading clients";
+            }
+        }
+
+        private void SetAllClientsSelected(bool selected)
+        {
+            foreach (var item in AvailableClients)
+                item.IsSelected = selected;
         }
 
         private async Task LoadAccessoriesAsync()
@@ -175,7 +269,6 @@ namespace SKAuto.UI.ViewModels
                 AccessoryOptions = newList;
                 OnPropertyChanged(nameof(AccessoryOptions));
 
-                // Keep the "All" selection if it was previously selected
                 if (SelectedAccessoryId == null)
                     SelectedAccessoryOption = AccessoryOptions.First();
                 else
@@ -208,18 +301,10 @@ namespace SKAuto.UI.ViewModels
 
                 if (saveDialog.ShowDialog() == true)
                 {
+                    var filter = BuildFilter();
                     byte[] data = SelectedReportType switch
                     {
-                        ReportType.WorkOrders => await _excelExport.GenerateWorkOrdersReportAsync(new ReportFilter
-                        {
-                            From = FromDate,
-                            To = ToDate,
-                            TaskType = SelectedTaskType,
-                            WorkStatus = SelectedWorkStatus,
-                            AccessoryId = SelectedAccessoryId,
-                            GroupByWeek = GroupByWeek,
-                            SummaryOnly = SummaryOnly
-                        }),
+                        ReportType.WorkOrders => await _excelExport.GenerateWorkOrdersReportAsync(filter, ShowPrice, ShowTime),
                         ReportType.Tasks => await _excelExport.GenerateTasksReportAsync(new ReportFilter
                         {
                             GroupByTaskType = GroupByTaskType,
@@ -249,6 +334,7 @@ namespace SKAuto.UI.ViewModels
             {
                 _isBusy = false;
                 Mouse.OverrideCursor = null;
+                StatusMessage = "Ready";
             }
         }
 
@@ -269,18 +355,10 @@ namespace SKAuto.UI.ViewModels
 
                 if (saveDialog.ShowDialog() == true)
                 {
+                    var filter = BuildFilter();
                     byte[] data = SelectedReportType switch
                     {
-                        ReportType.WorkOrders => await _pdfExport.GenerateWorkOrdersReportAsync(new ReportFilter
-                        {
-                            From = FromDate,
-                            To = ToDate,
-                            TaskType = SelectedTaskType,
-                            WorkStatus = SelectedWorkStatus,
-                            AccessoryId = SelectedAccessoryId,
-                            GroupByWeek = GroupByWeek,
-                            SummaryOnly = SummaryOnly
-                        }),
+                        ReportType.WorkOrders => await _pdfExport.GenerateWorkOrdersReportAsync(filter, ShowPrice, ShowTime),
                         ReportType.Tasks => await _pdfExport.GenerateTasksReportAsync(new ReportFilter
                         {
                             GroupByTaskType = GroupByTaskType,
@@ -310,7 +388,25 @@ namespace SKAuto.UI.ViewModels
             {
                 _isBusy = false;
                 Mouse.OverrideCursor = null;
+                StatusMessage = "Ready";
             }
+        }
+
+        private ReportFilter BuildFilter()
+        {
+            var selectedClientIds = AvailableClients.Where(c => c.IsSelected).Select(c => c.ClientId).ToList();
+            return new ReportFilter
+            {
+                From = FromDate,
+                To = ToDate,
+                TaskType = SelectedTaskType,
+                WorkStatus = SelectedWorkStatus,
+                AccessoryId = SelectedAccessoryId,
+                GroupByWeek = GroupByWeek,
+                SummaryOnly = SummaryOnly,
+                ClientIds = selectedClientIds.Any() ? selectedClientIds : null,
+                OrderType = SelectedOrderTypeOption?.Value
+            };
         }
 
         private string GetDefaultFileName(string extension)

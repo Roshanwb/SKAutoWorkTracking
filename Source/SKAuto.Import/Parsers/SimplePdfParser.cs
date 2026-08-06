@@ -1,11 +1,7 @@
-﻿using UglyToad.PdfPig;
-using UglyToad.PdfPig.Content;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Linq;
-using System;
-using System.IO;
-using System.Diagnostics;
+using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
 
 namespace SKAuto.Import.Parsers
 {

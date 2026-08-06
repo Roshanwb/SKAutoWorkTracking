@@ -1,10 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using SKAuto.Core.DTOs;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Text;
 
 namespace SKAuto.Import.Parsers
@@ -38,7 +35,7 @@ namespace SKAuto.Import.Parsers
             // Map columns by exact/partial matching with precedence
             int vinCol = FindColumn(headerList, new[] { "N° (VIN)", "VIN", "N°" });
             int clientCol = FindColumn(headerList, new[] { "Client" });
-            int modeleCol = FindColumn(headerList, new[] { "Modèle"}); // first choice
+            int modeleCol = FindColumn(headerList, new[] { "Modèle" }); // first choice
             //int marqueCol = FindColumn(headerList, new[] { "Marque" });           // fallback for model
             int finPrepCol = FindColumn(headerList, new[] { "Fin prép.", "Fin prep.", "Fin", "Date fin" });
             int etatCol = FindColumn(headerList, new[] { "Etat" });
@@ -83,7 +80,7 @@ namespace SKAuto.Import.Parsers
                     continue;
                 }
 
-                DateTime orderDate= new DateTime();
+                DateTime orderDate = new DateTime();
                 bool hasDate = false;
 
                 if (!string.IsNullOrWhiteSpace(finPrepStr))

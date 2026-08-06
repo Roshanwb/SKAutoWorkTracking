@@ -4,10 +4,6 @@ using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Helpers;
 using SKAuto.Core.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
 
 using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
@@ -91,7 +87,7 @@ namespace SKAuto.UI.ViewModels
 
         public event EventHandler<bool> Completed;
 
-        private bool _isSendCode=false;
+        private bool _isSendCode = false;
 
         public UserEditViewModel(IUnitOfWork unitOfWork, ILoggingService logger, User currentUser, User editingUser = null, UserEditMode mode = UserEditMode.Edit)
         {
@@ -149,11 +145,11 @@ namespace SKAuto.UI.ViewModels
                     ShowConfirmPassword = true;
                     ShowNewPasswordField = true;   // we will show three fields
                     ShowAdminFields = false;
-                    _isSendCode = false;    
+                    _isSendCode = false;
                     break;
 
                 case UserEditMode.ResetPassword:
-                    WindowTitle = LocalizationManager.Instance["ResetPassword"]; 
+                    WindowTitle = LocalizationManager.Instance["ResetPassword"];
                     IsUsernameEditable = true;
                     Username = "";
                     Email = "";

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "SKAuto.Mac": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:58785;http://localhost:58786"
+    }
+  }
+}

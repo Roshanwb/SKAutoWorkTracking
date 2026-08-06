@@ -2,16 +2,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
+using SKAuto.UI.Localization;
 using SKAuto.UI.Views;
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-
-using SKAuto.UI.Localization;
 namespace SKAuto.UI.ViewModels
 {
     public partial class ClientManagementViewModel : ObservableObject

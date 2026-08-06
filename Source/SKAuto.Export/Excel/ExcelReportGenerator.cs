@@ -3,10 +3,7 @@ using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace SKAuto.Export.Excel
 {
@@ -20,7 +17,6 @@ namespace SKAuto.Export.Excel
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
-
 
         // ========== DAILY REPORT ==========
         public async Task<byte[]> GenerateDailyReportAsync(DateTime date)
@@ -242,32 +238,29 @@ namespace SKAuto.Export.Excel
             return stream.ToArray();
         }
 
-        // ========== WORK ORDERS SUMMARY REPORT (with correct filtering) ==========
-        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter)
+        // ========== WORK ORDERS REPORT ==========
+        public async Task<byte[]> GenerateWorkOrdersReportAsync(ReportFilter filter, bool showPrice = true, bool showTime = true)
         {
             _logger.LogInfo($"GenerateWorkOrdersReportAsync started. From {filter.From:yyyy-MM-dd} to {filter.To:yyyy-MM-dd}, " +
-                $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}");
+                $"TaskType={filter.TaskType}, Status={filter.WorkStatus}, AccessoryId={filter.AccessoryId}, " +
+                $"GroupByWeek={filter.GroupByWeek}, SummaryOnly={filter.SummaryOnly}, " +
+                $"ClientIds={(filter.ClientIds != null ? string.Join(",", filter.ClientIds) : "All")}, " +
+                $"OrderType={filter.OrderType}, ShowPrice={showPrice}, ShowTime={showTime}");
 
-            // 1. Load all work orders in date range
-            var orders = (await _unitOfWork.WorkOrders
-                .FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To))
-                .ToList();
+            var orders = (await _unitOfWork.WorkOrders.FindAsync(w => w.OrderDate >= filter.From && w.OrderDate <= filter.To)).ToList();
 
-            // 2. Apply work status filter at work order level
             if (filter.WorkStatus.HasValue)
                 orders = orders.Where(o => o.Status == filter.WorkStatus.Value).ToList();
 
-            if (!orders.Any())
+            if (filter.ClientIds != null && filter.ClientIds.Any())
             {
-                using var emptyWorkbook = new XLWorkbook();
-                var ws = emptyWorkbook.Worksheets.Add("No Data");
-                ws.Cell(1, 1).Value = "No work orders match the date and status filters.";
-                using var stream = new MemoryStream();
-                emptyWorkbook.SaveAs(stream);
-                return stream.ToArray();
+                var clientIdSet = filter.ClientIds.ToHashSet();
+                orders = orders.Where(o => o.Vehicle != null && clientIdSet.Contains(o.Vehicle.ClientId)).ToList();
             }
 
-            // 3. Load related data for filtering and display
+            if (filter.OrderType.HasValue)
+                orders = orders.Where(o => o.OrderType == filter.OrderType.Value).ToList();
+
             var vehicleIds = orders.Select(o => o.VehicleId).Distinct().ToList();
             var vehicles = (await _unitOfWork.Vehicles.FindAsync(v => vehicleIds.Contains(v.Id))).ToDictionary(v => v.Id);
             var clientIds = vehicles.Values.Select(v => v.ClientId).Distinct().ToList();
@@ -281,32 +274,52 @@ namespace SKAuto.Export.Excel
             var accessories = (await _unitOfWork.Accessories.FindAsync(a => accessoryIds.Contains(a.Id)))
                 .ToDictionary(a => a.Id, a => a.Name);
 
-            // 4. Build a list of report rows (each row is a line in the final report)
+            var travelOrderIds = allTravels.Select(t => t.WorkOrderId).Distinct().ToHashSet();
+
             var reportRows = new List<ReportRow>();
             foreach (var wo in orders)
             {
-                // --- Task rows ---
+                bool hasTravel = travelOrderIds.Contains(wo.Id);
                 var tasks = allTasks.Where(t => t.WorkOrderId == wo.Id).ToList();
+
                 if (filter.TaskType.HasValue)
-                    tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
-                if (filter.AccessoryId.HasValue)
+                {
+                    if (filter.TaskType.Value == TaskType.Travel)
+                    {
+                        if (!hasTravel)
+                            tasks.Clear();
+                    }
+                    else
+                    {
+                        if (hasTravel)
+                            tasks.Clear();
+                        else
+                            tasks = tasks.Where(t => t.TaskType == filter.TaskType.Value).ToList();
+                    }
+                }
+
+                if (filter.AccessoryId.HasValue && tasks.Any())
                     tasks = tasks.Where(t => t.AccessoryId == filter.AccessoryId.Value).ToList();
 
                 foreach (var task in tasks)
                 {
                     decimal amount = (task.Price ?? 0) * task.Quantity;
                     string desc = accessories.GetValueOrDefault(task.AccessoryId, "?");
+                    if (hasTravel)
+                        desc = "Travel – " + desc;
                     reportRows.Add(new ReportRow
                     {
                         WorkOrder = wo,
                         Description = desc,
                         Amount = amount,
                         Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
-                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null
+                        Client = vehicles.TryGetValue(wo.VehicleId, out var veh) && clients.TryGetValue(veh.ClientId, out var cl) ? cl : null,
+                        HasTravel = hasTravel,
+                        IsTravelRow = false,
+                        EstimatedMinutes = task.EstimatedMinutes
                     });
                 }
 
-                // --- Travel rows – only if TaskType filter is null or equals Travel ---
                 if (!filter.TaskType.HasValue || filter.TaskType.Value == TaskType.Travel)
                 {
                     var travels = allTravels.Where(t => t.WorkOrderId == wo.Id).ToList();
@@ -320,48 +333,67 @@ namespace SKAuto.Export.Excel
                             Description = desc,
                             Amount = amount,
                             Vehicle = vehicles.GetValueOrDefault(wo.VehicleId),
-                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null
+                            Client = vehicles.TryGetValue(wo.VehicleId, out var veh2) && clients.TryGetValue(veh2.ClientId, out var cl2) ? cl2 : null,
+                            HasTravel = true,
+                            IsTravelRow = true,
+                            EstimatedMinutes = null
                         });
                     }
                 }
             }
 
-            if (!reportRows.Any())
-            {
-                using var emptyWorkbook = new XLWorkbook();
-                var ws = emptyWorkbook.Worksheets.Add("No Data");
-                ws.Cell(1, 1).Value = "No records match the selected filters.";
-                using var stream = new MemoryStream();
-                emptyWorkbook.SaveAs(stream);
-                return stream.ToArray();
-            }
+            reportRows = reportRows.Where(r => r.Amount > 0 || !string.IsNullOrEmpty(r.Description)).ToList();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Work Orders");
 
-            // Title
-            worksheet.Cell(1, 1).Value = "Work Orders Report";
+            var culture = CultureInfo.CurrentUICulture;
+            bool isFrench = culture.TwoLetterISOLanguageName == "fr";
+
+            string title = isFrench ? "Rapport des ordres de travail" : "Work Orders Report";
+            string periodLabel = isFrench ? "Période" : "Period";
+            string generatedLabel = isFrench ? "Généré le" : "Generated";
+            string noDataMsg = isFrench ? "Aucun enregistrement ne correspond aux filtres sélectionnés." : "No records match the selected filters.";
+
+            worksheet.Cell(1, 1).Value = title;
             worksheet.Cell(1, 1).Style.Font.Bold = true;
             worksheet.Cell(1, 1).Style.Font.FontSize = 16;
-            worksheet.Cell(2, 1).Value = $"Period: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}";
-            worksheet.Cell(3, 1).Value = $"Generated: {DateTime.Now:dd/MM/yyyy HH:mm}";
+            worksheet.Cell(2, 1).Value = $"{periodLabel}: {filter.From:dd/MM/yyyy} – {filter.To:dd/MM/yyyy}";
+            worksheet.Cell(3, 1).Value = $"{generatedLabel}: {DateTime.Now:dd/MM/yyyy HH:mm}";
 
-            // Filters summary
             int filterRow = 5;
-            worksheet.Cell(filterRow, 1).Value = "Applied Filters:";
+            worksheet.Cell(filterRow, 1).Value = isFrench ? "Filtres appliqués :" : "Applied Filters:";
             worksheet.Cell(filterRow, 1).Style.Font.Bold = true;
             filterRow++;
             worksheet.Cell(filterRow++, 1).Value = $"Task Type: {(filter.TaskType.HasValue ? filter.TaskType.Value.ToString() : "All")}";
             worksheet.Cell(filterRow++, 1).Value = $"Status: {(filter.WorkStatus.HasValue ? filter.WorkStatus.Value.ToString() : "All")}";
+            worksheet.Cell(filterRow++, 1).Value = $"Order Type: {(filter.OrderType.HasValue ? filter.OrderType.Value.GetDisplayName() : "All")}";
+            worksheet.Cell(filterRow++, 1).Value = $"Clients: {(filter.ClientIds != null && filter.ClientIds.Any() ? "Selected" : "All")}";
             worksheet.Cell(filterRow++, 1).Value = $"Group by Week: {(filter.GroupByWeek ? "Yes" : "No")}";
             worksheet.Cell(filterRow++, 1).Value = $"Summary Only: {(filter.SummaryOnly ? "Yes" : "No")}";
 
             int dataStartRow = filterRow + 2;
 
+            if (!reportRows.Any())
+            {
+                string[] baseHeaders = GetBaseHeaders(culture, showPrice, showTime);
+                for (int i = 0; i < baseHeaders.Length; i++)
+                {
+                    worksheet.Cell(dataStartRow, i + 1).Value = baseHeaders[i];
+                    worksheet.Cell(dataStartRow, i + 1).Style.Font.Bold = true;
+                    worksheet.Cell(dataStartRow, i + 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+                }
+                dataStartRow++;
+                worksheet.Cell(dataStartRow, 1).Value = noDataMsg;
+                worksheet.Columns().AdjustToContents();
+                using var emptyMs = new MemoryStream();
+                workbook.SaveAs(emptyMs);
+                return emptyMs.ToArray();
+            }
+
             if (filter.SummaryOnly)
             {
-                // Summary table
-                worksheet.Cell(dataStartRow, 1).Value = "Summary Statistics";
+                worksheet.Cell(dataStartRow, 1).Value = isFrench ? "Statistiques récapitulatives" : "Summary Statistics";
                 worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
                 dataStartRow++;
                 worksheet.Cell(dataStartRow, 1).Value = "Total Rows:";
@@ -386,35 +418,65 @@ namespace SKAuto.Export.Excel
                         worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
                         worksheet.Cell(dataStartRow, 1).Style.Font.FontSize = 12;
                         dataStartRow++;
-                        WriteReportRows(worksheet, ref dataStartRow, group.ToList());
+                        WriteReportRows(worksheet, ref dataStartRow, group.ToList(), showPrice, showTime);
                         decimal weekTotal = group.Sum(r => r.Amount);
-                        worksheet.Cell(dataStartRow, 7).Value = $"Week Total: €{weekTotal:0.00}";
-                        worksheet.Cell(dataStartRow, 7).Style.Font.Bold = true;
-                        worksheet.Cell(dataStartRow, 7).Style.NumberFormat.Format = "€#,##0.00";
+                        int weekLastCol = GetLastColumnIndex(showPrice, showTime);
+                        worksheet.Cell(dataStartRow, weekLastCol).Value = $"Week Total: €{weekTotal:0.00}";
+                        worksheet.Cell(dataStartRow, weekLastCol).Style.Font.Bold = true;
+                        worksheet.Cell(dataStartRow, weekLastCol).Style.NumberFormat.Format = "€#,##0.00";
                         dataStartRow += 2;
                     }
                 }
                 else
                 {
-                    WriteReportRows(worksheet, ref dataStartRow, reportRows);
+                    WriteReportRows(worksheet, ref dataStartRow, reportRows, showPrice, showTime);
                 }
             }
 
             decimal grandTotal = reportRows.Sum(r => r.Amount);
-            worksheet.Cell(dataStartRow, 7).Value = $"GRAND TOTAL: €{grandTotal:0.00}";
-            worksheet.Cell(dataStartRow, 7).Style.Font.Bold = true;
-            worksheet.Cell(dataStartRow, 7).Style.NumberFormat.Format = "€#,##0.00";
+            int lastCol = GetLastColumnIndex(showPrice, showTime);
+            worksheet.Cell(dataStartRow, lastCol).Value = $"GRAND TOTAL: €{grandTotal:0.00}";
+            worksheet.Cell(dataStartRow, lastCol).Style.Font.Bold = true;
+            worksheet.Cell(dataStartRow, lastCol).Style.NumberFormat.Format = "€#,##0.00";
 
             worksheet.Columns().AdjustToContents();
-            using var ms = new MemoryStream();
-            workbook.SaveAs(ms);
+            using var finalMs = new MemoryStream();
+            workbook.SaveAs(finalMs);
             _logger.LogInfo("Work orders report generation completed");
-            return ms.ToArray();
+            return finalMs.ToArray();
         }
 
-        private void WriteReportRows(IXLWorksheet ws, ref int row, List<ReportRow> rows)
+        private int GetLastColumnIndex(bool showPrice, bool showTime)
         {
-            string[] headers = { "ID", "Date", "Client", "Vehicle", "Status", "Description", "Amount" };
+            int baseCol = 6; // ID, Date, Client, Vehicle, Status, Description
+            if (showPrice) baseCol++;
+            if (showTime) baseCol++;
+            return baseCol;
+        }
+
+        private string[] GetBaseHeaders(CultureInfo culture, bool showPrice, bool showTime)
+        {
+            bool isFrench = culture.TwoLetterISOLanguageName == "fr";
+            var headers = new List<string>();
+            headers.Add("ID");
+            headers.Add(isFrench ? "Date" : "Date");
+            headers.Add(isFrench ? "Client" : "Client");
+            headers.Add(isFrench ? "Véhicule" : "Vehicle");
+            headers.Add(isFrench ? "Statut" : "Status");
+            headers.Add(isFrench ? "Description" : "Description");
+            if (showPrice)
+                headers.Add(isFrench ? "Montant" : "Amount");
+            if (showTime)
+                headers.Add(isFrench ? "Temps (min)" : "Time (min)");
+            return headers.ToArray();
+        }
+
+        private void WriteReportRows(IXLWorksheet ws, ref int row, List<ReportRow> rows, bool showPrice, bool showTime)
+        {
+            rows = rows.OrderBy(r => r.WorkOrder.Id).ThenBy(r => r.IsTravelRow ? 0 : 1).ToList();
+
+            var culture = CultureInfo.CurrentUICulture;
+            string[] headers = GetBaseHeaders(culture, showPrice, showTime);
             for (int i = 0; i < headers.Length; i++)
             {
                 ws.Cell(row, i + 1).Value = headers[i];
@@ -423,25 +485,65 @@ namespace SKAuto.Export.Excel
             }
             row++;
 
-            bool alternate = false;
+            int? currentOrderId = null;
+            bool groupAlternate = false;
+            XLColor groupBgColor = XLColor.White;
+
             foreach (var r in rows)
             {
-                ws.Cell(row, 1).Value = r.WorkOrder.Id;
-                ws.Cell(row, 2).Value = r.WorkOrder.OrderDate.ToString("dd/MM/yyyy");
-                ws.Cell(row, 3).Value = r.Client?.Name ?? "";
-                ws.Cell(row, 4).Value = r.Vehicle?.ChassisNumber ?? "";
-                ws.Cell(row, 5).Value = r.WorkOrder.Status.ToString();
-                ws.Cell(row, 6).Value = r.Description;
-                ws.Cell(row, 7).Value = r.Amount;
-                ws.Cell(row, 7).Style.NumberFormat.Format = "€#,##0.00";
-
-                if (alternate)
+                if (currentOrderId != r.WorkOrder.Id)
                 {
-                    for (int i = 1; i <= 7; i++)
-                        ws.Cell(row, i).Style.Fill.BackgroundColor = XLColor.LightGray;
+                    currentOrderId = r.WorkOrder.Id;
+                    groupAlternate = !groupAlternate;
+                    groupBgColor = groupAlternate ? XLColor.FromArgb(232, 232, 232) : XLColor.White;
+
+                    if (row > 2)
+                    {
+                        ws.Row(row - 1).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
+                        ws.Row(row - 1).Style.Border.BottomBorderColor = XLColor.DarkGray;
+                    }
+                }
+
+                int col = 1;
+                ws.Cell(row, col).Value = r.WorkOrder.Id;
+                ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                col++;
+                ws.Cell(row, col).Value = r.WorkOrder.OrderDate.ToString("dd/MM/yyyy");
+                ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                col++;
+                ws.Cell(row, col).Value = r.Client?.Name ?? "";
+                ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                col++;
+                ws.Cell(row, col).Value = r.Vehicle?.ChassisNumber ?? "";
+                ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                col++;
+                ws.Cell(row, col).Value = r.WorkOrder.Status.ToString();
+                ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                col++;
+                ws.Cell(row, col).Value = r.Description;
+                ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                col++;
+                if (showPrice)
+                {
+                    ws.Cell(row, col).Value = r.Amount;
+                    ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                    ws.Cell(row, col).Style.NumberFormat.Format = "€#,##0.00";
+                    col++;
+                }
+                if (showTime)
+                {
+                    string timeDisplay = (r.EstimatedMinutes.HasValue && r.EstimatedMinutes.Value > 0) ? r.EstimatedMinutes.Value.ToString() : "–";
+                    ws.Cell(row, col).Value = timeDisplay;
+                    ws.Cell(row, col).Style.Fill.BackgroundColor = groupBgColor;
+                    col++;
                 }
                 row++;
-                alternate = !alternate;
+            }
+
+            if (rows.Any())
+            {
+                ws.Row(row - 1).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
+                ws.Row(row - 1).Style.Border.BottomBorderColor = XLColor.DarkGray;
             }
             row++;
         }
@@ -453,6 +555,9 @@ namespace SKAuto.Export.Excel
             public decimal Amount { get; set; }
             public Vehicle Vehicle { get; set; }
             public Client Client { get; set; }
+            public bool HasTravel { get; set; }
+            public bool IsTravelRow { get; set; }
+            public int? EstimatedMinutes { get; set; }
         }
 
         // ========== CLIENTS REPORT ==========
@@ -610,6 +715,7 @@ namespace SKAuto.Export.Excel
                 var avgAct = group.Average(t => t.ActualMinutes!.Value);
                 var efficiency = avgEst > 0 ? (avgEst / avgAct) * 100 : 100;
                 worksheet.Cell(row, 1).Value = group.Key;
+                worksheet.Cell(row, 1).Style.NumberFormat.Format = "0";
                 worksheet.Cell(row, 2).Value = avgEst;
                 worksheet.Cell(row, 2).Style.NumberFormat.Format = "0";
                 worksheet.Cell(row, 3).Value = avgAct;
@@ -649,18 +755,6 @@ namespace SKAuto.Export.Excel
             return csv.ToString();
         }
 
-        // ========== HELPER METHODS ==========
-        private int GetIsoWeek(DateTime date)
-        {
-            return System.Globalization.CultureInfo.CurrentCulture.Calendar
-                .GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-        }
-
-        private DateTime GetStartOfWeek(DateTime date)
-        {
-            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-            return date.AddDays(-diff).Date;
-        }
         // ========== TASKS REPORT (Accessories) ==========
         public async Task<byte[]> GenerateTasksReportAsync(ReportFilter filter)
         {
@@ -682,7 +776,6 @@ namespace SKAuto.Export.Excel
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Tasks");
 
-            // Title
             worksheet.Cell(1, 1).Value = "Tasks Report";
             worksheet.Cell(1, 1).Style.Font.Bold = true;
             worksheet.Cell(1, 1).Style.Font.FontSize = 16;
@@ -692,7 +785,6 @@ namespace SKAuto.Export.Excel
 
             if (filter.SummaryOnly)
             {
-                // Summary table
                 worksheet.Cell(dataStartRow, 1).Value = "Summary Statistics";
                 worksheet.Cell(dataStartRow, 1).Style.Font.Bold = true;
                 dataStartRow++;
@@ -762,6 +854,19 @@ namespace SKAuto.Export.Excel
                 ws.Cell(row, 8).Value = t.IsActive ? "Yes" : "No";
                 row++;
             }
+        }
+
+        // ========== HELPER METHODS ==========
+        private int GetIsoWeek(DateTime date)
+        {
+            return System.Globalization.CultureInfo.CurrentCulture.Calendar
+                .GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
+
+        private DateTime GetStartOfWeek(DateTime date)
+        {
+            int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+            return date.AddDays(-diff).Date;
         }
     }
 }

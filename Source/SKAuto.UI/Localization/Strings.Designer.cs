@@ -727,6 +727,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Address:.
+        /// </summary>
+        internal static string ClientMergeDialog_Address {
+            get {
+                return ResourceManager.GetString("ClientMergeDialog_Address", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit Master Client Details.
         /// </summary>
         internal static string ClientMergeDialog_EditMasterClient {
@@ -857,7 +866,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A verification code has been sent to.
+        ///   Looks up a localized string similar to A verification code has been sent to .
         /// </summary>
         internal static string CodeSentMessageBodySuccessPart1 {
             get {
@@ -988,6 +997,15 @@ namespace SKAuto.UI.Localization {
         internal static string DeleteClientNoClientSelected {
             get {
                 return ResourceManager.GetString("DeleteClientNoClientSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download.
+        /// </summary>
+        internal static string DownloadText {
+            get {
+                return ResourceManager.GetString("DownloadText", resourceCulture);
             }
         }
         
@@ -2513,7 +2531,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version: 1.0.0 (latest).
+        ///   Looks up a localized string similar to Version: 2.0.0.
         /// </summary>
         internal static string HelpView_Version {
             get {
@@ -2720,6 +2738,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to    2026 Insights®.
+        /// </summary>
+        internal static string Insights {
+            get {
+                return ResourceManager.GetString("Insights", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid email format..
         /// </summary>
         internal static string InvalidEmailFormat {
@@ -2873,6 +2900,42 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Done.
+        /// </summary>
+        internal static string MainWindow_BillingDone {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pending.
+        /// </summary>
+        internal static string MainWindow_BillingPending {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingPending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Billing.
+        /// </summary>
+        internal static string MainWindow_BillingTitle {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To Do.
+        /// </summary>
+        internal static string MainWindow_BillingToDo {
+            get {
+                return ResourceManager.GetString("MainWindow_BillingToDo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Blocked.
         /// </summary>
         internal static string MainWindow_Blocked {
@@ -2999,15 +3062,6 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SK Auto Work Tracking v1.0 – © 2026 Insights®.
-        /// </summary>
-        internal static string MainWindow_Footer {
-            get {
-                return ResourceManager.GetString("MainWindow_Footer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to _Generate Report.
         /// </summary>
         internal static string MainWindow_GenerateReport {
@@ -3062,7 +3116,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MainWindow.
+        ///   Looks up a localized string similar to Main Window.
         /// </summary>
         internal static string MainWindow_MainWindow {
             get {
@@ -3134,7 +3188,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Refresh.
+        ///   Looks up a localized string similar to Today.
         /// </summary>
         internal static string MainWindow_Refresh {
             get {
@@ -3157,6 +3211,15 @@ namespace SKAuto.UI.Localization {
         internal static string MainWindow_Settings {
             get {
                 return ResourceManager.GetString("MainWindow_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string MainWindow_Status {
+            get {
+                return ResourceManager.GetString("MainWindow_Status", resourceCulture);
             }
         }
         
@@ -3256,6 +3319,15 @@ namespace SKAuto.UI.Localization {
         internal static string MainWindowShownAndActivated {
             get {
                 return ResourceManager.GetString("MainWindowShownAndActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Tasks.
+        /// </summary>
+        internal static string ManageTasks {
+            get {
+                return ResourceManager.GetString("ManageTasks", resourceCulture);
             }
         }
         
@@ -3683,6 +3755,24 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clients.
+        /// </summary>
+        internal static string ReportsView_Clients {
+            get {
+                return ResourceManager.GetString("ReportsView_Clients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deselect All.
+        /// </summary>
+        internal static string ReportsView_DeselectAll {
+            get {
+                return ResourceManager.GetString("ReportsView_DeselectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filters.
         /// </summary>
         internal static string ReportsView_Filters {
@@ -3737,6 +3827,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Order Type.
+        /// </summary>
+        internal static string ReportsView_OrderType {
+            get {
+                return ResourceManager.GetString("ReportsView_OrderType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reports.
         /// </summary>
         internal static string ReportsView_Reports {
@@ -3751,6 +3850,33 @@ namespace SKAuto.UI.Localization {
         internal static string ReportsView_ReportType {
             get {
                 return ResourceManager.GetString("ReportsView_ReportType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All.
+        /// </summary>
+        internal static string ReportsView_SelectAll {
+            get {
+                return ResourceManager.GetString("ReportsView_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Price.
+        /// </summary>
+        internal static string ReportsView_ShowPrice {
+            get {
+                return ResourceManager.GetString("ReportsView_ShowPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Time.
+        /// </summary>
+        internal static string ReportsView_ShowTime {
+            get {
+                return ResourceManager.GetString("ReportsView_ShowTime", resourceCulture);
             }
         }
         
@@ -3787,6 +3913,15 @@ namespace SKAuto.UI.Localization {
         internal static string ReportsView_TaskType {
             get {
                 return ResourceManager.GetString("ReportsView_TaskType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time (min).
+        /// </summary>
+        internal static string ReportsView_Time {
+            get {
+                return ResourceManager.GetString("ReportsView_Time", resourceCulture);
             }
         }
         
@@ -4111,6 +4246,150 @@ namespace SKAuto.UI.Localization {
         internal static string StepImportingBackup {
             get {
                 return ResourceManager.GetString("StepImportingBackup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A version conflict was detected between your local database (v{0}) and the remote database (v{1}).\n\nYour local changes have been backed up to:\n{2}\n\nDo you want to download the remote version (recommended)?.
+        /// </summary>
+        internal static string Sync_ConflictMessage {
+            get {
+                return ResourceManager.GetString("Sync_ConflictMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version Conflict.
+        /// </summary>
+        internal static string Sync_ConflictTitle {
+            get {
+                return ResourceManager.GetString("Sync_ConflictTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection Error.
+        /// </summary>
+        internal static string Sync_ConnectionError {
+            get {
+                return ResourceManager.GetString("Sync_ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synchronization failed: {0}.
+        /// </summary>
+        internal static string Sync_Error {
+            get {
+                return ResourceManager.GetString("Sync_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synchronization Error.
+        /// </summary>
+        internal static string Sync_ErrorTitle {
+            get {
+                return ResourceManager.GetString("Sync_ErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to synchronize database on exit: {0}. Your local changes may not be available on other machines..
+        /// </summary>
+        internal static string Sync_ExitError {
+            get {
+                return ResourceManager.GetString("Sync_ExitError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application closed successfully and database synchronized..
+        /// </summary>
+        internal static string Sync_ExitSuccess {
+            get {
+                return ResourceManager.GetString("Sync_ExitSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to force unlock. Please try again later..
+        /// </summary>
+        internal static string Sync_ForceUnlockFailed {
+            get {
+                return ResourceManager.GetString("Sync_ForceUnlockFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application appears to be in use by another user or a previous session may have crashed.\n\nDo you want to force unlock and continue? (Use with caution!).
+        /// </summary>
+        internal static string Sync_ForceUnlockQuestion {
+            get {
+                return ResourceManager.GetString("Sync_ForceUnlockQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internet connection is required to verify the database state. Please check your connection and try again..
+        /// </summary>
+        internal static string Sync_InternetRequired {
+            get {
+                return ResourceManager.GetString("Sync_InternetRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internet connection is not available. The application cannot start..
+        /// </summary>
+        internal static string Sync_InternetUnavailable {
+            get {
+                return ResourceManager.GetString("Sync_InternetUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application is currently in use by {0} on machine {1}. Only one user can use the application at a time..
+        /// </summary>
+        internal static string Sync_LockActive {
+            get {
+                return ResourceManager.GetString("Sync_LockActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to acquire cloud lock. Please check your network connection and try again..
+        /// </summary>
+        internal static string Sync_LockFailed {
+            get {
+                return ResourceManager.GetString("Sync_LockFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application in Use.
+        /// </summary>
+        internal static string Sync_LockTitle {
+            get {
+                return ResourceManager.GetString("Sync_LockTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A previous session from {0} timed out unexpectedly. This may be due to a crash or network interruption. Do you want to force unlock and continue?.
+        /// </summary>
+        internal static string Sync_StaleLockPrompt {
+            get {
+                return ResourceManager.GetString("Sync_StaleLockPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        internal static string Sync_SuccessTitle {
+            get {
+                return ResourceManager.GetString("Sync_SuccessTitle", resourceCulture);
             }
         }
         
@@ -4457,11 +4736,29 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to  Version: 2.1.0.0 (Latest) .
+        /// </summary>
+        internal static string Version {
+            get {
+                return ResourceManager.GetString("Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Accessory.
         /// </summary>
         internal static string WorkOrderDetailWindow_Accessory {
             get {
                 return ResourceManager.GetString("WorkOrderDetailWindow_Accessory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add File.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_AddAttachment {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_AddAttachment", resourceCulture);
             }
         }
         
@@ -4480,6 +4777,15 @@ namespace SKAuto.UI.Localization {
         internal static string WorkOrderDetailWindow_AddTravel {
             get {
                 return ResourceManager.GetString("WorkOrderDetailWindow_AddTravel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attachments.
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Attachments {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Attachments", resourceCulture);
             }
         }
         
@@ -4606,6 +4912,15 @@ namespace SKAuto.UI.Localization {
         internal static string WorkOrderDetailWindow_Task {
             get {
                 return ResourceManager.GetString("WorkOrderDetailWindow_Task", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time (min).
+        /// </summary>
+        internal static string WorkOrderDetailWindow_Time {
+            get {
+                return ResourceManager.GetString("WorkOrderDetailWindow_Time", resourceCulture);
             }
         }
         

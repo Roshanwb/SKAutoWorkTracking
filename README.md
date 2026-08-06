@@ -1,6 +1,7 @@
 # SKAuto Work Tracking System – User Guide
 
 ![.net](https://img.shields.io/badge/.NET-C%23-007396?style=flat)
+![Version](https://img.shields.io/badge/version-2.1.0-blue)
 
 ## Quick Start
 
@@ -18,13 +19,13 @@
 ### Morning (8:00–9:00)
 
 - Open the application and check today's planned work.
-- Import any new data (Excel/CSV, ParcCarrières, PDF folder, or Vehicles-only).
+- Import any new data (Excel/CSV, ParcCarrières, PDF folder, or Vehicles‑only).
 - Print work sheets for mechanics (via Reports → PDF).
 
 ### During the Day
 
-- Update work order status as progress is made.
-- Add notes and travel records to work orders.
+- Update work order status and billing status as progress is made.
+- Add notes, travel records, and file attachments to work orders.
 - Use the **Client Management** and **Vehicle Management** windows to maintain data.
 
 ### End of Day (16:00–17:00)
@@ -43,7 +44,9 @@
 - Create work orders for PSA and direct clients.
 - Add multiple tasks (accessories) per work order.
 - Track status: Planned → In Progress → Blocked → Done.
+- Track **billing status**: Done, To Do, Pending.
 - Add travel records (destination, distance, cost).
+- Attach one or more files (invoices, PDFs, images) to any work order – stored on Google Drive.
 - Edit or delete work orders directly from the main grid.
 
 > **Understanding Work Orders & Tasks**  
@@ -81,11 +84,14 @@ Generate **Excel** or **PDF** reports with powerful filters.
 
 **Filters (for Work Orders & Tasks):**
 - Date range, task type, work status, specific accessory.
+- **Multi‑select client filter** – dynamically populated from orders in the date range.
+- **Order Type** – choose from PSA Sur Site, PSA Exterieur, Direct Sur Site, Direct Exterieur, or All.
 - **Group by Week** – combines orders by week.
 - **Group by Task Type** – for the Tasks report.
-- **Summary Only** – hides task-level details, shows totals only.
+- **Show Price / Show Time** – toggle visibility of Amount and Time columns.
+- **Summary Only** – hides task‑level details, shows totals only.
 
-> 💡 **Tip:** PDF reports use your custom colors and fonts (configured in Settings).
+> 💡 **Tip:** PDF reports use your custom colors and fonts (configured in Settings). The time column shows `–` for tasks without an estimated duration.
 
 ---
 
@@ -101,7 +107,8 @@ Generate **Excel** or **PDF** reports with powerful filters.
 
 #### Accessories (Tasks)
 - Define tasks with part number, price, time, and task type (Fit, Sell, Remove, Preparation, Travel, Other).
-- **Bulk Price Update** – change the price for a specific accessory across a date range, optionally updating the accessory's default price.
+- **Admin‑only PSA rate** (€/h) – editable in the Accessory Management window; auto‑saved.
+- **Per‑task time/price override** – in the Work Order detail, adjust the time (▲/▼ buttons) and the price is recalculated from the PSA rate; you can also manually override the price.
 
 ---
 
@@ -129,7 +136,7 @@ Protect your data with **multiple backup options**:
 - **Login:** Secure login with BCrypt password hashing.
 - **Forgot Password:** Click "Forgot Password?" – a verification code is sent to your registered email.
 - **Change Password:** From the main menu (File → Change Password).
-- **Admin Only:** Manage users, configure Google Drive, set report styles.
+- **Admin Only:** Manage users, configure Google Drive, set report styles, bulk price updates.
 
 ---
 
@@ -164,5 +171,5 @@ Protect your data with **multiple backup options**:
 
 For technical issues: **roshanwb@gmail.com**
 
-**Version:** 1.0.0  
-**Last Updated:** 07/07/2026
+**Version:** 2.1.0  
+**Last Updated:** 06/08/2026

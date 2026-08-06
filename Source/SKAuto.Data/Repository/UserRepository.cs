@@ -2,7 +2,6 @@
 using SKAuto.Core.Entities;
 using SKAuto.Core.Interfaces;
 using SKAuto.Data.Database;
-using System.Threading.Tasks;
 
 namespace SKAuto.Data.Repository
 {

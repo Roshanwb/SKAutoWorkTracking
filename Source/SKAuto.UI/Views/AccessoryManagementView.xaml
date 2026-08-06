@@ -1,5 +1,6 @@
 <UserControl x:Class="SKAuto.UI.Views.AccessoryManagementView"
-                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:loc="clr-namespace:SKAuto.UI.Localization"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
@@ -14,13 +15,26 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="{loc:Translate ReportsView_Tasks}" Style="{StaticResource SectionHeader}" FontSize="18" Margin="0,0,0,10"/>
+        <!-- Title -->
+        <TextBlock Grid.Row="0" Text="{loc:Translate ReportsView_Tasks}" Style="{StaticResource SectionHeader}" FontSize="18" Margin="0,0,0,10"/>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+        <!-- PSA Rate (Admin only) -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Label Content="PSA Rate (Eur/h)" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+            <TextBox Text="{Binding PsaRate, UpdateSourceTrigger=PropertyChanged}" 
+                     Width="80" Height="25" VerticalAlignment="Center" BorderBrush="#dee2e6"
+                     ToolTip="Enter the PSA hourly rate (automatically saved)"/>
+            <TextBlock Text=" (auto-saved)" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6c757d" FontSize="11"/>
+        </StackPanel>
+
+        <!-- Search and Add -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                      Width="300" Margin="0,0,10,0" BorderBrush="#dee2e6"
                      ToolTip="{loc:Translate AccessoryManagementView_SearchHint}"/>
@@ -29,7 +43,8 @@
                     Style="{StaticResource ActionButton}" Background="#4CAF50" Height="28" Width="120"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="2" 
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="3" 
                   ItemsSource="{Binding Accessories}"
                   SelectedItem="{Binding SelectedAccessory}"
                   AutoGenerateColumns="False"
@@ -68,7 +83,7 @@
         </DataGrid>
 
         <!-- Edit Panel -->
-        <Border Grid.Row="3" 
+        <Border Grid.Row="4" 
                 Background="#f8f9fa" 
                 BorderBrush="#dee2e6" 
                 BorderThickness="1" 

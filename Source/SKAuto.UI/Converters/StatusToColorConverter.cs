@@ -1,8 +1,7 @@
-using System;
+using SKAuto.Core.Enums;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-using SKAuto.Core.Enums;
 
 namespace SKAuto.UI.Converters
 {

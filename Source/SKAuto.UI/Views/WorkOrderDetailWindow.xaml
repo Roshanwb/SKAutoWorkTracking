@@ -1,5 +1,6 @@
-<Window x:Class="SKAuto.UI.Views.WorkOrderDetailWindow"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
+﻿<Window x:Class="SKAuto.UI.Views.WorkOrderDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
@@ -15,33 +16,74 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
-        <!-- Modern button styles -->
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-            <Setter Property="Background" Value="#3498DB"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+        <!-- Compact DataGrid style -->
+        <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+            <Setter Property="RowHeight" Value="24"/>
+            <Setter Property="ColumnHeaderHeight" Value="28"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
         </Style>
-        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-            <Setter Property="Background" Value="#2ECC71"/>
-            <Setter Property="Foreground" Value="White"/>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-            <Setter Property="Background" Value="#E74C3C"/>
-            <Setter Property="Foreground" Value="White"/>
+        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridHeaderStyle}">
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="4,2"/>
         </Style>
-        <Style x:Key="InfoButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-            <Setter Property="Background" Value="#17A2B8"/>
+
+        <!-- Button styles with auto width and padding -->
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="White"/>
-        </Style>
-        <Style x:Key="LinkButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#3498DB"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <ContentPresenter Content="{TemplateBinding Content}"/>
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Opacity" Value="0.8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#3498DB"/>
+        </Style>
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#2ECC71"/>
+        </Style>
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#E74C3C"/>
+        </Style>
+        <Style x:Key="InfoButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#17A2B8"/>
+        </Style>
+        <Style x:Key="LinkButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#3498DB"/>
+            <Setter Property="Padding" Value="0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -52,29 +94,64 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Modern GroupBox style -->
+        <!-- Time arrow button -->
+        <Style x:Key="TimeArrowButton" TargetType="Button">
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="15"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E0E0E0"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#C0C0C0"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="GroupBox">
             <Setter Property="BorderBrush" Value="#DDD"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="Background" Value="White"/>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="12">
+    <!-- Main Grid -->
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Work Order Info -->
+            <!-- WorkOrder Info -->
             <RowDefinition Height="Auto"/>
-            <!-- Add Items toolbar -->
+            <!-- Toolbar -->
             <RowDefinition Height="*"/>
-            <!-- Tasks + Travels (split) -->
+            <!-- Tasks -->
+            <RowDefinition Height="Auto"/>
+            <!-- GridSplitter -->
+            <RowDefinition Height="200"/>
+            <!-- Attachments + Travels (resizable) -->
             <RowDefinition Height="Auto"/>
             <!-- Buttons -->
         </Grid.RowDefinitions>
 
-        <!-- ========== 1. WORK ORDER INFO ========== -->
+        <!-- 1. WorkOrder Info -->
         <GroupBox Grid.Row="0" Header="{loc:Translate WorkOrderDetailWindow_WorkOrderInfo}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -89,60 +166,58 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Row 0 -->
                 <Label Grid.Row="0" Grid.Column="0" Content="{loc:Translate MainWindow_Client}" Target="{Binding ElementName=ClientCombo}" 
-                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+                       Margin="0,0,6,0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="ClientCombo" Grid.Row="0" Grid.Column="1"
                           ItemsSource="{Binding Clients}" SelectedItem="{Binding SelectedClient}"
                           DisplayMemberPath="Name" IsEditable="True"
-                          Height="30" Margin="0,4,12,4" TabIndex="5"/>
+                          Height="28" Margin="0,4,8,4" TabIndex="5"/>
 
                 <Label Grid.Row="0" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_OrderDate}" Target="{Binding ElementName=OrderDatePicker}"
-                       Margin="12,0,8,0" VerticalAlignment="Center"/>
+                       Margin="10,0,6,0" VerticalAlignment="Center"/>
                 <DatePicker x:Name="OrderDatePicker" Grid.Row="0" Grid.Column="3"
                             SelectedDate="{Binding WorkOrder.OrderDate}"
-                            Height="30" Margin="0,4,0,4" TabIndex="2"/>
+                            Height="28" Margin="0,4,0,4" TabIndex="2"/>
 
-                <!-- Row 1 -->
                 <Label Grid.Row="1" Grid.Column="0" Content="{loc:Translate MainWindow_Chassis}" Target="{Binding ElementName=ChassisTextBox}"
-                       Margin="0,0,8,0" VerticalAlignment="Center"/>
-                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4,12,4">
+                       Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,4,8,4">
                     <TextBox x:Name="ChassisTextBox" Text="{Binding ChassisSearch, UpdateSourceTrigger=PropertyChanged}"
-                             Width="180" Height="30" CharacterCasing="Upper"
+                             Width="160" Height="28" CharacterCasing="Upper"
                              KeyDown="ChassisTextBox_KeyDown" TabIndex="0"/>
                     <Button Content="{loc:Translate WorkOrderDetailWindow_Search}" Command="{Binding SearchVehicleCommand}"
-                            Style="{StaticResource PrimaryButton}" Width="70" Height="30" Margin="8,0,0,0" TabIndex="1"/>
+                            Style="{StaticResource PrimaryButton}" MinWidth="50" Height="28" Margin="6,0,0,0" TabIndex="1"/>
                 </StackPanel>
 
                 <Label Grid.Row="1" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_SelectedVehicle}" Target="{Binding ElementName=VehicleLink}"
-                       Margin="12,0,8,0" VerticalAlignment="Center"/>
+                       Margin="10,0,6,0" VerticalAlignment="Center"/>
                 <Button x:Name="VehicleLink" Grid.Row="1" Grid.Column="3"
                         Command="{Binding OpenVehicleEditCommand}" Style="{StaticResource LinkButton}"
                         HorizontalAlignment="Left" Margin="0,4,0,4" TabIndex="6">
                     <TextBlock Text="{Binding SelectedVehicle, Converter={StaticResource VehicleDisplayConverter}}"/>
                 </Button>
 
-                <!-- Row 2 -->
                 <Label Grid.Row="2" Grid.Column="0" Content="{loc:Translate WorkOrderDetailWindow_OrderType}" Target="{Binding ElementName=OrderTypeCombo}"
-                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+                       Margin="0,0,6,0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="OrderTypeCombo" Grid.Row="2" Grid.Column="1"
-                          ItemsSource="{Binding OrderTypeValues}" SelectedItem="{Binding WorkOrder.OrderType}"
-                          Height="30" Margin="0,4,12,4" TabIndex="7"/>
+                          ItemsSource="{Binding OrderTypeOptions}"
+                          SelectedItem="{Binding SelectedOrderTypeOption}"
+                          DisplayMemberPath="Display"
+                          Height="28" Margin="0,4,8,4" TabIndex="7"/>
 
                 <Label Grid.Row="2" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_Status}" Target="{Binding ElementName=StatusCombo}"
-                       Margin="12,0,8,0" VerticalAlignment="Center"/>
+                       Margin="10,0,6,0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="StatusCombo" Grid.Row="2" Grid.Column="3"
                           ItemsSource="{Binding WorkStatusValues}" SelectedItem="{Binding WorkOrder.Status}"
-                          Height="30" Margin="0,4,0,4" TabIndex="8"/>
+                          Height="28" Margin="0,4,0,4" TabIndex="8"/>
             </Grid>
         </GroupBox>
 
-        <!-- ========== 2. ADD ITEMS TOOLBAR ========== -->
-        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="4" Padding="8" Margin="0,0,0,12">
+        <!-- 2. Add Items Toolbar (without AddTravel) -->
+        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="4" Padding="6" Margin="0,0,0,8">
             <StackPanel Orientation="Horizontal">
-                <Label Content="{loc:Translate WorkOrderDetailWindow_Task}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <!-- ComboBox with search-as-you-type -->
-                <ComboBox x:Name="TaskCombo" Width="250" Height="30"
+                <Label Content="{loc:Translate WorkOrderDetailWindow_Task}" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+                <ComboBox x:Name="TaskCombo" Width="180" Height="28"
                           ItemsSource="{Binding FilteredAccessories}"
                           Text="{Binding AccessorySearchText, UpdateSourceTrigger=PropertyChanged}"
                           IsEditable="True"
@@ -151,93 +226,141 @@
                           SelectedItem="{Binding SelectedAccessory}"
                           DisplayMemberPath="Name"
                           TabIndex="3"/>
+
+                <Label Content="{loc:Translate WorkOrderDetailWindow_Time}" VerticalAlignment="Center" Margin="10,0,6,0" FontSize="12"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBox x:Name="TimeTextBox" Text="{Binding TaskMinutes, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="44" Height="28" TextAlignment="Right" TabIndex="4"
+                             VerticalContentAlignment="Center" Background="#EEEEEE"
+                             ToolTip="{loc:Translate WorkOrderDetailWindow_TimeToolTip}"/>
+                    <StackPanel Orientation="Vertical" Margin="1,0,0,0">
+                        <Button Content="▲" Command="{Binding IncrementTimeCommand}" Style="{StaticResource TimeArrowButton}" TabIndex="-1"/>
+                        <Button Content="▼" Command="{Binding DecrementTimeCommand}" Style="{StaticResource TimeArrowButton}" TabIndex="-1"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Label Content="{loc:Translate WorkOrderDetailWindow_Price}" VerticalAlignment="Center" Margin="10,0,6,0" FontSize="12"/>
+                <TextBox x:Name="PriceTextBox" Text="{Binding TaskPrice, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F2}}" 
+                         Width="70" Height="28" TextAlignment="Right" TabIndex="5"
+                         VerticalContentAlignment="Center" Background="#EEEEEE"
+                         ToolTip="{loc:Translate WorkOrderDetailWindow_PriceToolTip}"/>
+
                 <Button Content="{loc:Translate WorkOrderDetailWindow_AddTask}" Command="{Binding AddTaskCommand}" 
-                        Style="{StaticResource PrimaryButton}" Width="80" Height="30" Margin="8,0,0,0" TabIndex="4"/>
+                        Style="{StaticResource PrimaryButton}" MinWidth="50" Height="28" Margin="8,0,0,0" TabIndex="6"/>
+                <GridSplitter Width="1" Background="#CCCCCC" Margin="10,0,10,0"/>
                 <Button Content="{loc:Translate WorkOrderDetailWindow_NewTask}" Command="{Binding OpenAddTaskCommand}"
-                        Style="{StaticResource SuccessButton}" Width="80" Height="30" Margin="8,0,0,0" TabIndex="9"/>
-                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,0"/>
-                <Button Content="{loc:Translate WorkOrderDetailWindow_AddTravel}" Command="{Binding AddTravelCommand}"
-                        Style="{StaticResource InfoButton}" Width="80" Height="30" TabIndex="10"/>
+                        Style="{StaticResource SuccessButton}" MinWidth="50" Height="28" Margin="4,0,0,0" TabIndex="7"/>
             </StackPanel>
         </Border>
 
-        <!-- ========== 3. TASKS & TRAVELS (split view) ========== -->
-        <Grid Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="5"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- 3. Tasks DataGrid -->
+        <GroupBox Grid.Row="2" Header="{loc:Translate ReportsView_Tasks}">
+            <DataGrid ItemsSource="{Binding Tasks}" AutoGenerateColumns="False" CanUserAddRows="False"
+                      ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                      BorderBrush="#E0E0E0" BorderThickness="1"
+                      RowBackground="White" AlternatingRowBackground="#F9F9F9"
+                      VerticalAlignment="Stretch">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Accessory}" Binding="{Binding Accessory.Name}" Width="*" SortDirection="Ascending"/>
+                    <DataGridTextColumn Header="{loc:Translate ClientManagementView_Type}" Binding="{Binding TaskType}" Width="60"/>
+                    <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Qty}" Binding="{Binding Quantity}" Width="40"/>
+                    <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Price}" Binding="{Binding Price, StringFormat=C}" Width="70"/>
+                    <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_EstMin}" Binding="{Binding EstimatedMinutes}" Width="60"/>
+                    <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Status}" Binding="{Binding TaskStatus}" Width="70"/>
+                    <DataGridTemplateColumn Header="" Width="40">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="✕" 
+                                        Command="{Binding DataContext.RemoveTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent" BorderThickness="0" Foreground="#E74C3C"
+                                        FontSize="12" Cursor="Hand" ToolTip="{loc:Translate WorkOrderDetailWindow_Remove}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
 
-            <!-- Tasks DataGrid (expands) -->
-            <GroupBox Grid.Row="0" Header="{loc:Translate ReportsView_Tasks}">
-                <DataGrid ItemsSource="{Binding Tasks}" AutoGenerateColumns="False" CanUserAddRows="False"
-                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
-                          BorderBrush="#E0E0E0" BorderThickness="1"
-                          RowBackground="White" AlternatingRowBackground="#F9F9F9"
-                          GridLinesVisibility="Horizontal" VerticalAlignment="Stretch">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Accessory}" Binding="{Binding Accessory.Name}" Width="*" SortDirection="Ascending"/>
-                        <DataGridTextColumn Header="{loc:Translate ClientManagementView_Type}" Binding="{Binding TaskType}" Width="70"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Qty}" Binding="{Binding Quantity}" Width="50"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Price}" Binding="{Binding Price, StringFormat=C}" Width="80"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_EstMin}" Binding="{Binding EstimatedMinutes}" Width="70"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Status}" Binding="{Binding TaskStatus}" Width="80"/>
-                        <DataGridTemplateColumn Header="" Width="50">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="?" 
-                                            Command="{Binding DataContext.RemoveTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"
-                                            Background="Transparent" BorderThickness="0" Foreground="#E74C3C"
-                                            FontSize="14" Cursor="Hand" ToolTip="{loc:Translate WorkOrderDetailWindow_Remove}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+        <!-- 4. GridSplitter between Tasks and bottom panel -->
+        <GridSplitter Grid.Row="3" Height="5" HorizontalAlignment="Stretch" Background="#E0E0E0" ResizeDirection="Rows"/>
+
+        <!-- 5. Bottom panel: Attachments & Travels (side by side) -->
+        <Grid Grid.Row="4" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Attachments -->
+            <GroupBox Header="Attachments" Grid.Column="0" Margin="0,0,4,0">
+                <StackPanel>
+                    <!-- Buttons -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <Button Content="{loc:Translate WorkOrderDetailWindow_AddAttachment}" Command="{Binding AddAttachmentCommand}" Background="#3498DB" Padding="8,3" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
+                        <Button Content="{loc:Translate ClientManagementView_Delete}" Command="{Binding RemoveAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#E74C3C" Padding="8,3" Margin="4,0,0,0" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
+                        <Button Content="{loc:Translate DownloadText}" Command="{Binding DownloadAttachmentCommand}" CommandParameter="{Binding SelectedAttachment}" Background="#2ECC71" Padding="8,3" Margin="4,0,0,0" Style="{StaticResource ActionButton}" Height="24" FontSize="11"/>
+                    </StackPanel>
+                    <!-- DataGrid -->
+                    <DataGrid ItemsSource="{Binding Attachments}" SelectedItem="{Binding SelectedAttachment}"
+                              AutoGenerateColumns="False" IsReadOnly="True"
+                              ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                              BorderBrush="#DEE2E6" BorderThickness="1"
+                              MaxHeight="150" VerticalAlignment="Top">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Filename" Binding="{Binding OriginalFilename}" Width="*"/>
+                            <DataGridTextColumn Header="Size" Binding="{Binding FileSize, StringFormat={}{0:N0}}" Width="50"/>
+                            <DataGridTextColumn Header="Uploaded" Binding="{Binding UploadDate, StringFormat=dd/MM/yyyy HH:mm}" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
             </GroupBox>
 
-            <!-- Grid splitter (optional, for resizing) -->
-            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="#E0E0E0"/>
+            <!-- GridSplitter between Attachments and Travels -->
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#E0E0E0" ResizeDirection="Columns"/>
 
-            <!-- Travels DataGrid (auto height) -->
-            <GroupBox Grid.Row="2" Header="{loc:Translate WorkOrderDetailWindow_Travels}">
-                <DataGrid ItemsSource="{Binding Travels}" AutoGenerateColumns="False" CanUserAddRows="False"
-                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
-                          BorderBrush="#E0E0E0" BorderThickness="1"
-                          RowBackground="White" AlternatingRowBackground="#F9F9F9"
-                          GridLinesVisibility="Horizontal" MaxHeight="160" VerticalAlignment="Top">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="{loc:Translate ImportView_Date}" Binding="{Binding TravelDate, StringFormat=dd/MM/yyyy}" Width="80" SortDirection="Descending"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Destination}" Binding="{Binding Destination}" Width="*"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Distance}" Binding="{Binding DistanceKm}" Width="70"/>
-                        <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Cost}" Binding="{Binding TravelCost, StringFormat=C}" Width="80"/>
-                        <DataGridTextColumn Header="{loc:Translate MainWindow_Notes}" Binding="{Binding Notes}" Width="120"/>
-                        <DataGridTemplateColumn Header="" Width="50">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="?" 
-                                            Command="{Binding DataContext.RemoveTravelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"
-                                            Background="Transparent" BorderThickness="0" Foreground="#E74C3C"
-                                            FontSize="14" Cursor="Hand" ToolTip="{loc:Translate WorkOrderDetailWindow_Remove}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+            <!-- Travels (with Add Travel button at top) -->
+            <GroupBox Header="{loc:Translate WorkOrderDetailWindow_Travels}" Grid.Column="2" Margin="4,0,0,0">
+                <StackPanel>
+                    <!-- Add Travel button -->
+                    <Button Content="{loc:Translate WorkOrderDetailWindow_AddTravel}" Command="{Binding AddTravelCommand}"
+                            Style="{StaticResource InfoButton}" Padding="8,3" HorizontalAlignment="Left" Height="24" FontSize="11" Margin="0,0,0,4"/>
+                    <!-- DataGrid -->
+                    <DataGrid ItemsSource="{Binding Travels}" AutoGenerateColumns="False" CanUserAddRows="False"
+                              ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                              BorderBrush="#E0E0E0" BorderThickness="1"
+                              RowBackground="White" AlternatingRowBackground="#F9F9F9"
+                              MaxHeight="150" VerticalAlignment="Top">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{loc:Translate ImportView_Date}" Binding="{Binding TravelDate, StringFormat=dd/MM/yyyy}" Width="70" SortDirection="Descending"/>
+                            <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Destination}" Binding="{Binding Destination}" Width="*"/>
+                            <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Distance}" Binding="{Binding DistanceKm}" Width="50"/>
+                            <DataGridTextColumn Header="{loc:Translate WorkOrderDetailWindow_Cost}" Binding="{Binding TravelCost, StringFormat=C}" Width="50"/>
+                            <DataGridTextColumn Header="{loc:Translate MainWindow_Notes}" Binding="{Binding Notes}" Width="80"/>
+                            <DataGridTemplateColumn Header="" Width="30">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="✕" 
+                                                Command="{Binding DataContext.RemoveTravelCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" BorderThickness="0" Foreground="#E74C3C"
+                                                FontSize="12" Cursor="Hand" ToolTip="{loc:Translate WorkOrderDetailWindow_Remove}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
             </GroupBox>
         </Grid>
 
-        <!-- ========== 4. BOTTOM BUTTONS ========== -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button Content="{loc:Translate ClientManagementView_Delete}" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}"
-                    Width="80" Height="34" Margin="5,0" TabIndex="11"/>
-            <Button Content="{loc:Translate VehicleEditWindow_Save}" Command="{Binding SaveCommand}" Style="{StaticResource SuccessButton}"
-                    Width="80" Height="34" Margin="5,0" TabIndex="12"/>
-            <Button Content="{loc:Translate VehicleEditWindow_Cancel}" Command="{Binding CancelCommand}" Style="{StaticResource ActionButton}"
-                    Background="#95A5A6" Width="80" Height="34" Margin="5,0" TabIndex="13"/>
+        <!-- 6. Bottom Buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+            <Button Content="{loc:Translate ClientManagementView_Delete}" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Padding="12,4" Height="30" Margin="4,0"/>
+            <Button Content="{loc:Translate VehicleEditWindow_Save}" Command="{Binding SaveCommand}" Style="{StaticResource SuccessButton}" Padding="12,4" Height="30" Margin="4,0"/>
+            <Button Content="{loc:Translate VehicleEditWindow_Cancel}" Command="{Binding CancelCommand}" Style="{StaticResource ActionButton}" Padding="12,4" Height="30" Margin="4,0" Background="#95A5A6"/>
         </StackPanel>
     </Grid>
 </Window>
+  

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SKAuto.Core.DTOs
+﻿namespace SKAuto.Core.DTOs
 {
     public class BackupImportResult
     {

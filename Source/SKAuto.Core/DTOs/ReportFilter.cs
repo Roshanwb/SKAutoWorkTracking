@@ -1,5 +1,4 @@
 ﻿using SKAuto.Core.Enums;
-using System;
 
 namespace SKAuto.Core.DTOs
 {
@@ -12,6 +11,8 @@ namespace SKAuto.Core.DTOs
         public int? AccessoryId { get; set; }
         public bool GroupByWeek { get; set; }
         public bool SummaryOnly { get; set; }
-        public bool GroupByTaskType { get; set; }   // NEW
+        public bool GroupByTaskType { get; set; }
+        public List<int>? ClientIds { get; set; }
+        public OrderType? OrderType { get; set; }
     }
 }
