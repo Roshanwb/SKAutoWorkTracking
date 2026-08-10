@@ -143,7 +143,7 @@
                     <DatePicker SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="8,0" Background="White" VerticalAlignment="Center"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding NextDayCommand}" Content="&#xE76C;" Margin="0,0,4,0" ToolTip="{loc:Translate MainWindow_NextDay}"/>
                     <Button Style="{StaticResource IconButton}" Command="{Binding NextWeekCommand}" Content="&#xeb9d;" ToolTip="{loc:Translate MainWindow_NextWeek}"/>
-                    <Button Content="{loc:Translate MainWindow_Refresh}" Command="{Binding GoToTodayCommand}" Style="{StaticResource ActionButton}" Background="#2196F3" Width="70" Margin="16,0,0,0" ToolTip="Go to today"/>
+                    <Button Content="{loc:Translate MainWindow_Today}" Command="{Binding GoToTodayCommand}" Style="{StaticResource ActionButton}" Background="#2196F3" Width="70" Margin="16,0,0,0" ToolTip="Go to today"/>
                     <TextBlock Text="{Binding StatusMessage}" Foreground="#BDC3C7" Margin="16,0,0,0" VerticalAlignment="Center" FontStyle="Italic" FontSize="12"/>
                 </StackPanel>
             </Border>

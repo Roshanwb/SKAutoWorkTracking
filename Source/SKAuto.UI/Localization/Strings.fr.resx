@@ -535,7 +535,7 @@
     <value>Pour les problèmes techniques, contactez : roshanwb@gmail.com</value>
   </data>
   <data name="HelpView_Version" xml:space="preserve">
-    <value>Version : 3.0.1 (dernière)</value>
+    <value>Version : 2.1.0</value>
   </data>
   <data name="MainWindow_Title" xml:space="preserve">
     <value>SK Auto Work Tracking</value>
@@ -688,7 +688,7 @@
     <value>© 2026 Insights®</value>
   </data>
   <data name="Version" xml:space="preserve">
-    <value>Version : 3.0.1 (dernière)</value>
+    <value>Version : 2.1.0.0 (dernière)</value>
   </data>
   <data name="Splash_Title" xml:space="preserve">
     <value>SKAuto Work Tracking</value>
@@ -1755,5 +1755,8 @@
   </data>
   <data name="ReportsView_Reports" xml:space="preserve">
     <value>Rapports</value>
+  </data>
+  <data name="ReportsView_SendToAccounting" xml:space="preserve">
+    <value>Envoyer à la comptabilité</value>
   </data>
 </root>

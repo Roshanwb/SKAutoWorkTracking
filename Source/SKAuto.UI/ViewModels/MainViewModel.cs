@@ -10,6 +10,7 @@ using SKAuto.Export.Pdf;
 using SKAuto.UI.Localization;
 using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -22,6 +23,7 @@ namespace SKAuto.UI.ViewModels
         private readonly IConfigurationService _configService;
         private readonly ILoggingService _logger;
         private readonly IGoogleDriveService _driveService;
+        private readonly IEmailService _emailService;
 
         [ObservableProperty]
         private ObservableCollection<WorkOrderDto> _todayWorkOrders = new();
@@ -97,12 +99,13 @@ namespace SKAuto.UI.ViewModels
         // NEW: Attachments command
         public IAsyncRelayCommand<WorkOrderDto> OpenAttachmentsCommand { get; }
 
-        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService, ILoggingService logger, IGoogleDriveService driveService)
+        public MainViewModel(IUnitOfWork unitOfWork, IConfigurationService configService, ILoggingService logger, IGoogleDriveService driveService, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _configService = configService;
             _logger = logger;
-            _driveService = driveService; // <-- This was missing – now injected!
+            _driveService = driveService;
+            _emailService = emailService;
 
             LoadTodayWorkCommand = new AsyncRelayCommand(LoadTodayWorkAsync);
             CreateWorkOrderCommand = new RelayCommand(CreateWorkOrder);
@@ -225,11 +228,11 @@ namespace SKAuto.UI.ViewModels
                 _unitOfWork,
                 App.GetService<IExportService>(),
                 App.GetService<PdfReportGenerator>(),
-                App.GetService<ILoggingService>());
-            var window = new ReportsView { DataContext = vm };
-            window.Owner = System.Windows.Application.Current.MainWindow;
-            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            window.Show();
+                App.GetService<ILoggingService>(),
+                _emailService,
+                _configService);
+            var win = new ReportsView { DataContext = vm };
+            win.Show();
         }
 
         private void OpenHelp()
@@ -242,10 +245,10 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenAbout()
         {
-            System.Windows.MessageBox.Show($" \n \nDeveloped by ",
+            System.Windows.MessageBox.Show($"{Localization.Strings.Splash_Title} \n{Assembly.GetExecutingAssembly().GetName().Version.ToString()} \nDeveloped by Insights ",
                             LocalizationManager.Instance["MainWindow_About"], MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
+         
         private async void OpenPriceUpdate()
         {
             var logger = App.GetService<ILoggingService>();

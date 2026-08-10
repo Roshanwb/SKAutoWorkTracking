@@ -3188,7 +3188,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Today.
+        ///   Looks up a localized string similar to Refresh.
         /// </summary>
         internal static string MainWindow_Refresh {
             get {
@@ -3859,6 +3859,15 @@ namespace SKAuto.UI.Localization {
         internal static string ReportsView_SelectAll {
             get {
                 return ResourceManager.GetString("ReportsView_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Send to Accounting.
+        /// </summary>
+        internal static string ReportsView_SendToAccounting {
+            get {
+                return ResourceManager.GetString("ReportsView_SendToAccounting", resourceCulture);
             }
         }
         

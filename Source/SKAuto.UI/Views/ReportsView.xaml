@@ -6,7 +6,7 @@
         xmlns:converters="clr-namespace:SKAuto.UI.Converters"
         xmlns:loc="clr-namespace:SKAuto.UI.Localization"
         mc:Ignorable="d"
-        Title="{loc:Translate Reports_Title}"
+        Title="{loc:Translate ReportsView_Reports}"
         Height="600" Width="860"
         WindowStartupLocation="CenterOwner"
         Background="#f5f5f5">
@@ -134,7 +134,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Width="100" Content="{loc:Translate ReportsView_TaskType}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"/>
+                            <Label Grid.Column="0" Width="150" Content="{loc:Translate ReportsView_TaskType}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"/>
                             <ComboBox Grid.Column="1" HorizontalAlignment="Left"
                                       ItemsSource="{Binding TaskTypeOptions}"
                                       SelectedItem="{Binding SelectedTaskTypeOption}"
@@ -149,7 +149,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0"  Width="100" Content="{loc:Translate ReportsView_Status}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"/>
+                            <Label Grid.Column="0"  Width="150" Content="{loc:Translate ReportsView_Status}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"/>
                             <ComboBox Grid.Column="1" HorizontalAlignment="Left"
                                       ItemsSource="{Binding WorkStatusOptions}"
                                       SelectedItem="{Binding SelectedWorkStatusOption}"
@@ -164,7 +164,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0"  Width="100" Content="{loc:Translate WorkOrderDetailWindow_Task}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"
+                            <Label Grid.Column="0"  Width="150" Content="{loc:Translate WorkOrderDetailWindow_Task}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"
                                    Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
                             <ComboBox Grid.Column="1" HorizontalAlignment="Left"
                                       ItemsSource="{Binding AccessoryOptions}"
@@ -180,7 +180,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0"  Width="100" Content="{loc:Translate WorkOrderDetailWindow_OrderType}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"
+                            <Label Grid.Column="0"  Width="150" Content="{loc:Translate WorkOrderDetailWindow_OrderType}" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="Normal"
                                    Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
                             <ComboBox Grid.Column="1" HorizontalAlignment="Left"
                                       ItemsSource="{Binding OrderTypeOptions}"
@@ -201,6 +201,9 @@
                             <CheckBox Content="{loc:Translate ReportsView_GroupByTaskType}" IsChecked="{Binding GroupByTaskType}" Margin="0,2"
                                       Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Tasks}"/>
                             <CheckBox Content="{loc:Translate ReportsView_SummaryOnly}" IsChecked="{Binding SummaryOnly}" Margin="0,2"/>
+                            <!-- NEW: Send to Accounting -->
+                            <CheckBox Content="{loc:Translate ReportsView_SendToAccounting}" IsChecked="{Binding SendToAccounting}" Margin="0,2"
+                  Visibility="{Binding SelectedReportType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=WorkOrders}"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -232,7 +235,7 @@
 
         <!-- Row 4: Status Message -->
         <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" 
-                   Foreground="#27ae60" MinHeight="30"
+                   Foreground="#27ae60" MinHeight="30" Margin="20,4,0,4"
                    TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="SemiBold" Height="30"/>
 
         <!-- Row 5: Action Buttons -->

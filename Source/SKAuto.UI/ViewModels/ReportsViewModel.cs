@@ -23,7 +23,7 @@ namespace SKAuto.UI.ViewModels
         public string Name { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool _isSelected = true;
+        private bool _isSelected;
     }
 
     public enum ReportType
@@ -40,6 +40,8 @@ namespace SKAuto.UI.ViewModels
         private readonly IExportService _excelExport;
         private readonly PdfReportGenerator _pdfExport;
         private readonly ILoggingService _logger;
+        private readonly IEmailService _emailService;
+        private readonly IConfigurationService _configService;
 
         [ObservableProperty]
         private ReportType _selectedReportType = ReportType.WorkOrders;
@@ -80,6 +82,10 @@ namespace SKAuto.UI.ViewModels
 
         [ObservableProperty]
         private bool _showTime = true;
+
+        // NEW: Send to Accounting checkbox
+        [ObservableProperty]
+        private bool _sendToAccounting = false;
 
         // Options for dropdowns
         public List<SelectableOption<TaskType?>> TaskTypeOptions { get; }
@@ -149,12 +155,14 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand GeneratePdfCommand { get; }
         public IRelayCommand CloseCommand { get; }
 
-        public ReportsViewModel(IUnitOfWork unitOfWork, IExportService excelExport, PdfReportGenerator pdfExport, ILoggingService logger)
+        public ReportsViewModel(IUnitOfWork unitOfWork, IExportService excelExport, PdfReportGenerator pdfExport, ILoggingService logger, IEmailService emailService, IConfigurationService configService)
         {
             _unitOfWork = unitOfWork;
             _excelExport = excelExport;
             _pdfExport = pdfExport;
             _logger = logger;
+            _emailService = emailService;
+            _configService = configService;
 
             // Build task type options
             TaskTypeOptions = new List<SelectableOption<TaskType?>>();
@@ -318,6 +326,12 @@ namespace SKAuto.UI.ViewModels
                     await System.IO.File.WriteAllBytesAsync(saveDialog.FileName, data);
                     StatusMessage = $"Report saved to {saveDialog.FileName}";
                     _logger.LogInfo($"Excel report generated: {saveDialog.FileName}");
+
+                    // Send email if checkbox is checked
+                    if (SendToAccounting)
+                    {
+                        await SendReportEmailAsync(saveDialog.FileName, "Excel");
+                    }
                 }
                 else
                 {
@@ -372,6 +386,12 @@ namespace SKAuto.UI.ViewModels
                     await System.IO.File.WriteAllBytesAsync(saveDialog.FileName, data);
                     StatusMessage = $"Report saved to {saveDialog.FileName}";
                     _logger.LogInfo($"PDF report generated: {saveDialog.FileName}");
+
+                    // Send email if checkbox is checked
+                    if (SendToAccounting)
+                    {
+                        await SendReportEmailAsync(saveDialog.FileName, "PDF");
+                    }
                 }
                 else
                 {
@@ -389,6 +409,39 @@ namespace SKAuto.UI.ViewModels
                 _isBusy = false;
                 Mouse.OverrideCursor = null;
                 StatusMessage = "Ready";
+            }
+        }
+
+        private async Task SendReportEmailAsync(string filePath, string reportType)
+        {
+            try
+            {
+                var config = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
+                if (string.IsNullOrEmpty(config.AccountingEmail))
+                {
+                    StatusMessage = "Accounting email not configured. Email not sent.";
+                    _logger.LogWarning("Accounting email address is not set in AppConfig.");
+                    return;
+                }
+
+                var subject = $"SKAuto {reportType} Report - {DateTime.Now:dd/MM/yyyy}";
+                var body = $"Please find attached the {reportType} report generated on {DateTime.Now:dd/MM/yyyy HH:mm}.";
+
+                await _emailService.SendEmailAsync(
+                    config.AccountingEmail,
+                    subject,
+                    body,
+                    new List<string> { filePath }
+                );
+
+                StatusMessage = $"Report saved and sent to accounting ({config.AccountingEmail})";
+                _logger.LogInfo($"Report emailed to {config.AccountingEmail}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to send report email", ex);
+                StatusMessage = $"Email failed: {ex.Message}";
+                System.Windows.MessageBox.Show($"Failed to send email: {ex.Message}", "Email Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -631,7 +631,7 @@
     <value>Next Week</value>
   </data>
   <data name="MainWindow_Refresh" xml:space="preserve">
-    <value>Today</value>
+    <value>Refresh</value>
   </data>
   <data name="MainWindow_Today" xml:space="preserve">
     <value>Today</value>
@@ -1755,5 +1755,8 @@
   </data>
   <data name="ReportsView_Reports" xml:space="preserve">
     <value>Reports</value>
+  </data>
+  <data name="ReportsView_SendToAccounting" xml:space="preserve">
+    <value>Send to Accounting</value>
   </data>
 </root>

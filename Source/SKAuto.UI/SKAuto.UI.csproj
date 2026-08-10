@@ -10,8 +10,8 @@
 	<UseWindowsForms>true</UseWindowsForms>
 	<Copyright>Insights</Copyright>
 	<PackageIcon>logo.ico</PackageIcon>
-	<AssemblyVersion>3.0.1.0</AssemblyVersion>
-	<FileVersion>3.0.1.0</FileVersion>
+	<AssemblyVersion>2.1.0.0</AssemblyVersion>
+	<FileVersion>2.1.0.0</FileVersion>
 	<PackageId>SKAuto</PackageId>
 	<Version>2.1.0.0</Version>
 	<Authors>Roshan BIYAGAMA</Authors>
