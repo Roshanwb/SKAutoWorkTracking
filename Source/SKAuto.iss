@@ -1,5 +1,5 @@
 #define MyAppName "SKAuto Work Tracking"
-#define MyAppVersion "2.0.1.0"
+#define MyAppVersion "2.1.0.0"
 #define MyAppPublisher "Insights"
 #define MyAppExeName "SKAuto.exe"
 
@@ -7,6 +7,7 @@
 AppId={{8A5C1B2C-4C5E-4C2A-BF6A-8A7C8B9C0D1E}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+AppCopyright=Copyright (C) 2026 {#MyAppPublisher}.
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}

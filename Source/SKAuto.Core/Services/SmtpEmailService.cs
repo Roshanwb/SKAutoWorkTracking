@@ -1,7 +1,9 @@
 ﻿using SKAuto.Core.DTOs;
 using SKAuto.Core.Interfaces;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Mail;
+using System.Threading.Tasks;
 
 namespace SKAuto.Core.Services
 {
@@ -18,6 +20,11 @@ namespace SKAuto.Core.Services
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
+            await SendEmailAsync(to, subject, body, null);
+        }
+
+        public async Task SendEmailAsync(string to, string subject, string body, IEnumerable<string> attachmentPaths)
+        {
             try
             {
                 var config = await _configService.GetAsync<AppConfig>("AppConfig") ?? new AppConfig();
@@ -25,7 +32,7 @@ namespace SKAuto.Core.Services
 
                 if (string.IsNullOrEmpty(emailConfig.SenderEmail) || string.IsNullOrEmpty(emailConfig.SenderPassword))
                 {
-                    _logger.LogWarning("Email not configured – cannot send reset email.");
+                    _logger.LogWarning("Email not configured – cannot send email.");
                     return;
                 }
 
@@ -35,7 +42,7 @@ namespace SKAuto.Core.Services
                     Credentials = new NetworkCredential(emailConfig.SenderEmail, emailConfig.SenderPassword)
                 };
 
-                var mail = new MailMessage
+                using var mail = new MailMessage
                 {
                     From = new MailAddress(emailConfig.SenderEmail, emailConfig.SenderName),
                     Subject = subject,
@@ -44,8 +51,25 @@ namespace SKAuto.Core.Services
                 };
                 mail.To.Add(to);
 
+                // Add attachments if any
+                if (attachmentPaths != null)
+                {
+                    foreach (var path in attachmentPaths)
+                    {
+                        if (System.IO.File.Exists(path))
+                        {
+                            var attachment = new Attachment(path);
+                            mail.Attachments.Add(attachment);
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Attachment file not found: {path}");
+                        }
+                    }
+                }
+
                 await client.SendMailAsync(mail);
-                _logger.LogInfo($"Password reset email sent to {to}");
+                _logger.LogInfo($"Email sent to {to}");
             }
             catch (Exception ex)
             {

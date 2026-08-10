@@ -8,9 +8,10 @@
         public int MaxBackupsToKeep { get; set; } = 20;
         public EmailConfig Email { get; set; } = new();
         public string Theme { get; set; } = "Light";
+        public decimal PsaRate { get; set; } = 47.5m;
 
-        // NEW: PSA Rate (€ per hour)
-        public decimal PsaRate { get; set; } = 66.0m;
+        // NEW: Accounting email address for report distribution
+        public string AccountingEmail { get; set; } = "dev.skauto@gmail.com";
     }
 
     public class EmailConfig
