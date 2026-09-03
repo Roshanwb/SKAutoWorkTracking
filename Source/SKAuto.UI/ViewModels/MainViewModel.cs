@@ -5,6 +5,7 @@ using SKAuto.Core.DTOs;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.Export.Pdf;
 using SKAuto.UI.Localization;
@@ -355,7 +356,8 @@ namespace SKAuto.UI.ViewModels
         private void CreateWorkOrder()
         {
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, 0);
+            var messageBoxService = App.GetService<IMessageBoxService>(); // NEW
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, 0);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -506,7 +508,8 @@ namespace SKAuto.UI.ViewModels
             if (SelectedWorkOrder == null) return;
 
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, SelectedWorkOrder.Id);
+            var messageBoxService = App.GetService<IMessageBoxService>(); // NEW
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -599,7 +602,8 @@ namespace SKAuto.UI.ViewModels
         private async Task EditWorkOrderAsync(int workOrderId)
         {
             var logger = App.GetService<ILoggingService>();
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, workOrderId);
+            var messageBoxService = App.GetService<IMessageBoxService>(); // NEW
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;

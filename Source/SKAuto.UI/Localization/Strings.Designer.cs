@@ -4754,6 +4754,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Work Orders for the Chassis : .
+        /// </summary>
+        internal static string WOForChassis {
+            get {
+                return ResourceManager.GetString("WOForChassis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Accessory.
         /// </summary>
         internal static string WorkOrderDetailWindow_Accessory {

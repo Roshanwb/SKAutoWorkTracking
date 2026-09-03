@@ -1759,4 +1759,7 @@
   <data name="ReportsView_SendToAccounting" xml:space="preserve">
     <value>Envoyer à la comptabilité</value>
   </data>
+  <data name="WOForChassis" xml:space="preserve">
+    <value>Bons de travails Pour le Châssis : </value>
+  </data>
 </root>
