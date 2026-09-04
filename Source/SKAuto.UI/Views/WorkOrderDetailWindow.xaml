@@ -171,13 +171,13 @@
                 <ComboBox x:Name="ClientCombo" Grid.Row="0" Grid.Column="1"
                           ItemsSource="{Binding Clients}" SelectedItem="{Binding SelectedClient}"
                           DisplayMemberPath="Name" IsEditable="True"
-                          Height="28" Margin="0,4,8,4" TabIndex="5"/>
+                          Height="28" Margin="0,4,8,4" TabIndex="2"/>
 
                 <Label Grid.Row="0" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_OrderDate}" Target="{Binding ElementName=OrderDatePicker}"
                        Margin="10,0,6,0" VerticalAlignment="Center"/>
                 <DatePicker x:Name="OrderDatePicker" Grid.Row="0" Grid.Column="3"
                             SelectedDate="{Binding WorkOrder.OrderDate}"
-                            Height="28" Margin="0,4,0,4" TabIndex="2"/>
+                            Height="28" Margin="0,4,0,4" TabIndex="10"/>
 
                 <Label Grid.Row="1" Grid.Column="0" Content="{loc:Translate MainWindow_Chassis}" Target="{Binding ElementName=ChassisTextBox}"
                        Margin="0,0,6,0" VerticalAlignment="Center"/>
@@ -188,9 +188,9 @@
                     <Button Content="{loc:Translate WorkOrderDetailWindow_Search}" Command="{Binding SearchVehicleCommand}"
             Style="{StaticResource PrimaryButton}" MinWidth="50" Height="28" Margin="6,0,0,0" TabIndex="1"/>
                     <!-- NEW: Lookup button -->
-                    <Button Content="📋" Command="{Binding ShowVehicleWorkOrdersCommand}"
+                    <Button Content="⫶☰ " Command="{Binding ShowVehicleWorkOrdersCommand}"
             Style="{StaticResource PrimaryButton}" MinWidth="30" Height="28" Margin="4,0,0,0"
-            ToolTip="Show all work orders for this chassis" FontSize="14"/>
+            ToolTip="{loc:Translate VehicleManagementView_ShowWorkOrders}" FontSize="14"/>
                 </StackPanel>
                 <Label Grid.Row="1" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_SelectedVehicle}" Target="{Binding ElementName=VehicleLink}"
                        Margin="10,0,6,0" VerticalAlignment="Center"/>
@@ -206,13 +206,13 @@
                           ItemsSource="{Binding OrderTypeOptions}"
                           SelectedItem="{Binding SelectedOrderTypeOption}"
                           DisplayMemberPath="Display"
-                          Height="28" Margin="0,4,8,4" TabIndex="7"/>
+                          Height="28" Margin="0,4,8,4" TabIndex="3"/>
 
                 <Label Grid.Row="2" Grid.Column="2" Content="{loc:Translate WorkOrderDetailWindow_Status}" Target="{Binding ElementName=StatusCombo}"
                        Margin="10,0,6,0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="StatusCombo" Grid.Row="2" Grid.Column="3"
                           ItemsSource="{Binding WorkStatusValues}" SelectedItem="{Binding WorkOrder.Status}"
-                          Height="28" Margin="0,4,0,4" TabIndex="8"/>
+                          Height="28" Margin="0,4,0,4" TabIndex="9"/>
             </Grid>
         </GroupBox>
 
@@ -228,12 +228,12 @@
                           StaysOpenOnEdit="True"
                           SelectedItem="{Binding SelectedAccessory}"
                           DisplayMemberPath="Name"
-                          TabIndex="3"/>
+                          TabIndex="4"/>
 
                 <Label Content="{loc:Translate WorkOrderDetailWindow_Time}" VerticalAlignment="Center" Margin="10,0,6,0" FontSize="12"/>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBox x:Name="TimeTextBox" Text="{Binding TaskMinutes, UpdateSourceTrigger=PropertyChanged}" 
-                             Width="44" Height="28" TextAlignment="Right" TabIndex="4"
+                             Width="44" Height="28" TextAlignment="Right" TabIndex="5"
                              VerticalContentAlignment="Center" Background="#EEEEEE"
                              ToolTip="{loc:Translate WorkOrderDetailWindow_TimeToolTip}"/>
                     <StackPanel Orientation="Vertical" Margin="1,0,0,0">
@@ -244,15 +244,15 @@
 
                 <Label Content="{loc:Translate WorkOrderDetailWindow_Price}" VerticalAlignment="Center" Margin="10,0,6,0" FontSize="12"/>
                 <TextBox x:Name="PriceTextBox" Text="{Binding TaskPrice, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F2}}" 
-                         Width="70" Height="28" TextAlignment="Right" TabIndex="5"
+                         Width="70" Height="28" TextAlignment="Right" TabIndex="6"
                          VerticalContentAlignment="Center" Background="#EEEEEE"
                          ToolTip="{loc:Translate WorkOrderDetailWindow_PriceToolTip}"/>
 
                 <Button Content="{loc:Translate WorkOrderDetailWindow_AddTask}" Command="{Binding AddTaskCommand}" 
-                        Style="{StaticResource PrimaryButton}" MinWidth="50" Height="28" Margin="8,0,0,0" TabIndex="6"/>
+                        Style="{StaticResource PrimaryButton}" MinWidth="50" Height="28" Margin="8,0,0,0" TabIndex="7"/>
                 <GridSplitter Width="1" Background="#CCCCCC" Margin="10,0,10,0"/>
                 <Button Content="{loc:Translate WorkOrderDetailWindow_NewTask}" Command="{Binding OpenAddTaskCommand}"
-                        Style="{StaticResource SuccessButton}" MinWidth="50" Height="28" Margin="4,0,0,0" TabIndex="7"/>
+                        Style="{StaticResource SuccessButton}" MinWidth="50" Height="28" Margin="4,0,0,0" TabIndex="8"/>
             </StackPanel>
         </Border>
 

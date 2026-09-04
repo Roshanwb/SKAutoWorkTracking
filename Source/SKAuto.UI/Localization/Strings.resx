@@ -1762,4 +1762,7 @@
   <data name="WOForChassis" xml:space="preserve">
     <value>Work Orders for the Chassis : </value>
   </data>
+  <data name="VehicleManagementView_ShowWorkOrders" xml:space="preserve">
+    <value>Show work orders for this vehicle</value>
+  </data>
 </root>

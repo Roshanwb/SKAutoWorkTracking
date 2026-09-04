@@ -1760,6 +1760,9 @@
     <value>Envoyer à la comptabilité</value>
   </data>
   <data name="WOForChassis" xml:space="preserve">
-    <value>Bons de travails Pour le Châssis : </value>
+    <value>Bons de travail Pour le Châssis : </value>
+  </data>
+  <data name="VehicleManagementView_ShowWorkOrders" xml:space="preserve">
+    <value>Afficher les ordres de travail pour ce véhicule</value>
   </data>
 </root>

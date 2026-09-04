@@ -4727,6 +4727,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show work orders for this vehicle.
+        /// </summary>
+        internal static string VehicleManagementView_ShowWorkOrders {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_ShowWorkOrders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Year.
         /// </summary>
         internal static string VehicleManagementView_Year {

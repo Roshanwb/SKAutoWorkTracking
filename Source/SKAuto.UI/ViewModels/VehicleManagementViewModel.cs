@@ -4,18 +4,22 @@ using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.Import.Parsers;
 using SKAuto.UI.Localization;
+using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
+
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleManagementViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMessageBoxService _messageBoxService; // NEW
 
         [ObservableProperty]
         private ObservableCollection<Vehicle> _vehicles = new();
@@ -40,16 +44,55 @@ namespace SKAuto.UI.ViewModels
         private string _currentOperation = "";
 
         public IAsyncRelayCommand ImportVehiclesCommand { get; }
+        public IAsyncRelayCommand<string> ShowVehicleWorkOrdersCommand { get; } // Changed to accept parameter
         public IRelayCommand CloseCommand { get; }
 
-        public VehicleManagementViewModel(IUnitOfWork unitOfWork)
+        // Placeholder commands for add/edit/delete – you can implement later
+        public IRelayCommand AddVehicleCommand { get; }
+        public IRelayCommand EditVehicleCommand { get; }
+        public IRelayCommand DeleteVehicleCommand { get; }
+
+        public VehicleManagementViewModel(IUnitOfWork unitOfWork, IMessageBoxService messageBoxService) // NEW parameter
         {
             _unitOfWork = unitOfWork;
+            _messageBoxService = messageBoxService;
 
             ImportVehiclesCommand = new AsyncRelayCommand(ImportVehiclesAsync);
+            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand<string>(ShowVehicleWorkOrdersAsync); // Changed
             CloseCommand = new RelayCommand(Close);
 
+            // Stub commands (you can implement later)
+            AddVehicleCommand = new RelayCommand(() => { });
+            EditVehicleCommand = new RelayCommand(() => { });
+            DeleteVehicleCommand = new RelayCommand(() => { });
+
             LoadVehiclesAsync().ConfigureAwait(false);
+        }
+
+        private async Task ShowVehicleWorkOrdersAsync(string? chassis) // NOW accepts chassis
+        {
+            if (string.IsNullOrWhiteSpace(chassis))
+            {
+                _messageBoxService.Show("Please select a vehicle first.", "No Chassis", MessageBoxButtonType.OK, MessageBoxImageType.Information);
+                return;
+            }
+
+            // Check if vehicle exists (optional)
+            var vehicle = await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == chassis);
+            if (!vehicle.Any())
+            {
+                _messageBoxService.Show("Vehicle not found.", "Not Found", MessageBoxButtonType.OK, MessageBoxImageType.Warning);
+                return;
+            }
+
+            // Open the lookup window
+            var viewModel = new VehicleWorkOrdersViewModel(_unitOfWork, chassis);
+            var view = new VehicleWorkOrdersView
+            {
+                DataContext = viewModel,
+                Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+            };
+            view.ShowDialog();
         }
 
         partial void OnSearchTextChanged(string value) => ApplyFilter();
@@ -81,10 +124,9 @@ namespace SKAuto.UI.ViewModels
         private void Close() =>
             System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
 
-        // ===== IMPORT VEHICLES =====
+        // ===== IMPORT VEHICLES (unchanged, keep as is) =====
         private async Task ImportVehiclesAsync()
         {
-            // --- UI feedback start ---
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
@@ -119,7 +161,7 @@ namespace SKAuto.UI.ViewModels
 
                 if (!importDtos.Any())
                 {
-                    System.Windows.MessageBox.Show(LocalizationManager.Instance["NoValidVehicleDataInFile"], LocalizationManager.Instance["BackupView_Import"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    _messageBoxService.Show(LocalizationManager.Instance["NoValidVehicleDataInFile"], LocalizationManager.Instance["BackupView_Import"], MessageBoxButtonType.OK, MessageBoxImageType.Warning);
                     return;
                 }
 
@@ -137,7 +179,6 @@ namespace SKAuto.UI.ViewModels
                     CurrentOperation = "Preparing clients...";
                     ImportProgress = 30;
 
-                    // Ensure "PSA Group" client
                     if (!clientDict.ContainsKey("PSA Group"))
                     {
                         var psaGroup = new Client { Name = "PSA Group", Type = ClientType.PSA, IsActive = true };
@@ -147,13 +188,11 @@ namespace SKAuto.UI.ViewModels
                         logger.LogInfo("Created default client 'PSA Group'");
                     }
 
-                    // Collect all cleaned client names
                     var clientNames = importDtos
                         .Select(dto => CleanClientName(dto.ClientName))
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
 
-                    // Create missing clients
                     var newClients = new List<Client>();
                     foreach (var name in clientNames)
                     {
@@ -174,7 +213,6 @@ namespace SKAuto.UI.ViewModels
                         logger.LogInfo($"Created {newClients.Count} new clients.");
                     }
 
-                    // Build client ID map
                     var clientIdMap = clientDict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Id, StringComparer.OrdinalIgnoreCase);
 
                     CurrentOperation = "Fetching existing vehicles...";
@@ -192,7 +230,6 @@ namespace SKAuto.UI.ViewModels
                     foreach (var dto in importDtos)
                     {
                         processed++;
-                        // Update progress every 100 items
                         if (processed % 100 == 0 || processed == total)
                         {
                             int progress = 60 + (int)((double)processed / total * 30);
@@ -235,8 +272,8 @@ namespace SKAuto.UI.ViewModels
                     ImportProgress = 100;
                     CurrentOperation = "Import complete!";
                     logger.LogInfo($"Vehicle import: {newVehicles.Count} added, {skipped} skipped, {newClients.Count} new clients.");
-                    System.Windows.MessageBox.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
-                        LocalizationManager.Instance["VehicleManagementView_ImportVehicles"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _messageBoxService.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
+                        LocalizationManager.Instance["VehicleManagementView_ImportVehicles"], MessageBoxButtonType.OK, MessageBoxImageType.Information);
 
                     await LoadVehiclesAsync();
                 }
@@ -244,7 +281,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 logger.LogError("Vehicle import failed", ex);
-                System.Windows.MessageBox.Show($"Error: {ex.Message}", LocalizationManager.Instance["ImportFailed"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                _messageBoxService.Show($"Error: {ex.Message}", LocalizationManager.Instance["ImportFailed"], MessageBoxButtonType.OK, MessageBoxImageType.Error);
             }
             finally
             {
@@ -255,7 +292,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ===== CLIENT NAME CLEANING =====
+        // ===== CLIENT NAME CLEANING (unchanged) =====
         private static readonly HashSet<string> ExcludedWords = new(StringComparer.OrdinalIgnoreCase)
         {
             "ok", "acc", "kit", "logos", "conforme", "pneus", "att.", "att. rv", "att rv",

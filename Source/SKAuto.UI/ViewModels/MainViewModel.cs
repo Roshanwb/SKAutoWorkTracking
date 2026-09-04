@@ -591,7 +591,7 @@ namespace SKAuto.UI.ViewModels
 
         private void OpenVehicleManagement()
         {
-            var vm = new VehicleManagementViewModel(_unitOfWork);
+            var vm = new VehicleManagementViewModel(_unitOfWork, App.GetService<IMessageBoxService>());
             var window = new VehicleManagementView { DataContext = vm };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
