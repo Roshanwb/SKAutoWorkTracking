@@ -168,7 +168,7 @@
                           AlternatingRowBackground="#F8F9FA"
                           ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="{loc:Translate MainWindow_ID}" Binding="{Binding Id}" Width="45"/>
+                        <DataGridTextColumn Header="{loc:Translate MainWindow_ID}" Binding="{Binding Id}" Width="45" SortDirection="Ascending"/>
                         <DataGridTemplateColumn Header="{loc:Translate MainWindow_Edit}" Width="45">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>

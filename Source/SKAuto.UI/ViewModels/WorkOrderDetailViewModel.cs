@@ -23,7 +23,7 @@ namespace SKAuto.UI.ViewModels
         private readonly ILoggingService _logger;
         private readonly IConfigurationService _configService;
         private readonly IGoogleDriveService _driveService;
-        private readonly IMessageBoxService _messageBoxService; // NEW
+        private readonly IMessageBoxService _messageBoxService;
         private readonly bool _isNew;
         private decimal _psaRate;
 
@@ -78,7 +78,6 @@ namespace SKAuto.UI.ViewModels
         [ObservableProperty]
         private SourceDocument? _selectedAttachment;
 
-        // OrderType options with friendly names
         public List<SelectableOption<OrderType>> OrderTypeOptions { get; }
 
         private SelectableOption<OrderType> _selectedOrderTypeOption;
@@ -97,7 +96,7 @@ namespace SKAuto.UI.ViewModels
         public Array WorkStatusValues => Enum.GetValues(typeof(WorkStatus));
 
         public IAsyncRelayCommand SearchVehicleCommand { get; }
-        public IAsyncRelayCommand ShowVehicleWorkOrdersCommand { get; } // NEW
+        public IAsyncRelayCommand ShowVehicleWorkOrdersCommand { get; }
         public IRelayCommand AddTaskCommand { get; }
         public IRelayCommand<WorkTask> RemoveTaskCommand { get; }
         public IRelayCommand AddTravelCommand { get; }
@@ -114,7 +113,6 @@ namespace SKAuto.UI.ViewModels
         public IAsyncRelayCommand<SourceDocument> RemoveAttachmentCommand { get; }
         public IAsyncRelayCommand<SourceDocument> DownloadAttachmentCommand { get; }
 
-        // Updated constructor with IMessageBoxService
         public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService,
                                         IGoogleDriveService driveService, IMessageBoxService messageBoxService,
                                         int workOrderId = 0)
@@ -123,19 +121,18 @@ namespace SKAuto.UI.ViewModels
             _logger = logger;
             _configService = configService;
             _driveService = driveService;
-            _messageBoxService = messageBoxService; // NEW
+            _messageBoxService = messageBoxService;
             _isNew = workOrderId == 0;
 
             _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}");
 
-            // Build OrderType options with friendly names
             OrderTypeOptions = Enum.GetValues(typeof(OrderType))
                 .Cast<OrderType>()
                 .Select(ot => new SelectableOption<OrderType> { Value = ot, Display = ot.GetDisplayName() })
                 .ToList();
 
             SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync);
-            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand(ShowVehicleWorkOrdersAsync); // NEW
+            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand(ShowVehicleWorkOrdersAsync);
             AddTaskCommand = new RelayCommand(AddTask);
             RemoveTaskCommand = new RelayCommand<WorkTask>(RemoveTask);
             AddTravelCommand = new RelayCommand(AddTravel);
@@ -157,7 +154,6 @@ namespace SKAuto.UI.ViewModels
             _ = LoadPsaRateAsync();
         }
 
-        // NEW: Command to show all work orders for the current chassis
         private async Task ShowVehicleWorkOrdersAsync()
         {
             if (string.IsNullOrWhiteSpace(ChassisSearch))
@@ -166,7 +162,6 @@ namespace SKAuto.UI.ViewModels
                 return;
             }
 
-            // Check if vehicle exists
             var vehicle = await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == ChassisSearch);
             if (!vehicle.Any())
             {
@@ -174,7 +169,6 @@ namespace SKAuto.UI.ViewModels
                 return;
             }
 
-            // Open the lookup window
             var viewModel = new VehicleWorkOrdersViewModel(_unitOfWork, ChassisSearch);
             var view = new VehicleWorkOrdersView
             {
@@ -352,7 +346,7 @@ namespace SKAuto.UI.ViewModels
             var editWindow = new VehicleEditWindow();
             var viewModel = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
             editWindow.DataContext = viewModel;
-            editWindow.Owner = System.Windows.Application.Current.Windows.OfType<System.Windows. Window>().FirstOrDefault(w => w.IsActive);
+            editWindow.Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
 
             if (editWindow.ShowDialog() == true)
             {
@@ -416,7 +410,6 @@ namespace SKAuto.UI.ViewModels
                     Attachments = new ObservableCollection<SourceDocument>(docs.OrderByDescending(d => d.UploadDate ?? DateTime.MinValue));
                     _logger.LogInfo($"Loaded {Tasks.Count} tasks, {Travels.Count} travels, {Attachments.Count} attachments");
 
-                    // Set selected OrderType option
                     SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == WorkOrder.OrderType);
                 }
                 else
@@ -432,7 +425,6 @@ namespace SKAuto.UI.ViewModels
                     Attachments = new ObservableCollection<SourceDocument>();
                     _logger.LogInfo(LocalizationManager.Instance["CreatedNewWorkOrder"]);
 
-                    // Set default OrderType option
                     SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == OrderType.PSA_Sur_Site);
                 }
             }
@@ -596,7 +588,7 @@ namespace SKAuto.UI.ViewModels
 
         private async Task AddAttachmentAsync()
         {
-            var openFileDialog = new Microsoft.Win32.   OpenFileDialog
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
                 Multiselect = true,
                 Title = "Select files to attach"
@@ -727,18 +719,20 @@ namespace SKAuto.UI.ViewModels
 
                 WorkOrder.VehicleId = SelectedVehicle.Id;
 
-                // --- NEW: Duplicate check ---
-                var existingOrders = await _unitOfWork.WorkOrders.FindAsync(
-                    wo => wo.VehicleId == SelectedVehicle.Id &&
-                          wo.OrderDate == WorkOrder.OrderDate &&
-                          wo.Id != WorkOrder.Id // exclude self if editing
-                );
+                // --- Duplicate check (in-memory, date-only, explicit self-exclusion) ---
+                var targetDate = WorkOrder.OrderDate.Date;
+                _logger.LogInfo($"Duplicate check: VehicleId={SelectedVehicle.Id}, TargetDate={targetDate:yyyy-MM-dd}, CurrentWorkOrderId={WorkOrder.Id}, IsNew={_isNew}");
 
-                if (existingOrders.Any())
+                var sameVehicleOrders = await _unitOfWork.WorkOrders.FindAsync(wo => wo.VehicleId == SelectedVehicle.Id);
+                var duplicateOrder = sameVehicleOrders.FirstOrDefault(wo =>
+                    wo.Id != WorkOrder.Id &&
+                    wo.OrderDate.Date == targetDate);
+
+                if (duplicateOrder != null)
                 {
-                    _logger.LogWarning($"Duplicate work order for vehicle {SelectedVehicle.ChassisNumber} on {WorkOrder.OrderDate:yyyy-MM-dd}");
+                    _logger.LogWarning($"Duplicate work order detected: existing WO #{duplicateOrder.Id} for vehicle {SelectedVehicle.ChassisNumber} on {targetDate:yyyy-MM-dd}");
                     _messageBoxService.Show(
-                        $"A work order already exists for chassis {SelectedVehicle.ChassisNumber} on {WorkOrder.OrderDate:dd/MM/yyyy}. Please choose a different date.",
+                        $"A work order already exists for chassis {SelectedVehicle.ChassisNumber} on {targetDate:dd/MM/yyyy}. Please choose a different date.",
                         "Duplicate Work Order",
                         MessageBoxButtonType.OK,
                         MessageBoxImageType.Warning
