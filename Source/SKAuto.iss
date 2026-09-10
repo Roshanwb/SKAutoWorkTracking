@@ -1,5 +1,5 @@
 #define MyAppName "SKAuto Work Tracking"
-#define MyAppVersion "2.1.0.0"
+#define MyAppVersion "2.1.2.0"
 #define MyAppPublisher "Insights"
 #define MyAppExeName "SKAuto.exe"
 
