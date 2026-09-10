@@ -16,6 +16,8 @@ namespace SKAuto.Core.Services
         private readonly string _dbPath;
         private readonly string _versionFileName = "db_version.json";
         private readonly string _backupFolder;
+        private const string DataFolderName = "SKAuto Data";
+        private const string LegacyFolderName = "SKAuto Backups";
 
         public DatabaseSyncService(IGoogleDriveService driveService, ILoggingService logger, string dbPath)
         {
@@ -136,12 +138,26 @@ namespace SKAuto.Core.Services
             await vacuumCmd.ExecuteNonQueryAsync();
         }
 
+        // FIXED: now tries SKAuto Data first, then falls back to legacy SKAuto Backups.
+        // Before overwriting the local DB, releases all pooled SQLite connections so the file lock is dropped.
         private async Task DownloadRemoteDatabaseAsync()
         {
+            // 1. Locate the remote DB file
             var dbFile = await _driveService.GetFileByNameAsync("SKAuto.db");
-            if (dbFile == null)
-                throw new Exception("Remote database file not found on Google Drive.");
 
+            // 2. Legacy fallback – machines running the old code uploaded SKAuto.db here
+            if (dbFile == null)
+            {
+                _logger.LogWarning($"SKAuto.db not found in '{DataFolderName}'. Checking legacy '{LegacyFolderName}' folder.");
+                dbFile = await _driveService.GetFileByNameInFolderAsync("SKAuto.db", LegacyFolderName);
+            }
+
+            if (dbFile == null)
+                throw new Exception(
+                    $"Remote database file 'SKAuto.db' not found in '{DataFolderName}' or '{LegacyFolderName}'. " +
+                    "Please ensure at least one computer has uploaded the database after applying the sync fix.");
+
+            // 3. Backup the current local DB before overwriting
             if (File.Exists(_dbPath))
             {
                 var backupPath = Path.Combine(_backupFolder, $"SKAuto_PRE_SYNC_{DateTime.Now:yyyyMMdd_HHmmss}.db");
@@ -149,25 +165,68 @@ namespace SKAuto.Core.Services
                 _logger.LogInfo($"Local DB backed up to {backupPath}");
             }
 
+            // 4. Release all pooled SQLite connections + OS file handles before overwriting
+            bool released = await ReleaseDatabaseFileAsync(_dbPath);
+            if (!released)
+            {
+                throw new Exception(
+                    $"Could not release the local database file at '{_dbPath}'. " +
+                    "Please close any other running SKAuto instances and try again.");
+            }
+
+            // 5. Download the remote DB (now that the file is unlocked)
             await _driveService.DownloadFileAsync(dbFile.Id, _dbPath);
-            _logger.LogInfo($"Remote database downloaded to {_dbPath}");
+            _logger.LogInfo($"Remote database downloaded to {_dbPath} (from '{dbFile.Name}')");
         }
 
-        // ========== FIXED: Upload with connection pool clearing ==========
+        /// <summary>
+        /// Clears all pooled SQLite connections and forces GC to release file handles.
+        /// Retries a few times to give the OS time to fully release the lock.
+        /// </summary>
+        private static async Task<bool> ReleaseDatabaseFileAsync(string dbPath, int maxAttempts = 10)
+        {
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                // Force SQLite to drop all pooled connections
+                SqliteConnection.ClearAllPools();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                await Task.Delay(200);
+
+                try
+                {
+                    if (!File.Exists(dbPath))
+                        return true;
+
+                    // Try to open exclusively – this succeeds only if nothing else holds a handle
+                    using (var fs = new FileStream(dbPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        // If we got here, the file is free
+                        return true;
+                    }
+                }
+                catch (IOException)
+                {
+                    // File still locked – retry
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // File still locked – retry
+                }
+            }
+            return false;
+        }
+
         private async Task UploadLocalDatabaseAsync()
         {
-            // Force close all pooled connections to release file lock
             SqliteConnection.ClearAllPools();
-            await Task.Delay(100); // allow OS to release file handles
-
+            await Task.Delay(100);
             await VacuumDatabaseAsync();
-
-            // Clear pools again after vacuum (in case vacuum left something open)
             SqliteConnection.ClearAllPools();
             await Task.Delay(100);
 
-            await _driveService.UploadFileAsync(_dbPath, "SKAuto.db");
-            _logger.LogInfo($"Local database uploaded to Google Drive");
+            await _driveService.UploadOrReplaceFileAsync(_dbPath, "SKAuto.db", DataFolderName);
+            _logger.LogInfo($"Local database uploaded to Google Drive ({DataFolderName}/SKAuto.db)");
         }
 
         public async Task<SyncResultInfo> SyncOnStartupAsync(string machineName)
@@ -210,26 +269,10 @@ namespace SKAuto.Core.Services
                     return result;
                 }
 
-                if (remoteVersion > result.LocalVersion)
-                {
-                    if (result.LocalVersion > 1)
-                    {
-                        _logger.LogWarning($"Conflict: Local {result.LocalVersion}, Remote {remoteVersion}");
-                        result.Result = SyncResult.ConflictDetected;
-
-                        var crashBackupPath = Path.Combine(_backupFolder, $"SKAuto_CRASH_BACKUP_{DateTime.Now:yyyyMMdd_HHmmss}.db");
-                        File.Copy(_dbPath, crashBackupPath, true);
-                        result.LocalBackupPath = crashBackupPath;
-                        _logger.LogInfo($"Local DB backed up to {crashBackupPath}");
-
-                        return result;
-                    }
-
-                    _logger.LogInfo($"Remote version {remoteVersion} > local {result.LocalVersion} – downloading remote DB");
-                    await DownloadRemoteDatabaseAsync();
-                    await SetLocalVersionAsync(remoteVersion);
-                    result.LocalVersion = remoteVersion;
-                }
+                _logger.LogInfo($"Remote version {remoteVersion} > local {result.LocalVersion} – downloading remote DB");
+                await DownloadRemoteDatabaseAsync();
+                await SetLocalVersionAsync(remoteVersion);
+                result.LocalVersion = remoteVersion;
 
                 return result;
             }

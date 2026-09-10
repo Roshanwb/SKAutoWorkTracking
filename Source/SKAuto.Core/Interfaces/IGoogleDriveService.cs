@@ -27,7 +27,13 @@ namespace SKAuto.Core.Interfaces
         Task UploadFileContentAsync(string fileName, string content);
         Task DeleteFileAsync(string fileId);
 
-        // NEW: Get subfolder ID under a parent folder
+        // Get subfolder ID under a parent folder
         Task<string> GetSubFolderIdAsync(string parentFolderId, string folderName);
+
+        // Upload a file to a specific folder, replacing any existing file with the same name
+        Task<string> UploadOrReplaceFileAsync(string localPath, string remoteFileName, string folderName);
+
+        // NEW: Look up a file by name inside a specific folder (used for legacy fallback)
+        Task<Google.Apis.Drive.v3.Data.File?> GetFileByNameInFolderAsync(string fileName, string folderName);
     }
 }

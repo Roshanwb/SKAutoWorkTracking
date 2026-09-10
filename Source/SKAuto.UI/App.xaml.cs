@@ -282,13 +282,17 @@ namespace SKAuto.UI
                                 MessageBoxButton.YesNo,
                                 MessageBoxImage.Warning);
 
-                            if (userChoice == MessageBoxResult.Yes)
+                            var resolveResult = await _syncService.ResolveConflictAsync(useRemote: userChoice == MessageBoxResult.Yes);
+                            if (resolveResult.Result != SyncResult.Success)
                             {
-                                await _syncService.ResolveConflictAsync(useRemote: true);
-                            }
-                            else
-                            {
-                                await _syncService.ResolveConflictAsync(useRemote: false);
+                                System.Windows.MessageBox.Show(
+                                    string.Format(LocalizationManager.Instance["Sync_Error"], resolveResult.Message),
+                                    LocalizationManager.Instance["Sync_ErrorTitle"],
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                                _syncError = true;
+                                Shutdown();
+                                return;
                             }
                         }
                         else if (syncResult.Result != SyncResult.Success)
@@ -361,26 +365,20 @@ namespace SKAuto.UI
             base.OnStartup(e);
         }
 
-        // --- Public method for MainWindow to trigger shutdown ---
         public async void BeginShutdown()
         {
-
             _logger.LogInfo("Shutdown initiated.");
             if (_isShuttingDown) return;
             _isShuttingDown = true;
 
-            // Show the splash screen again (if not already visible)
             if (_splash != null)
             {
-                _splash.Hide(); // Hide first to reset any previous state
+                _splash.Hide();
                 _splash.Show();
-                _splash.Visibility= Visibility.Visible;
-                // Ensure it's on top and visible
-              
+                _splash.Visibility = Visibility.Visible;
                 _splash.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                _splash.Topmost = true; // Keep on top
+                _splash.Topmost = true;
                 _splash.Activate();
-                // Small delay to let the window render
                 await Task.Delay(100);
                 _splash.UpdateStatus("Shutting down...", 0);
             }
@@ -399,7 +397,6 @@ namespace SKAuto.UI
 
                 bool syncSuccess = false;
 
-                // Perform exit sync (if no sync error occurred)
                 if (!_syncError && _syncService != null && _lockService != null)
                 {
                     try
@@ -426,7 +423,6 @@ namespace SKAuto.UI
                     await Task.Delay(500);
                 }
 
-                // Backup (existing logic)
                 if (App.CurrentUser != null)
                 {
                     try
@@ -445,20 +441,17 @@ namespace SKAuto.UI
                     }
                 }
 
-                // Clean up host and lock service
                 await _host.StopAsync();
                 _host.Dispose();
                 (_lockService as IDisposable)?.Dispose();
 
-                // --- Final splash status with 1-second visibility ---
                 if (_splash != null)
                 {
                     _splash.UpdateStatus("Done.", 100);
-                    await Task.Delay(1000); // Keep splash visible for 1 second after everything is done
+                    await Task.Delay(1000);
                     _splash.Close();
                 }
 
-                // Show final confirmation message
                 if (syncSuccess)
                 {
                     System.Windows.MessageBox.Show(
@@ -476,7 +469,6 @@ namespace SKAuto.UI
                         MessageBoxImage.Warning);
                 }
 
-                // Force exit to ensure process terminates
                 Environment.Exit(0);
             }
             catch (Exception ex)
