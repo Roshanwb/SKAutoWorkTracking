@@ -309,14 +309,14 @@ namespace SKAuto.UI.ViewModels
                     Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
                 };
 
-                if (window.ShowDialog() == true)
-                {
-                    AccessorySearchText = "";
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
-                    {
-                        await RefreshAccessoriesAsync();
-                    });
-                }
+                // ShowDialog may return null, true, or false depending on how the window is closed.
+                // We ignore the result and always refresh, because the user may have added tasks
+                // without explicitly setting DialogResult.
+                window.ShowDialog();
+
+                // Always refresh the accessory list so any newly added task appears in TaskCombo.
+                AccessorySearchText = "";
+                await RefreshAccessoriesAsync();
             }
             catch (Exception ex)
             {
@@ -329,13 +329,10 @@ namespace SKAuto.UI.ViewModels
         private async Task RefreshAccessoriesAsync()
         {
             _logger.LogInfo(LocalizationManager.Instance["RefreshingAccessoriesList"]);
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                var accessories = await _unitOfWork.Accessories.GetAllAsync();
-                AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
-                FilterAccessories(AccessorySearchText);
-                _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories, filtered to {FilteredAccessories.Count}");
-            });
+            var accessories = await _unitOfWork.Accessories.GetAllAsync();
+            AvailableAccessories = new ObservableCollection<Accessory>(accessories.OrderBy(a => a.Name));
+            FilterAccessories(AccessorySearchText);
+            _logger.LogInfo($"Loaded {AvailableAccessories.Count} accessories, filtered to {FilteredAccessories.Count}");
         }
 
         private async void OpenVehicleEdit()
