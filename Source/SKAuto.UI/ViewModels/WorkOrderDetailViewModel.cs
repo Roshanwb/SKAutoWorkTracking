@@ -716,20 +716,32 @@ namespace SKAuto.UI.ViewModels
 
                 WorkOrder.VehicleId = SelectedVehicle.Id;
 
+                // --- Diagnostic: capture the exact WorkOrder.OrderDate value at save time ---
+                _logger.LogInfo($"SaveAsync: WorkOrder.OrderDate = {WorkOrder.OrderDate:yyyy-MM-dd HH:mm:ss.fff} (Kind={WorkOrder.OrderDate.Kind}), IsNew={_isNew}, WorkOrderId={WorkOrder.Id}");
+
                 // --- Duplicate check (in-memory, date-only, explicit self-exclusion) ---
                 var targetDate = WorkOrder.OrderDate.Date;
-                _logger.LogInfo($"Duplicate check: VehicleId={SelectedVehicle.Id}, TargetDate={targetDate:yyyy-MM-dd}, CurrentWorkOrderId={WorkOrder.Id}, IsNew={_isNew}");
+                _logger.LogInfo($"Duplicate check: VehicleId={SelectedVehicle.Id} (Chassis={SelectedVehicle.ChassisNumber}), TargetDate={targetDate:yyyy-MM-dd}");
 
                 var sameVehicleOrders = await _unitOfWork.WorkOrders.FindAsync(wo => wo.VehicleId == SelectedVehicle.Id);
-                var duplicateOrder = sameVehicleOrders.FirstOrDefault(wo =>
+                var sameVehicleList = sameVehicleOrders.ToList();
+
+                _logger.LogInfo($"Found {sameVehicleList.Count} work order(s) for vehicle {SelectedVehicle.Id}:");
+                foreach (var wo in sameVehicleList)
+                {
+                    _logger.LogInfo($"  -> WO #{wo.Id}: OrderDate={wo.OrderDate:yyyy-MM-dd HH:mm:ss.fff} (Kind={wo.OrderDate.Kind}), .Date={wo.OrderDate.Date:yyyy-MM-dd}");
+                }
+
+                var duplicateOrder = sameVehicleList.FirstOrDefault(wo =>
                     wo.Id != WorkOrder.Id &&
                     wo.OrderDate.Date == targetDate);
 
                 if (duplicateOrder != null)
                 {
-                    _logger.LogWarning($"Duplicate work order detected: existing WO #{duplicateOrder.Id} for vehicle {SelectedVehicle.ChassisNumber} on {targetDate:yyyy-MM-dd}");
+                    _logger.LogWarning($"Duplicate detected: existing WO #{duplicateOrder.Id} has OrderDate={duplicateOrder.OrderDate:yyyy-MM-dd HH:mm:ss} (.Date={duplicateOrder.OrderDate.Date:yyyy-MM-dd}) which matches target {targetDate:yyyy-MM-dd}");
+
                     _messageBoxService.Show(
-                        $"A work order already exists for chassis {SelectedVehicle.ChassisNumber} on {targetDate:dd/MM/yyyy}. Please choose a different date.",
+                        $"A work order (#{duplicateOrder.Id}) already exists for chassis {SelectedVehicle.ChassisNumber} on {duplicateOrder.OrderDate.Date:dd/MM/yyyy}.\n\nPlease choose a different date.",
                         "Duplicate Work Order",
                         MessageBoxButtonType.OK,
                         MessageBoxImageType.Warning
