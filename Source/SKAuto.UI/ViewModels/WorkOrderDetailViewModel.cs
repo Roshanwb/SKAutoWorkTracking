@@ -25,6 +25,7 @@ namespace SKAuto.UI.ViewModels
         private readonly IGoogleDriveService _driveService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly bool _isNew;
+        private readonly DateTime? _initialOrderDate;
         private decimal _psaRate;
 
         [ObservableProperty]
@@ -115,7 +116,7 @@ namespace SKAuto.UI.ViewModels
 
         public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService,
                                         IGoogleDriveService driveService, IMessageBoxService messageBoxService,
-                                        int workOrderId = 0)
+                                        int workOrderId = 0, DateTime? initialOrderDate = null)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -123,8 +124,9 @@ namespace SKAuto.UI.ViewModels
             _driveService = driveService;
             _messageBoxService = messageBoxService;
             _isNew = workOrderId == 0;
+            _initialOrderDate = initialOrderDate;
 
-            _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}");
+            _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}, InitialOrderDate: {(_initialOrderDate.HasValue ? _initialOrderDate.Value.ToString("yyyy-MM-dd") : "(null)")}");
 
             OrderTypeOptions = Enum.GetValues(typeof(OrderType))
                 .Cast<OrderType>()
@@ -411,16 +413,17 @@ namespace SKAuto.UI.ViewModels
                 }
                 else
                 {
+                    var newOrderDate = _initialOrderDate ?? DateTime.Today;
                     WorkOrder = new WorkOrder
                     {
-                        OrderDate = DateTime.Today,
+                        OrderDate = newOrderDate,
                         Status = WorkStatus.Planned,
                         OrderType = OrderType.PSA_Sur_Site
                     };
                     Tasks = new ObservableCollection<WorkTask>();
                     Travels = new ObservableCollection<Travel>();
                     Attachments = new ObservableCollection<SourceDocument>();
-                    _logger.LogInfo(LocalizationManager.Instance["CreatedNewWorkOrder"]);
+                    _logger.LogInfo($"{LocalizationManager.Instance["CreatedNewWorkOrder"]} (OrderDate={newOrderDate:yyyy-MM-dd})");
 
                     SelectedOrderTypeOption = OrderTypeOptions.FirstOrDefault(o => o.Value == OrderType.PSA_Sur_Site);
                 }

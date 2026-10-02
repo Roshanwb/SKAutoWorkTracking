@@ -210,7 +210,7 @@ namespace SKAuto.UI.ViewModels
             var settingsWindow = new SettingsView();
             settingsWindow.DataContext = new SettingsViewModel(_configService);
             settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
-             settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
+            settingsWindow.Owner = System.Windows.Application.Current.MainWindow;
             settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             settingsWindow.Show();
 
@@ -249,7 +249,7 @@ namespace SKAuto.UI.ViewModels
             System.Windows.MessageBox.Show($"{Localization.Strings.Splash_Title} \n{Assembly.GetExecutingAssembly().GetName().Version.ToString()} \nDeveloped by Insights ",
                             LocalizationManager.Instance["MainWindow_About"], MessageBoxButton.OK, MessageBoxImage.Information);
         }
-         
+
         private async void OpenPriceUpdate()
         {
             var logger = App.GetService<ILoggingService>();
@@ -276,7 +276,7 @@ namespace SKAuto.UI.ViewModels
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.Show();
-            UpdateSyncStatus();     
+            UpdateSyncStatus();
         }
 
         private async Task SyncNowAsync()
@@ -309,7 +309,7 @@ namespace SKAuto.UI.ViewModels
             var backupService = App.GetService<IBackupService>();
             var loggingService = App.GetService<ILoggingService>();
             var vm = new BackupViewModel(backupService, loggingService);
-            var window =   new BackupView { DataContext = vm };
+            var window = new BackupView { DataContext = vm };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.Show();
@@ -356,8 +356,8 @@ namespace SKAuto.UI.ViewModels
         private void CreateWorkOrder()
         {
             var logger = App.GetService<ILoggingService>();
-            var messageBoxService = App.GetService<IMessageBoxService>(); // NEW
-            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, 0);
+            var messageBoxService = App.GetService<IMessageBoxService>();
+            var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, 0, SelectedDate);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -508,7 +508,7 @@ namespace SKAuto.UI.ViewModels
             if (SelectedWorkOrder == null) return;
 
             var logger = App.GetService<ILoggingService>();
-            var messageBoxService = App.GetService<IMessageBoxService>(); // NEW
+            var messageBoxService = App.GetService<IMessageBoxService>();
             var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, SelectedWorkOrder.Id);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
@@ -586,7 +586,7 @@ namespace SKAuto.UI.ViewModels
             window.Owner = System.Windows.Application.Current.MainWindow;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.Show();
-                LoadTodayWorkCommand.Execute(null);
+            LoadTodayWorkCommand.Execute(null);
         }
 
         private void OpenVehicleManagement()
@@ -602,7 +602,7 @@ namespace SKAuto.UI.ViewModels
         private async Task EditWorkOrderAsync(int workOrderId)
         {
             var logger = App.GetService<ILoggingService>();
-            var messageBoxService = App.GetService<IMessageBoxService>(); // NEW
+            var messageBoxService = App.GetService<IMessageBoxService>();
             var detailVM = new WorkOrderDetailViewModel(_unitOfWork, logger, _configService, _driveService, messageBoxService, workOrderId);
             var window = new WorkOrderDetailWindow { DataContext = detailVM };
             window.Owner = System.Windows.Application.Current.MainWindow;
