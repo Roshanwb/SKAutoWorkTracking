@@ -190,6 +190,62 @@ namespace SKAuto.Core.Services
             }
         }
 
+        public async Task<string> UploadOrReplaceFileAsync(string localPath, string remoteFileName, string folderName)
+        {
+            if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+
+            string folderId = await GetFolderIdAsync(folderName);
+
+            var listRequest = _driveService.Files.List();
+            listRequest.Q = $"name='{remoteFileName}' and '{folderId}' in parents and trashed=false";
+            listRequest.Fields = "files(id, name)";
+            var listResult = await listRequest.ExecuteAsync();
+
+            var existing = listResult.Files.FirstOrDefault();
+            if (existing != null)
+            {
+                await _driveService.Files.Delete(existing.Id).ExecuteAsync();
+                _logger.LogInfo($"Deleted existing remote file '{remoteFileName}' (ID {existing.Id}) before replacement upload.");
+            }
+
+            var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+            {
+                Name = remoteFileName,
+                Parents = new[] { folderId }
+            };
+
+            using (var stream = new FileStream(localPath, FileMode.Open, FileAccess.Read))
+            {
+                var uploadRequest = _driveService.Files.Create(fileMetadata, stream, GetMimeType(localPath));
+                uploadRequest.Fields = "id";
+                var uploadResult = await uploadRequest.UploadAsync();
+
+                if (uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed)
+                {
+                    _logger.LogInfo($"Uploaded '{remoteFileName}' to folder '{folderName}' (ID {uploadRequest.ResponseBody.Id}).");
+                    return uploadRequest.ResponseBody.Id;
+                }
+
+                throw new Exception($"Upload failed: {uploadResult.Exception?.Message}");
+            }
+        }
+
+        // NEW: Get file by name inside a specific folder (legacy fallback)
+        public async Task<Google.Apis.Drive.v3.Data.File?> GetFileByNameInFolderAsync(string fileName, string folderName)
+        {
+            if (_driveService == null) throw new InvalidOperationException("Not authenticated");
+
+            string folderId = await GetFolderIdAsync(folderName);
+
+            var request = _driveService.Files.List();
+            request.Q = $"name='{fileName}' and '{folderId}' in parents and trashed=false";
+            request.Fields = "files(id, name, mimeType, createdTime)";
+            request.OrderBy = "createdTime desc";
+
+            var result = await request.ExecuteAsync();
+            return result.Files.FirstOrDefault();
+        }
+
         public async Task<List<BackupFileInfo>> ListDriveBackupsAsync()
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
@@ -243,8 +299,6 @@ namespace SKAuto.Core.Services
             return localPath;
         }
 
-        // --- NEW methods for sync ---
-
         public async Task<Google.Apis.Drive.v3.Data.File?> GetFileByNameAsync(string fileName)
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
@@ -267,7 +321,6 @@ namespace SKAuto.Core.Services
             return await reader.ReadToEndAsync();
         }
 
-        // FIXED: Delete existing and upload new
         public async Task UploadFileContentAsync(string fileName, string content)
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
@@ -297,7 +350,6 @@ namespace SKAuto.Core.Services
             await _driveService.Files.Delete(fileId).ExecuteAsync();
         }
 
-        // --- Helpers ---
         private string GetMimeType(string fileName)
         {
             string ext = Path.GetExtension(fileName).ToLowerInvariant();
@@ -332,7 +384,6 @@ namespace SKAuto.Core.Services
         {
             if (_driveService == null) throw new InvalidOperationException("Not authenticated");
 
-            // Search for existing folder with given name under parent
             var request = _driveService.Files.List();
             request.Q = $"mimeType='application/vnd.google-apps.folder' and name='{folderName}' and '{parentFolderId}' in parents and trashed=false";
             request.Fields = "files(id, name)";
@@ -342,7 +393,6 @@ namespace SKAuto.Core.Services
             if (folder != null)
                 return folder.Id;
 
-            // Create new folder
             var folderMetadata = new Google.Apis.Drive.v3.Data.File()
             {
                 Name = folderName,

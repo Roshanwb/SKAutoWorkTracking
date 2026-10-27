@@ -4,18 +4,22 @@ using Microsoft.Extensions.DependencyInjection;
 using SKAuto.Core.Entities;
 using SKAuto.Core.Enums;
 using SKAuto.Core.Interfaces;
+using SKAuto.Core.Services;
 using SKAuto.Data.Repository;
 using SKAuto.Import.Parsers;
 using SKAuto.UI.Localization;
+using SKAuto.UI.Views;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
+
 namespace SKAuto.UI.ViewModels
 {
     public partial class VehicleManagementViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMessageBoxService _messageBoxService;
 
         [ObservableProperty]
         private ObservableCollection<Vehicle> _vehicles = new();
@@ -40,16 +44,194 @@ namespace SKAuto.UI.ViewModels
         private string _currentOperation = "";
 
         public IAsyncRelayCommand ImportVehiclesCommand { get; }
+        public IAsyncRelayCommand<string> ShowVehicleWorkOrdersCommand { get; }
         public IRelayCommand CloseCommand { get; }
 
-        public VehicleManagementViewModel(IUnitOfWork unitOfWork)
+        public IAsyncRelayCommand AddVehicleCommand { get; }
+        public IAsyncRelayCommand EditVehicleCommand { get; }
+        public IAsyncRelayCommand DeleteVehicleCommand { get; }
+
+        public VehicleManagementViewModel(IUnitOfWork unitOfWork, IMessageBoxService messageBoxService)
         {
             _unitOfWork = unitOfWork;
+            _messageBoxService = messageBoxService;
 
             ImportVehiclesCommand = new AsyncRelayCommand(ImportVehiclesAsync);
+            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand<string>(ShowVehicleWorkOrdersAsync);
             CloseCommand = new RelayCommand(Close);
 
+            AddVehicleCommand = new AsyncRelayCommand(AddVehicleAsync);
+            EditVehicleCommand = new AsyncRelayCommand(EditVehicleAsync, () => SelectedVehicle != null);
+            DeleteVehicleCommand = new AsyncRelayCommand(DeleteVehicleAsync, () => SelectedVehicle != null);
+
             LoadVehiclesAsync().ConfigureAwait(false);
+        }
+
+        partial void OnSelectedVehicleChanged(Vehicle? value)
+        {
+            DeleteVehicleCommand?.NotifyCanExecuteChanged();
+            EditVehicleCommand?.NotifyCanExecuteChanged();
+        }
+
+        // ===== ADD VEHICLE =====
+        private async Task AddVehicleAsync()
+        {
+            try
+            {
+                var vm = new VehicleEditViewModel(_unitOfWork, null);
+                var window = new VehicleEditWindow { DataContext = vm };
+                window.Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                              ?? System.Windows.Application.Current.MainWindow;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                if (window.ShowDialog() == true)
+                {
+                    await LoadVehiclesAsync();
+                    var logger = App.GetService<ILoggingService>();
+                    logger?.LogInfo("New vehicle added via vehicle management view.");
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError("Failed to add vehicle", ex);
+                _messageBoxService.Show($"Error adding vehicle: {ex.Message}", "Error", MessageBoxButtonType.OK, MessageBoxImageType.Error);
+            }
+        }
+
+        // ===== EDIT VEHICLE =====
+        private async Task EditVehicleAsync()
+        {
+            if (SelectedVehicle == null) return;
+
+            try
+            {
+                var vm = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
+                var window = new VehicleEditWindow { DataContext = vm };
+                window.Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                              ?? System.Windows.Application.Current.MainWindow;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                if (window.ShowDialog() == true)
+                {
+                    await LoadVehiclesAsync();
+                    var logger = App.GetService<ILoggingService>();
+                    logger?.LogInfo($"Vehicle '{SelectedVehicle.ChassisNumber}' updated via vehicle management view.");
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError($"Failed to edit vehicle '{SelectedVehicle.ChassisNumber}'", ex);
+                _messageBoxService.Show($"Error editing vehicle: {ex.Message}", "Error", MessageBoxButtonType.OK, MessageBoxImageType.Error);
+            }
+        }
+
+        // ===== DELETE VEHICLE =====
+        private async Task DeleteVehicleAsync()
+        {
+            if (SelectedVehicle == null) return;
+
+            var chassis = SelectedVehicle.ChassisNumber;
+
+            var confirm = _messageBoxService.Show(
+                $"Delete vehicle with chassis '{chassis}'?\n\nThis action cannot be undone.",
+                "Confirm Delete",
+                MessageBoxButtonType.YesNo,
+                MessageBoxImageType.Warning);
+
+            if (confirm != MessageBoxResultType.Yes) return;
+
+            var logger = App.GetService<ILoggingService>();
+            logger?.LogInfo($"Attempting to delete vehicle '{chassis}' (ID {SelectedVehicle.Id}).");
+
+            try
+            {
+                await _unitOfWork.Vehicles.DeleteAsync(SelectedVehicle);
+                logger?.LogInfo($"Vehicle '{chassis}' (ID {SelectedVehicle.Id}) deleted successfully.");
+
+                SelectedVehicle = null;
+                await LoadVehiclesAsync();
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Failed to delete vehicle '{chassis}'", ex);
+
+                var isForeignKeyViolation =
+                    (ex.Message?.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase) == true) ||
+                    (ex.InnerException?.Message?.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase) == true);
+
+                if (isForeignKeyViolation)
+                {
+                    var deactivate = _messageBoxService.Show(
+                        $"Vehicle '{chassis}' is linked to one or more records (work orders or other data) and cannot be permanently deleted.\n\n" +
+                        $"Would you like to deactivate it instead? It will be hidden from the list but can be reactivated later.",
+                        "Deactivate Vehicle?",
+                        MessageBoxButtonType.YesNo,
+                        MessageBoxImageType.Question);
+
+                    if (deactivate == MessageBoxResultType.Yes)
+                    {
+                        try
+                        {
+                            SelectedVehicle.IsActive = false;
+                            await _unitOfWork.Vehicles.UpdateAsync(SelectedVehicle);
+                            logger?.LogInfo($"Vehicle '{chassis}' deactivated (soft-deleted) due to FK constraint.");
+
+                            _messageBoxService.Show(
+                                $"Vehicle '{chassis}' has been deactivated.",
+                                "Success",
+                                MessageBoxButtonType.OK,
+                                MessageBoxImageType.Information);
+
+                            SelectedVehicle = null;
+                            await LoadVehiclesAsync();
+                        }
+                        catch (Exception ex2)
+                        {
+                            logger?.LogError($"Failed to deactivate vehicle '{chassis}'", ex2);
+                            _messageBoxService.Show(
+                                $"Error deactivating vehicle: {ex2.Message}",
+                                "Error",
+                                MessageBoxButtonType.OK,
+                                MessageBoxImageType.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    _messageBoxService.Show(
+                        $"Error deleting vehicle: {ex.Message}",
+                        "Error",
+                        MessageBoxButtonType.OK,
+                        MessageBoxImageType.Error);
+                }
+            }
+        }
+
+        // ===== SHOW WORK ORDERS FOR CHASSIS =====
+        private async Task ShowVehicleWorkOrdersAsync(string? chassis)
+        {
+            if (string.IsNullOrWhiteSpace(chassis))
+            {
+                _messageBoxService.Show("Please select a vehicle first.", "No Chassis", MessageBoxButtonType.OK, MessageBoxImageType.Information);
+                return;
+            }
+
+            var vehicle = await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == chassis);
+            if (!vehicle.Any())
+            {
+                _messageBoxService.Show("Vehicle not found.", "Not Found", MessageBoxButtonType.OK, MessageBoxImageType.Warning);
+                return;
+            }
+
+            var viewModel = new VehicleWorkOrdersViewModel(_unitOfWork, chassis);
+            var view = new VehicleWorkOrdersView
+            {
+                DataContext = viewModel,
+                Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+            };
+            view.ShowDialog();
         }
 
         partial void OnSearchTextChanged(string value) => ApplyFilter();
@@ -84,7 +266,6 @@ namespace SKAuto.UI.ViewModels
         // ===== IMPORT VEHICLES =====
         private async Task ImportVehiclesAsync()
         {
-            // --- UI feedback start ---
             IsImporting = true;
             ImportProgress = 0;
             CurrentOperation = "Preparing import...";
@@ -119,7 +300,7 @@ namespace SKAuto.UI.ViewModels
 
                 if (!importDtos.Any())
                 {
-                    System.Windows.MessageBox.Show(LocalizationManager.Instance["NoValidVehicleDataInFile"], LocalizationManager.Instance["BackupView_Import"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    _messageBoxService.Show(LocalizationManager.Instance["NoValidVehicleDataInFile"], LocalizationManager.Instance["BackupView_Import"], MessageBoxButtonType.OK, MessageBoxImageType.Warning);
                     return;
                 }
 
@@ -137,7 +318,6 @@ namespace SKAuto.UI.ViewModels
                     CurrentOperation = "Preparing clients...";
                     ImportProgress = 30;
 
-                    // Ensure "PSA Group" client
                     if (!clientDict.ContainsKey("PSA Group"))
                     {
                         var psaGroup = new Client { Name = "PSA Group", Type = ClientType.PSA, IsActive = true };
@@ -147,13 +327,11 @@ namespace SKAuto.UI.ViewModels
                         logger.LogInfo("Created default client 'PSA Group'");
                     }
 
-                    // Collect all cleaned client names
                     var clientNames = importDtos
                         .Select(dto => CleanClientName(dto.ClientName))
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
 
-                    // Create missing clients
                     var newClients = new List<Client>();
                     foreach (var name in clientNames)
                     {
@@ -174,7 +352,6 @@ namespace SKAuto.UI.ViewModels
                         logger.LogInfo($"Created {newClients.Count} new clients.");
                     }
 
-                    // Build client ID map
                     var clientIdMap = clientDict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Id, StringComparer.OrdinalIgnoreCase);
 
                     CurrentOperation = "Fetching existing vehicles...";
@@ -192,7 +369,6 @@ namespace SKAuto.UI.ViewModels
                     foreach (var dto in importDtos)
                     {
                         processed++;
-                        // Update progress every 100 items
                         if (processed % 100 == 0 || processed == total)
                         {
                             int progress = 60 + (int)((double)processed / total * 30);
@@ -235,8 +411,8 @@ namespace SKAuto.UI.ViewModels
                     ImportProgress = 100;
                     CurrentOperation = "Import complete!";
                     logger.LogInfo($"Vehicle import: {newVehicles.Count} added, {skipped} skipped, {newClients.Count} new clients.");
-                    System.Windows.MessageBox.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
-                        LocalizationManager.Instance["VehicleManagementView_ImportVehicles"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _messageBoxService.Show($"Import complete:\n{newVehicles.Count} vehicles added\n{skipped} skipped (already exist)\n{newClients.Count} new clients created",
+                        LocalizationManager.Instance["VehicleManagementView_ImportVehicles"], MessageBoxButtonType.OK, MessageBoxImageType.Information);
 
                     await LoadVehiclesAsync();
                 }
@@ -244,7 +420,7 @@ namespace SKAuto.UI.ViewModels
             catch (Exception ex)
             {
                 logger.LogError("Vehicle import failed", ex);
-                System.Windows.MessageBox.Show($"Error: {ex.Message}", LocalizationManager.Instance["ImportFailed"], System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                _messageBoxService.Show($"Error: {ex.Message}", LocalizationManager.Instance["ImportFailed"], MessageBoxButtonType.OK, MessageBoxImageType.Error);
             }
             finally
             {

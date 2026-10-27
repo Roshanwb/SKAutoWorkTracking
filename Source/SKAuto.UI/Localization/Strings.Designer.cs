@@ -3188,7 +3188,7 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Today.
+        ///   Looks up a localized string similar to Refresh.
         /// </summary>
         internal static string MainWindow_Refresh {
             get {
@@ -3859,6 +3859,15 @@ namespace SKAuto.UI.Localization {
         internal static string ReportsView_SelectAll {
             get {
                 return ResourceManager.GetString("ReportsView_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Send to Accounting.
+        /// </summary>
+        internal static string ReportsView_SendToAccounting {
+            get {
+                return ResourceManager.GetString("ReportsView_SendToAccounting", resourceCulture);
             }
         }
         
@@ -4718,6 +4727,15 @@ namespace SKAuto.UI.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show work orders for this vehicle.
+        /// </summary>
+        internal static string VehicleManagementView_ShowWorkOrders {
+            get {
+                return ResourceManager.GetString("VehicleManagementView_ShowWorkOrders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Year.
         /// </summary>
         internal static string VehicleManagementView_Year {
@@ -4741,6 +4759,15 @@ namespace SKAuto.UI.Localization {
         internal static string Version {
             get {
                 return ResourceManager.GetString("Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Orders for the Chassis : .
+        /// </summary>
+        internal static string WOForChassis {
+            get {
+                return ResourceManager.GetString("WOForChassis", resourceCulture);
             }
         }
         
