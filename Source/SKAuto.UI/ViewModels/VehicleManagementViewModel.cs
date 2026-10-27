@@ -19,7 +19,7 @@ namespace SKAuto.UI.ViewModels
     public partial class VehicleManagementViewModel : ObservableObject
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMessageBoxService _messageBoxService; // NEW
+        private readonly IMessageBoxService _messageBoxService;
 
         [ObservableProperty]
         private ObservableCollection<Vehicle> _vehicles = new();
@@ -44,32 +44,173 @@ namespace SKAuto.UI.ViewModels
         private string _currentOperation = "";
 
         public IAsyncRelayCommand ImportVehiclesCommand { get; }
-        public IAsyncRelayCommand<string> ShowVehicleWorkOrdersCommand { get; } // Changed to accept parameter
+        public IAsyncRelayCommand<string> ShowVehicleWorkOrdersCommand { get; }
         public IRelayCommand CloseCommand { get; }
 
-        // Placeholder commands for add/edit/delete – you can implement later
-        public IRelayCommand AddVehicleCommand { get; }
-        public IRelayCommand EditVehicleCommand { get; }
-        public IRelayCommand DeleteVehicleCommand { get; }
+        public IAsyncRelayCommand AddVehicleCommand { get; }
+        public IAsyncRelayCommand EditVehicleCommand { get; }
+        public IAsyncRelayCommand DeleteVehicleCommand { get; }
 
-        public VehicleManagementViewModel(IUnitOfWork unitOfWork, IMessageBoxService messageBoxService) // NEW parameter
+        public VehicleManagementViewModel(IUnitOfWork unitOfWork, IMessageBoxService messageBoxService)
         {
             _unitOfWork = unitOfWork;
             _messageBoxService = messageBoxService;
 
             ImportVehiclesCommand = new AsyncRelayCommand(ImportVehiclesAsync);
-            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand<string>(ShowVehicleWorkOrdersAsync); // Changed
+            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand<string>(ShowVehicleWorkOrdersAsync);
             CloseCommand = new RelayCommand(Close);
 
-            // Stub commands (you can implement later)
-            AddVehicleCommand = new RelayCommand(() => { });
-            EditVehicleCommand = new RelayCommand(() => { });
-            DeleteVehicleCommand = new RelayCommand(() => { });
+            AddVehicleCommand = new AsyncRelayCommand(AddVehicleAsync);
+            EditVehicleCommand = new AsyncRelayCommand(EditVehicleAsync, () => SelectedVehicle != null);
+            DeleteVehicleCommand = new AsyncRelayCommand(DeleteVehicleAsync, () => SelectedVehicle != null);
 
             LoadVehiclesAsync().ConfigureAwait(false);
         }
 
-        private async Task ShowVehicleWorkOrdersAsync(string? chassis) // NOW accepts chassis
+        partial void OnSelectedVehicleChanged(Vehicle? value)
+        {
+            DeleteVehicleCommand?.NotifyCanExecuteChanged();
+            EditVehicleCommand?.NotifyCanExecuteChanged();
+        }
+
+        // ===== ADD VEHICLE =====
+        private async Task AddVehicleAsync()
+        {
+            try
+            {
+                var vm = new VehicleEditViewModel(_unitOfWork, null);
+                var window = new VehicleEditWindow { DataContext = vm };
+                window.Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                              ?? System.Windows.Application.Current.MainWindow;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                if (window.ShowDialog() == true)
+                {
+                    await LoadVehiclesAsync();
+                    var logger = App.GetService<ILoggingService>();
+                    logger?.LogInfo("New vehicle added via vehicle management view.");
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError("Failed to add vehicle", ex);
+                _messageBoxService.Show($"Error adding vehicle: {ex.Message}", "Error", MessageBoxButtonType.OK, MessageBoxImageType.Error);
+            }
+        }
+
+        // ===== EDIT VEHICLE =====
+        private async Task EditVehicleAsync()
+        {
+            if (SelectedVehicle == null) return;
+
+            try
+            {
+                var vm = new VehicleEditViewModel(_unitOfWork, SelectedVehicle);
+                var window = new VehicleEditWindow { DataContext = vm };
+                window.Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                              ?? System.Windows.Application.Current.MainWindow;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                if (window.ShowDialog() == true)
+                {
+                    await LoadVehiclesAsync();
+                    var logger = App.GetService<ILoggingService>();
+                    logger?.LogInfo($"Vehicle '{SelectedVehicle.ChassisNumber}' updated via vehicle management view.");
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = App.GetService<ILoggingService>();
+                logger?.LogError($"Failed to edit vehicle '{SelectedVehicle.ChassisNumber}'", ex);
+                _messageBoxService.Show($"Error editing vehicle: {ex.Message}", "Error", MessageBoxButtonType.OK, MessageBoxImageType.Error);
+            }
+        }
+
+        // ===== DELETE VEHICLE =====
+        private async Task DeleteVehicleAsync()
+        {
+            if (SelectedVehicle == null) return;
+
+            var chassis = SelectedVehicle.ChassisNumber;
+
+            var confirm = _messageBoxService.Show(
+                $"Delete vehicle with chassis '{chassis}'?\n\nThis action cannot be undone.",
+                "Confirm Delete",
+                MessageBoxButtonType.YesNo,
+                MessageBoxImageType.Warning);
+
+            if (confirm != MessageBoxResultType.Yes) return;
+
+            var logger = App.GetService<ILoggingService>();
+            logger?.LogInfo($"Attempting to delete vehicle '{chassis}' (ID {SelectedVehicle.Id}).");
+
+            try
+            {
+                await _unitOfWork.Vehicles.DeleteAsync(SelectedVehicle);
+                logger?.LogInfo($"Vehicle '{chassis}' (ID {SelectedVehicle.Id}) deleted successfully.");
+
+                SelectedVehicle = null;
+                await LoadVehiclesAsync();
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Failed to delete vehicle '{chassis}'", ex);
+
+                var isForeignKeyViolation =
+                    (ex.Message?.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase) == true) ||
+                    (ex.InnerException?.Message?.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase) == true);
+
+                if (isForeignKeyViolation)
+                {
+                    var deactivate = _messageBoxService.Show(
+                        $"Vehicle '{chassis}' is linked to one or more records (work orders or other data) and cannot be permanently deleted.\n\n" +
+                        $"Would you like to deactivate it instead? It will be hidden from the list but can be reactivated later.",
+                        "Deactivate Vehicle?",
+                        MessageBoxButtonType.YesNo,
+                        MessageBoxImageType.Question);
+
+                    if (deactivate == MessageBoxResultType.Yes)
+                    {
+                        try
+                        {
+                            SelectedVehicle.IsActive = false;
+                            await _unitOfWork.Vehicles.UpdateAsync(SelectedVehicle);
+                            logger?.LogInfo($"Vehicle '{chassis}' deactivated (soft-deleted) due to FK constraint.");
+
+                            _messageBoxService.Show(
+                                $"Vehicle '{chassis}' has been deactivated.",
+                                "Success",
+                                MessageBoxButtonType.OK,
+                                MessageBoxImageType.Information);
+
+                            SelectedVehicle = null;
+                            await LoadVehiclesAsync();
+                        }
+                        catch (Exception ex2)
+                        {
+                            logger?.LogError($"Failed to deactivate vehicle '{chassis}'", ex2);
+                            _messageBoxService.Show(
+                                $"Error deactivating vehicle: {ex2.Message}",
+                                "Error",
+                                MessageBoxButtonType.OK,
+                                MessageBoxImageType.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    _messageBoxService.Show(
+                        $"Error deleting vehicle: {ex.Message}",
+                        "Error",
+                        MessageBoxButtonType.OK,
+                        MessageBoxImageType.Error);
+                }
+            }
+        }
+
+        // ===== SHOW WORK ORDERS FOR CHASSIS =====
+        private async Task ShowVehicleWorkOrdersAsync(string? chassis)
         {
             if (string.IsNullOrWhiteSpace(chassis))
             {
@@ -77,7 +218,6 @@ namespace SKAuto.UI.ViewModels
                 return;
             }
 
-            // Check if vehicle exists (optional)
             var vehicle = await _unitOfWork.Vehicles.FindAsync(v => v.ChassisNumber == chassis);
             if (!vehicle.Any())
             {
@@ -85,7 +225,6 @@ namespace SKAuto.UI.ViewModels
                 return;
             }
 
-            // Open the lookup window
             var viewModel = new VehicleWorkOrdersViewModel(_unitOfWork, chassis);
             var view = new VehicleWorkOrdersView
             {
@@ -124,7 +263,7 @@ namespace SKAuto.UI.ViewModels
         private void Close() =>
             System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
 
-        // ===== IMPORT VEHICLES (unchanged, keep as is) =====
+        // ===== IMPORT VEHICLES =====
         private async Task ImportVehiclesAsync()
         {
             IsImporting = true;
@@ -292,7 +431,7 @@ namespace SKAuto.UI.ViewModels
             }
         }
 
-        // ===== CLIENT NAME CLEANING (unchanged) =====
+        // ===== CLIENT NAME CLEANING =====
         private static readonly HashSet<string> ExcludedWords = new(StringComparer.OrdinalIgnoreCase)
         {
             "ok", "acc", "kit", "logos", "conforme", "pneus", "att.", "att. rv", "att rv",
