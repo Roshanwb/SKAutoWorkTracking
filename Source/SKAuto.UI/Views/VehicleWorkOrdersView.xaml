@@ -9,7 +9,6 @@
         ResizeMode="CanResize" WindowStyle="None">
 
     <Window.Resources>
-        <!-- DataGrid style without BasedOn to avoid sealing errors -->
         <Style TargetType="DataGrid">
             <Setter Property="RowHeight" Value="24"/>
             <Setter Property="ColumnHeaderHeight" Value="28"/>
@@ -26,7 +25,6 @@
             <Setter Property="IsReadOnly" Value="True"/>
         </Style>
 
-        <!-- Column header style (light background, bold) -->
         <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="#EEEEEE"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -51,6 +49,8 @@
 
         <DataGrid Grid.Row="1" 
                   ItemsSource="{Binding WorkOrders}"
+                  SelectedItem="{Binding SelectedWorkOrder}"
+                  MouseDoubleClick="DataGrid_MouseDoubleClick"
                   ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{loc:Translate WorkOrderView_WorkOrder}" Binding="{Binding Id}" Width="Auto" MinWidth="70"/>

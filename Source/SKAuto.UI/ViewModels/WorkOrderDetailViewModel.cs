@@ -29,6 +29,28 @@ namespace SKAuto.UI.ViewModels
         private decimal _psaRate;
 
         [ObservableProperty]
+        private bool _isReadOnly;
+
+        public bool IsNotReadOnly => !IsReadOnly;
+
+        partial void OnIsReadOnlyChanged(bool value)
+        {
+            OnPropertyChanged(nameof(IsNotReadOnly));
+            SaveCommand?.NotifyCanExecuteChanged();
+            DeleteCommand?.NotifyCanExecuteChanged();
+            AddTaskCommand?.NotifyCanExecuteChanged();
+            RemoveTaskCommand?.NotifyCanExecuteChanged();
+            AddTravelCommand?.NotifyCanExecuteChanged();
+            RemoveTravelCommand?.NotifyCanExecuteChanged();
+            AddAttachmentCommand?.NotifyCanExecuteChanged();
+            RemoveAttachmentCommand?.NotifyCanExecuteChanged();
+            OpenAddTaskCommand?.NotifyCanExecuteChanged();
+            OpenVehicleEditCommand?.NotifyCanExecuteChanged();
+            SearchVehicleCommand?.NotifyCanExecuteChanged();
+            ShowVehicleWorkOrdersCommand?.NotifyCanExecuteChanged();
+        }
+
+        [ObservableProperty]
         private WorkOrder _workOrder;
 
         [ObservableProperty]
@@ -116,7 +138,7 @@ namespace SKAuto.UI.ViewModels
 
         public WorkOrderDetailViewModel(IUnitOfWork unitOfWork, ILoggingService logger, IConfigurationService configService,
                                         IGoogleDriveService driveService, IMessageBoxService messageBoxService,
-                                        int workOrderId = 0, DateTime? initialOrderDate = null)
+                                        int workOrderId = 0, DateTime? initialOrderDate = null, bool isReadOnly = false)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -126,31 +148,34 @@ namespace SKAuto.UI.ViewModels
             _isNew = workOrderId == 0;
             _initialOrderDate = initialOrderDate;
 
-            _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}, InitialOrderDate: {(_initialOrderDate.HasValue ? _initialOrderDate.Value.ToString("yyyy-MM-dd") : "(null)")}");
+            _logger.LogInfo($"WorkOrderDetailViewModel initializing. IsNew: {_isNew}, WorkOrderId: {workOrderId}, IsReadOnly: {isReadOnly}, InitialOrderDate: {(_initialOrderDate.HasValue ? _initialOrderDate.Value.ToString("yyyy-MM-dd") : "(null)")}");
 
             OrderTypeOptions = Enum.GetValues(typeof(OrderType))
                 .Cast<OrderType>()
                 .Select(ot => new SelectableOption<OrderType> { Value = ot, Display = ot.GetDisplayName() })
                 .ToList();
 
-            SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync);
-            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand(ShowVehicleWorkOrdersAsync);
-            AddTaskCommand = new RelayCommand(AddTask);
-            RemoveTaskCommand = new RelayCommand<WorkTask>(RemoveTask);
-            AddTravelCommand = new RelayCommand(AddTravel);
-            RemoveTravelCommand = new RelayCommand<Travel>(RemoveTravel);
-            SaveCommand = new AsyncRelayCommand(SaveAsync);
+            SearchVehicleCommand = new AsyncRelayCommand(SearchVehicleAsync, () => !IsReadOnly);
+            ShowVehicleWorkOrdersCommand = new AsyncRelayCommand(ShowVehicleWorkOrdersAsync, () => !IsReadOnly);
+            AddTaskCommand = new RelayCommand(AddTask, () => !IsReadOnly);
+            RemoveTaskCommand = new RelayCommand<WorkTask>(RemoveTask, _ => !IsReadOnly);
+            AddTravelCommand = new RelayCommand(AddTravel, () => !IsReadOnly);
+            RemoveTravelCommand = new RelayCommand<Travel>(RemoveTravel, _ => !IsReadOnly);
+            SaveCommand = new AsyncRelayCommand(SaveAsync, () => !IsReadOnly);
             CancelCommand = new RelayCommand(() => CloseWindow());
-            DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew);
-            OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null);
-            OpenAddTaskCommand = new RelayCommand(OpenAddTask);
+            DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !_isNew && !IsReadOnly);
+            OpenVehicleEditCommand = new RelayCommand(OpenVehicleEdit, () => SelectedVehicle != null && !IsReadOnly);
+            OpenAddTaskCommand = new RelayCommand(OpenAddTask, () => !IsReadOnly);
 
             IncrementTimeCommand = new RelayCommand(() => TaskMinutes = System.Math.Min(999, TaskMinutes + 5));
             DecrementTimeCommand = new RelayCommand(() => TaskMinutes = System.Math.Max(0, TaskMinutes - 5));
 
-            AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync);
-            RemoveAttachmentCommand = new AsyncRelayCommand<SourceDocument>(RemoveAttachmentAsync);
+            AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync, () => !IsReadOnly);
+            RemoveAttachmentCommand = new AsyncRelayCommand<SourceDocument>(RemoveAttachmentAsync, _ => !IsReadOnly);
             DownloadAttachmentCommand = new AsyncRelayCommand<SourceDocument>(DownloadAttachmentAsync);
+
+            // Set read-only mode (this triggers OnIsReadOnlyChanged AFTER commands exist)
+            IsReadOnly = isReadOnly;
 
             _ = InitializeAsync(workOrderId);
             _ = LoadPsaRateAsync();
@@ -158,6 +183,8 @@ namespace SKAuto.UI.ViewModels
 
         private async Task ShowVehicleWorkOrdersAsync()
         {
+            if (IsReadOnly) return;
+
             if (string.IsNullOrWhiteSpace(ChassisSearch))
             {
                 _messageBoxService.Show("Please enter a chassis number first.", "No Chassis", MessageBoxButtonType.OK, MessageBoxImageType.Information);
@@ -251,6 +278,8 @@ namespace SKAuto.UI.ViewModels
 
         private void AddTravel()
         {
+            if (IsReadOnly) return;
+
             _logger.LogInfo(LocalizationManager.Instance["AddTravelCalled"]);
             var dialog = new TravelDialog();
             dialog.Owner = System.Windows.Application.Current.MainWindow;
@@ -286,6 +315,7 @@ namespace SKAuto.UI.ViewModels
 
         private void RemoveTravel(Travel? travel)
         {
+            if (IsReadOnly) return;
             if (travel == null) return;
             _logger.LogInfo($"Removing travel: Destination={travel.Destination}, Date={travel.TravelDate:yyyy-MM-dd}");
             Travels.Remove(travel);
@@ -294,6 +324,8 @@ namespace SKAuto.UI.ViewModels
 
         private async void OpenAddTask()
         {
+            if (IsReadOnly) return;
+
             try
             {
                 var logger = App.GetService<ILoggingService>();
@@ -311,12 +343,8 @@ namespace SKAuto.UI.ViewModels
                     Owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
                 };
 
-                // ShowDialog may return null, true, or false depending on how the window is closed.
-                // We ignore the result and always refresh, because the user may have added tasks
-                // without explicitly setting DialogResult.
                 window.ShowDialog();
 
-                // Always refresh the accessory list so any newly added task appears in TaskCombo.
                 AccessorySearchText = "";
                 await RefreshAccessoriesAsync();
             }
@@ -339,6 +367,7 @@ namespace SKAuto.UI.ViewModels
 
         private async void OpenVehicleEdit()
         {
+            if (IsReadOnly) return;
             if (SelectedVehicle == null) return;
 
             _logger.LogInfo($"Opening vehicle edit for chassis {SelectedVehicle.ChassisNumber}");
@@ -438,6 +467,7 @@ namespace SKAuto.UI.ViewModels
 
         private async Task SearchVehicleAsync()
         {
+            if (IsReadOnly) return;
             if (string.IsNullOrWhiteSpace(ChassisSearch)) return;
 
             _logger.LogInfo($"Searching vehicle with chassis: {ChassisSearch}");
@@ -530,6 +560,7 @@ namespace SKAuto.UI.ViewModels
                     _logger.LogInfo($"Selected vehicle changed to ID {value.Id}, Chassis {value.ChassisNumber}");
                 }
             }
+            OpenVehicleEditCommand?.NotifyCanExecuteChanged();
         }
 
         partial void OnSelectedClientChanged(Client? value)
@@ -546,6 +577,8 @@ namespace SKAuto.UI.ViewModels
 
         private void AddTask()
         {
+            if (IsReadOnly) return;
+
             if (SelectedAccessory == null)
             {
                 _logger.LogWarning(LocalizationManager.Instance["AddTaskNoAccessorySelected"]);
@@ -577,6 +610,7 @@ namespace SKAuto.UI.ViewModels
 
         private void RemoveTask(WorkTask? task)
         {
+            if (IsReadOnly) return;
             if (task != null)
             {
                 var taskInfo = $"AccessoryId {task.AccessoryId}, Quantity {task.Quantity}, Price {task.Price}";
@@ -588,6 +622,8 @@ namespace SKAuto.UI.ViewModels
 
         private async Task AddAttachmentAsync()
         {
+            if (IsReadOnly) return;
+
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
                 Multiselect = true,
@@ -633,6 +669,7 @@ namespace SKAuto.UI.ViewModels
 
         private async Task RemoveAttachmentAsync(SourceDocument? doc)
         {
+            if (IsReadOnly) return;
             if (doc == null) return;
             var result = _messageBoxService.Show($"Delete attachment '{doc.OriginalFilename}'? This action cannot be undone.",
                 "Confirm Delete", MessageBoxButtonType.YesNo, MessageBoxImageType.Warning);
@@ -708,6 +745,8 @@ namespace SKAuto.UI.ViewModels
         {
             try
             {
+                if (IsReadOnly) return;
+
                 _logger.LogInfo(LocalizationManager.Instance["SaveAsyncStarted"]);
 
                 if (SelectedVehicle == null)
@@ -719,10 +758,8 @@ namespace SKAuto.UI.ViewModels
 
                 WorkOrder.VehicleId = SelectedVehicle.Id;
 
-                // --- Diagnostic: capture the exact WorkOrder.OrderDate value at save time ---
                 _logger.LogInfo($"SaveAsync: WorkOrder.OrderDate = {WorkOrder.OrderDate:yyyy-MM-dd HH:mm:ss.fff} (Kind={WorkOrder.OrderDate.Kind}), IsNew={_isNew}, WorkOrderId={WorkOrder.Id}");
 
-                // --- Duplicate check (in-memory, date-only, explicit self-exclusion) ---
                 var targetDate = WorkOrder.OrderDate.Date;
                 _logger.LogInfo($"Duplicate check: VehicleId={SelectedVehicle.Id} (Chassis={SelectedVehicle.ChassisNumber}), TargetDate={targetDate:yyyy-MM-dd}");
 
@@ -751,7 +788,6 @@ namespace SKAuto.UI.ViewModels
                     );
                     return;
                 }
-                // --- End of duplicate check ---
 
                 if (SelectedClient != null && SelectedVehicle.ClientId != SelectedClient.Id)
                 {
@@ -788,6 +824,7 @@ namespace SKAuto.UI.ViewModels
         private async Task DeleteAsync()
         {
             if (_isNew) return;
+            if (IsReadOnly) return;
 
             _logger.LogInfo($"DeleteAsync called for work order #{WorkOrder.Id}");
             var result = _messageBoxService.Show($"Delete work order #{WorkOrder.Id}? This will also delete all associated tasks and travels.",
